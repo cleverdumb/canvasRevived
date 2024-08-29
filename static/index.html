@@ -4,7 +4,7 @@
     </head>
     <!-- <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script> -->
     <body>
-        <h1>Hello world</h1>
+        <canvas id='cvs'></canvas>
         <script type="module">
             import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
             ioT = io;
@@ -15,7 +15,20 @@
                 const socket = ioT('http://localhost:3276/');
             }
 
+            const chw = 50;  // CHunk Width
+            const chh = 25;  // CHunk Height
+            const chnx = 16; // CHunk Number X
+            const chny = 24; // CHunk Number Y
+
             let session = null;
+            let mapData = [];
+            for (let y=0; y<chny; y++) {
+                mapData.push([]);
+                for (let x=0; x<chnx; x++) {
+                    mapData[y].push(null);
+                }
+            }
+            let pl = null;
 
             function signup(user, pass) {
                 let request = new XMLHttpRequest();
@@ -31,6 +44,7 @@
                         }
                         else if (res == '1') {
                             console.log('%cUsername used', 'color: red');
+                            login('n1', 'p1');
                         }
                         else if (res == '2') {
                             console.log('%cInvalid data', 'color: red')
@@ -55,8 +69,17 @@
                             console.log('%cInvalid data', 'color: red')
                         }
                         else {
-                            console.log(`%cSuccess. Session: ${request.responseText}`, 'color: green');
-                            session = request.responseText;
+                            let resp = request.responseText;
+                            session = resp.split('-')[0];
+                            pl = JSON.parse(resp.split('-')[1]);
+                            let resMapData = JSON.parse(resp.split('-')[2]);
+                            resMapData.forEach((x, i)=>{
+                                mapData[pl.chunk.y - 1 + Math.floor(i/3)][pl.chunk.x - 1 + i%3] = x;
+                            })
+                            console.log(`%cSuccess. Session: ${session}`, 'color: green');
+                            console.log(mapData);
+
+                            afterLogin();
                         }
                     }
                 }
@@ -77,8 +100,46 @@
                 request.send(JSON.stringify({session}));
             }
 
-            // signup('n1', 'p1');
-            login('n1', 'p1');
+            signup('n1', 'p1');
+            // login('n1', 'p1');
+
+            function afterLogin() {
+                render();
+            }
+
+            const cvs = document.getElementById('cvs');
+            const ctx = cvs.getContext('2d');
+            
+            let bw = 20; // px
+            let bh = 20; // px
+
+            let bx = 39; // boxes
+            let by = 25; // boxes
+
+            cvs.width = bw * bx;
+            cvs.height = bh * by;
+            cvs.border = '1px solid black';
+
+            function render() {
+                let px = chw + pl.pos.x;
+                let py = chh + pl.pos.y;
+                for (let y=0; y<by; y++) {
+                    for (let x=0; x<bx; x++) {
+                        let cx = x + (px - 19);
+                        let cy = y + (py - 12);
+                        let chx = Math.floor(cx/chw);
+                        let chy = Math.floor(cy/chh);
+                        ctx.strokeRect(x*bw, y*bh, bw, bh);
+                        if (x == 19 && y == 12) {
+                            ctx.fillStyle = 'cyan';
+                            ctx.fillRect(x*bw, y*bh, bw, bh);
+                        }
+                        // console.log(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw])
+                        // ctx.fillStyle = 'black';
+                        // ctx.fillText(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw],x*bw+2, y*bh+10);
+                    }
+                }
+            }
         </script>
     </body>
 </html>

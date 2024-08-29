@@ -29,12 +29,24 @@ db.run(`
 
 // db.run(`INSERT INTO accData (user, pass) VALUES ('n1', 'p1')`)
 
+// world[chunkY][chunkX][y][x]
+// 0 - ground
 let players = {};
 let world = [];
-for (let y=0; y<50; y++) {
+let chunkX = 16;
+let chunkY = 24;
+let chunkW = 50;
+let chunkH = 25;
+for (let y=0; y<chunkY; y++) {
     world.push([]);
-    for (let x=0; x<50; x++) {
-        world[y].push(0);
+    for (let x=0; x<chunkX; x++) {
+        world[y].push([]);
+        for (let a=0; a<chunkH; a++) {
+            world[y][x].push([]);
+            for (let b=0; b<chunkW; b++) {
+                world[y][x][a].push(`${x}${y}${a}${b}`);
+            }
+        }
     }
 }
 
@@ -71,7 +83,18 @@ app.post('/signup', jsonParser, (req, res)=>{
             db.get('SELECT userId FROM accData WHERE user=? AND pass=?', [user, pass], (err, row) => {
                 if (err) throw err;
                 // put new playerData
-                db.run(`INSERT INTO playerData (userId, data) VALUES (?, ?)`, [row.userId, JSON.stringify({id: row.userId, name: user})], err => {
+                db.run(`INSERT INTO playerData (userId, data) VALUES (?, ?)`, [row.userId, JSON.stringify({
+                    id: row.userId,
+                    name: user,
+                    chunk: {
+                        x: 1,
+                        y: 1
+                    },
+                    pos:{
+                        x: 4,
+                        y: 4
+                    }
+                })], err => {
                     if (err) throw err;
                     res.send('0');
                 })
@@ -113,10 +136,17 @@ app.post('/login', jsonParser, (req, res)=>{
             // get the playerData of the player
             db.get('SELECT (data) FROM playerData WHERE userId=?', [id], (err, row) => {
                 if (err) throw err;
-                players[ses] = JSON.parse(row.data);
-                console.log(players);
+                let data = JSON.parse(row.data);
+                players[ses] = data;
 
-                res.send(ses.toString());
+                let initMapData = [
+                    data.chunk.x == 0 || data.chunk.y == 0 ? null : world[data.chunk.y-1][data.chunk.x-1],        data.chunk.y == 0 ? null : world[data.chunk.y-1][data.chunk.x],        data.chunk.x == chunkX-1 || data.chunk.y == 0 ? null : world[data.chunk.y-1][data.chunk.x+1],
+                    data.chunk.x == 0 ? null : world[data.chunk.y][data.chunk.x-1],                               world[data.chunk.y][data.chunk.x],                                     data.chunk.x == chunkX-1 ? null : world[data.chunk.y][data.chunk.x+1],
+                    data.chunk.x == 0 || data.chunk.y == chunkY-1 ? null : world[data.chunk.y+1][data.chunk.x-1], data.chunk.y == chunkY-1 ? null : world[data.chunk.y+1][data.chunk.x], data.chunk.x == chunkX-1 || data.chunk.y == chunkY-1 ? null : world[data.chunk.y+1][data.chunk.x+1]
+                ]
+                // console.log(players);
+
+                res.send(`${ses.toString()}-${JSON.stringify(data)}-${JSON.stringify(initMapData)}`);
                 return;
             })
         })
