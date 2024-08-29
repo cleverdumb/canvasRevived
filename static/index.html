@@ -1,0 +1,84 @@
+<html>
+    <head>
+        <title>RPG 2D</title>
+    </head>
+    <!-- <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script> -->
+    <body>
+        <h1>Hello world</h1>
+        <script type="module">
+            import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+            ioT = io;
+        </script>
+        <script>
+            ioT = null;
+            document.body.onload = ()=>{
+                const socket = ioT('http://localhost:3276/');
+            }
+
+            let session = null;
+
+            function signup(user, pass) {
+                let request = new XMLHttpRequest();
+                let path = window.location.href + 'signup';
+                request.open('POST', path, true);
+                request.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                request.onreadystatechange = ()=>{
+                    if (request.readyState == XMLHttpRequest.DONE) {
+                        let res = request.responseText;
+                        if (res == '0') {
+                            console.log('%cSuccess', 'color: green');
+                            login('n1', 'p1');
+                        }
+                        else if (res == '1') {
+                            console.log('%cUsername used', 'color: red');
+                        }
+                        else if (res == '2') {
+                            console.log('%cInvalid data', 'color: red')
+                        }
+                    }
+                }
+                let text = JSON.stringify({user, pass});
+                request.send(text);
+            }
+
+            function login(user, pass) {
+                let request = new XMLHttpRequest();
+                let path = window.location.href + 'login';
+                request.open('POST', path, true);
+                request.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                request.onreadystatechange = ()=>{
+                    if (request.readyState == XMLHttpRequest.DONE) {
+                        if (request.responseText == '0') {
+                            console.log('%cIncorrect user or pass', 'color: red');
+                        }
+                        else if (request.responseText == '1') {
+                            console.log('%cInvalid data', 'color: red')
+                        }
+                        else {
+                            console.log(`%cSuccess. Session: ${request.responseText}`, 'color: green');
+                            session = request.responseText;
+                        }
+                    }
+                }
+                let text = JSON.stringify({user, pass});
+                request.send(text);
+            }
+
+            function logout() {
+                let request = new XMLHttpRequest();
+                let path = window.location.href + 'logout';
+                request.open('POST', path, true);
+                request.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                request.onreadystatechange = ()=>{
+                    if (request.readyState == XMLHttpRequest.DONE) {
+                        console.log(`%cSuccess`, 'color: green');
+                    }
+                }
+                request.send(JSON.stringify({session}));
+            }
+
+            // signup('n1', 'p1');
+            login('n1', 'p1');
+        </script>
+    </body>
+</html>
