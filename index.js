@@ -50,10 +50,6 @@ for (let y=0; y<chunkY; y++) {
     }
 }
 
-io.on('connection', ()=>{
-    console.log('connection');
-})
-
 const port = 3276;
 
 app.get('/', (req, res)=>{
@@ -87,8 +83,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                     id: row.userId,
                     name: user,
                     chunk: {
-                        x: 1,
-                        y: 1
+                        x: 0,
+                        y: 0
                     },
                     pos:{
                         x: 4,
@@ -164,4 +160,21 @@ app.post('/logout', jsonParser, (req, res)=>{
 
 server.listen(port, ()=>{
     console.log(`App hosting on port ${port}`);
+})
+
+let sockets = {};
+
+io.on('connection', (socket)=>{
+    socket.on('initiate', arg=>{
+        if (!players.hasOwnProperty(arg)) return;
+        sockets[arg] = socket.id;
+        let data = players[arg];
+        [-1, 1, 0].forEach(y=>{
+            [-1, 1, 0].forEach(x=>{
+                if (data.chunk.x + x >= 0 && data.chunk.x + x < chunkX && data.chunk.y + y >= 0 && data.chunk.y + y < chunkY) {
+                    socket.join(`${data.chunk.x + x},${data.chunk.y + y}`)
+                }
+            })
+        })
+    })
 })
