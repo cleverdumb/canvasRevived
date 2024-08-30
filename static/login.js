@@ -12,7 +12,7 @@ for (let y=0; y<chny; y++) {
     }
 }
 let pl = null;
-let plRange = []; // players in updating range
+let plData = {}; // players data locally
 
 function signup(user, pass, cb) {
     let request = new XMLHttpRequest();
@@ -56,7 +56,7 @@ function login(user, pass, cb) {
                 let resp = request.responseText;
                 session = resp.split('-')[0];
                 pl = JSON.parse(resp.split('-')[1]);
-                plRange.push({id: pl.id, chunk:pl.chunk, pos:pl.pos});
+                plData[pl.id] = ({chunk:pl.chunk, pos:pl.pos});
                 let resMapData = JSON.parse(resp.split('-')[2]);
                 resMapData.forEach((x, i)=>{
                     if (!x) return;

@@ -27,17 +27,25 @@ function render() {
             if (pl.chunk.x-1+chx < 0) continue;
             if (pl.chunk.x-1+chx > chnx-1) continue;
             if (pl.chunk.y-1+chy > chny-1) continue; 
-            ctx.drawImage(sprite, 0, 0, 16, 16, x*bw, y*bh, bw, bh);
+            switch (mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw]) {
+                case 0:
+                    ctx.drawImage(sprite, 0, 0, 16, 16, x*bw, y*bh, bw, bh);
+                    break;
+                case 1:
+                    ctx.drawImage(sprite, 0, 64, 16, 16, x*bw, y*bh, bw, bh);
+                    break;
+            }
             // if (x == 19 && y == 12) {
             //     ctx.fillStyle = 'cyan';
             //     ctx.drawImage(sprite, 0, 208, 16, 16, x*bw, y*bh, bw, bh);
             // }
-            plRange.forEach(p=>{
+            for (q in plData) {
+                let p = plData[q];
                 // console.log(x);
                 if ((pl.chunk.y-1+chy == p.chunk.y) && (pl.chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
                     ctx.drawImage(sprite, 0, 208, 16, 16, x*bw, y*bh, bw, bh);
                 }
-            })
+            }
             // console.log(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw])
             // ctx.fillStyle = 'black';
             // ctx.fillText(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw],x*bw+2, y*bh+10);

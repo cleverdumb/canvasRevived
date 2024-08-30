@@ -9,6 +9,8 @@
             let ioT = null;
             let socket = null;
             let socketId = null;
+            let executedCmdId = [];
+
             document.body.onload = ()=>{
                 loadSpriteMap(afterSpriteLoaded);
             }
@@ -24,6 +26,27 @@
 
                 socket.on('test', ()=>{
                     console.log('test signal received');
+                })
+
+                socket.on('movement', (id, dir, cmdId) => {
+                    if (!executedCmdId.includes(cmdId)) {
+                        if (dir == 'd') {
+                            plData[id].pos.x++;
+                            if (plData[id].pos.x >= chw) {
+                                plData[id].pos.x = 0;
+                                plData[id].chunk.x++;
+                            }
+                        }
+                        render();
+                        executedCmdId.push(cmdId);
+                    }
+                })
+
+                document.body.addEventListener('keydown', e=>{
+                    if (e.key == 'd') {
+                        console.log('t');
+                        socket.emit('movement', session, 'd');
+                    }
                 })
             }
         </script>

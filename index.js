@@ -31,6 +31,7 @@ db.run(`
 
 // world[chunkY][chunkX][y][x]
 // 0 - ground
+// 1 - ice
 let players = {};
 let world = [];
 let chunkX = 16;
@@ -44,11 +45,20 @@ for (let y=0; y<chunkY; y++) {
         for (let a=0; a<chunkH; a++) {
             world[y][x].push([]);
             for (let b=0; b<chunkW; b++) {
-                world[y][x][a].push(`${x}${y}${a}${b}`);
+                world[y][x][a].push(((a+b)%2)?0:1);
             }
         }
     }
 }
+
+function *commandIdGenO() {
+    let x = 0;
+    while (true) {
+        yield x++;
+    }
+}
+
+let commandIdGen = commandIdGenO();
 
 const port = 3276;
 
@@ -164,6 +174,17 @@ server.listen(port, ()=>{
 
 let sockets = {};
 
+function emitToAdj(cpos, msg, arg) {
+    let {x, y} = cpos;
+    [-1, 0, 1].forEach(a=>{
+        [-1, 0, 1].forEach(b=>{
+            if (x+a >= 0 && x+a < chunkX && y+b >= 0 && y+b < chunkY) {
+                io.to(`${x+a},${y+b}`).emit(msg, ...arg);
+            }
+        })
+    })
+}
+
 io.on('connection', (socket)=>{
     socket.on('initiate', arg=>{
         if (!players.hasOwnProperty(arg)) return;
@@ -176,5 +197,18 @@ io.on('connection', (socket)=>{
                 }
             })
         })
+    })
+
+    socket.on('movement', (session, direction) => {
+        if (direction == 'd') {
+            let thisCmd = commandIdGen.next().value;
+            players[session].pos.x++;
+            if (players[session].pos.x > chunkW) {
+                players[session].pos.x = 0;
+                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+                players[session].chunk.x++;
+            }
+            emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+        }
     })
 })
