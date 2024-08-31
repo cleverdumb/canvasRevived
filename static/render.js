@@ -14,8 +14,9 @@ cvs.height = bh * by;
 cvs.border = '1px solid black';
 
 function render() {
-    let px = chw + pl.pos.x; // absolute pos of player, x, relative to 3x3
-    let py = chh + pl.pos.y; // absolute pos of player, y, relative to 3x3
+    ctx.clearRect(0, 0, bw * bx, bh * by);
+    let px = chw + plData[plId].pos.x; // absolute pos of player, x, relative to 3x3
+    let py = chh + plData[plId].pos.y; // absolute pos of player, y, relative to 3x3
     for (let y=0; y<by; y++) {
         for (let x=0; x<bx; x++) {
             let cx = x + (px - 19); // absolute pos, x, relative to 3x3

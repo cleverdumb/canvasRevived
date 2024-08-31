@@ -8,11 +8,26 @@ let mapData = [];
 for (let y=0; y<chny; y++) {
     mapData.push([]);
     for (let x=0; x<chnx; x++) {
-        mapData[y].push(null);
+        mapData[y].push([]);
+        for (let a=0; a<chh; a++) {
+            mapData[y][x].push([]);
+            for (let b=0; b<chw; b++) {
+                mapData[y][x][a].push((a+b)%2?0:1);
+            }
+        }
     }
 }
+
+// for (let y=0; y<chny; y++) {
+//     mapData.push([]);
+//     for (let x=0; x<chnx; x++) {
+//         mapData[y].push(null);
+//     }
+// }
+
 let pl = null;
 let plData = {}; // players data locally
+let plId = null;
 
 function signup(user, pass, cb) {
     let request = new XMLHttpRequest();
@@ -56,6 +71,7 @@ function login(user, pass, cb) {
                 let resp = request.responseText;
                 session = resp.split('-')[0];
                 pl = JSON.parse(resp.split('-')[1]);
+                plId = pl.id;
                 plData[pl.id] = ({chunk:pl.chunk, pos:pl.pos});
                 let resMapData = JSON.parse(resp.split('-')[2]);
                 resMapData.forEach((x, i)=>{

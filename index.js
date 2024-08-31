@@ -94,7 +94,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                     name: user,
                     chunk: {
                         x: 0,
-                        y: 0
+                        y: 1
                     },
                     pos:{
                         x: 4,
@@ -186,10 +186,10 @@ function emitToAdj(cpos, msg, arg) {
 }
 
 io.on('connection', (socket)=>{
-    socket.on('initiate', arg=>{
-        if (!players.hasOwnProperty(arg)) return;
-        sockets[arg] = socket.id;
-        let data = players[arg];
+    socket.on('initiate', ses=>{
+        if (!players.hasOwnProperty(ses)) return;
+        sockets[ses] = socket;
+        let data = players[ses];
         [-1, 1, 0].forEach(y=>{
             [-1, 1, 0].forEach(x=>{
                 if (data.chunk.x + x >= 0 && data.chunk.x + x < chunkX && data.chunk.y + y >= 0 && data.chunk.y + y < chunkY) {
@@ -201,14 +201,176 @@ io.on('connection', (socket)=>{
 
     socket.on('movement', (session, direction) => {
         if (direction == 'd') {
+            // world boundary check
+            if (players[session].chunk.x >= chunkX-1 && players[session].pos.x >= chunkW-1) return;
+
             let thisCmd = commandIdGen.next().value;
+            // inc pos
             players[session].pos.x++;
-            if (players[session].pos.x > chunkW) {
+            // roll over chunk
+            if (players[session].pos.x >= chunkW) {
                 players[session].pos.x = 0;
+                // emit to original chunk
                 emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
                 players[session].chunk.x++;
+                // socket leave rooms
+                if (players[session].chunk.y > 0) {
+                    sockets[session].leave(`${players[session].chunk.x-2},${players[session].chunk.y-1}`);
+                }
+                sockets[session].leave(`${players[session].chunk.x-2},${players[session].chunk.y}`);
+                if (players[session].chunk.y < chunkY-1) {
+                    sockets[session].leave(`${players[session].chunk.x-2},${players[session].chunk.y+1}`);
+                }
+                // socket join rooms + get new map data to send to client
+                let newMapData = {};
+                if (players[session].chunk.x < chunkX-1) {
+                    if (players[session].chunk.y > 0) {
+                        sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y-1}`);
+                        newMapData[`${players[session].chunk.x+1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x+1]
+                    }
+                    sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y}`);
+                    newMapData[`${players[session].chunk.x+1},${players[session].chunk.y}`] = world[players[session].chunk.y][players[session].chunk.x+1]
+                    if (players[session].chunk.y < chunkY-1) {
+                        sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y+1}`);
+                        newMapData[`${players[session].chunk.x+1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x+1]
+                    }
+                }
+                // pm new map data
+                io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
+
+                // todo: sent map data after crossing chunk border
             }
+            // emit to new chunk (or original chunk if no chunk border passed)
             emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+        }
+        else if (direction == 'a') {
+            // world boundary check
+            if (players[session].chunk.x <= 0 && players[session].pos.x <= 0) return;
+
+            let thisCmd = commandIdGen.next().value;
+            // inc pos
+            players[session].pos.x--;
+            // roll over chunk
+            if (players[session].pos.x < 0) {
+                players[session].pos.x = chunkW-1;
+                // emit to original chunk
+                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
+                players[session].chunk.x--;
+                // socket leave rooms
+                if (players[session].chunk.y > 0) {
+                    sockets[session].leave(`${players[session].chunk.x+2},${players[session].chunk.y-1}`);
+                }
+                sockets[session].leave(`${players[session].chunk.x+2},${players[session].chunk.y}`);
+                if (players[session].chunk.y < chunkY-1) {
+                    sockets[session].leave(`${players[session].chunk.x+2},${players[session].chunk.y+1}`);
+                }
+                // socket join rooms + get new map data to send to client
+                let newMapData = {};
+                if (players[session].chunk.x > 0) {
+                    if (players[session].chunk.y > 0) {
+                        sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y-1}`);
+                        newMapData[`${players[session].chunk.x-1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x-1]
+                    }
+                    sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y}`);
+                    newMapData[`${players[session].chunk.x-1},${players[session].chunk.y}`] = world[players[session].chunk.y][players[session].chunk.x-1]
+                    if (players[session].chunk.y < chunkY-1) {
+                        sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y+1}`);
+                        newMapData[`${players[session].chunk.x-1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x-1]
+                    }
+                }
+                // pm new map data
+                io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
+
+                // todo: sent map data after crossing chunk border
+            }
+            // emit to new chunk (or original chunk if no chunk border passed)
+            emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
+        }
+        if (direction == 's') {
+            // world boundary check
+            if (players[session].chunk.y >= chunkY-1 && players[session].pos.y >= chunkH-1) return;
+
+            let thisCmd = commandIdGen.next().value;
+            // inc pos
+            players[session].pos.y++;
+            // roll over chunk
+            if (players[session].pos.y >= chunkH) {
+                players[session].pos.y = 0;
+                // emit to original chunk
+                emitToAdj(players[session].chunk, 'movement', [players[session].id, 's', thisCmd]);
+                players[session].chunk.y++;
+                // socket leave rooms
+                if (players[session].chunk.x > 0) {
+                    sockets[session].leave(`${players[session].chunk.x-1},${players[session].chunk.y-2}`);
+                }
+                sockets[session].leave(`${players[session].chunk.x},${players[session].chunk.y-2}`);
+                if (players[session].chunk.x < chunkX-1) {
+                    sockets[session].leave(`${players[session].chunk.x-1},${players[session].chunk.y-2}`);
+                }
+                // socket join rooms + get new map data to send to client
+                let newMapData = {};
+                if (players[session].chunk.y < chunkY-1) {
+                    if (players[session].chunk.x > 0) {
+                        sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y+1}`);
+                        newMapData[`${players[session].chunk.x-1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x-1]
+                    }
+                    sockets[session].join(`${players[session].chunk.x},${players[session].chunk.y+1}`);
+                    newMapData[`${players[session].chunk.x},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x]
+                    if (players[session].chunk.x < chunkX-1) {
+                        sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y+1}`);
+                        newMapData[`${players[session].chunk.x+1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x+1]
+                    }
+                }
+                // pm new map data
+                io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
+
+                // todo: sent map data after crossing chunk border
+            }
+            // emit to new chunk (or original chunk if no chunk border passed)
+            emitToAdj(players[session].chunk, 'movement', [players[session].id, 's', thisCmd]);
+        }
+        if (direction == 'w') {
+            // world boundary check
+            if (players[session].chunk.y <= 0 && players[session].pos.y <= 0) return;
+
+            let thisCmd = commandIdGen.next().value;
+            // inc pos
+            players[session].pos.y--;
+            // roll over chunk
+            if (players[session].pos.y < 0) {
+                players[session].pos.y = chunkH-1;
+                // emit to original chunk
+                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'w', thisCmd]);
+                players[session].chunk.y--;
+                // socket leave rooms
+                if (players[session].chunk.x > 0) {
+                    sockets[session].leave(`${players[session].chunk.x-1},${players[session].chunk.y+2}`);
+                }
+                sockets[session].leave(`${players[session].chunk.x},${players[session].chunk.y+2}`);
+                if (players[session].chunk.x < chunkX-1) {
+                    sockets[session].leave(`${players[session].chunk.x-1},${players[session].chunk.y+2}`);
+                }
+                // socket join rooms + get new map data to send to client
+                let newMapData = {};
+                if (players[session].chunk.y > 0) {
+                    if (players[session].chunk.x > 0) {
+                        sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y-1}`);
+                        newMapData[`${players[session].chunk.x-1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x-1]
+                    }
+                    sockets[session].join(`${players[session].chunk.x},${players[session].chunk.y-1}`);
+                    newMapData[`${players[session].chunk.x},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x]
+                    if (players[session].chunk.x < chunkX-1) {
+                        sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y-1}`);
+                        newMapData[`${players[session].chunk.x+1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x+1]
+                    }
+                }
+                // pm new map data
+                io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
+
+                // todo: sent map data after crossing chunk border
+            }
+            // emit to new chunk (or original chunk if no chunk border passed)
+            emitToAdj(players[session].chunk, 'movement', [players[session].id, 'w', thisCmd]);
         }
     })
 })
