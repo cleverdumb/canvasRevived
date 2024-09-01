@@ -69,11 +69,23 @@
                     for (x in d) {
                         mapData[parseInt(x.split(',')[1])][parseInt(x.split(',')[0])] = d[x];
                     }
+                    render();
+                })
+                
+                socket.on('newPlayerData', data=>{
+                    console.log(data);
+                    let d = JSON.parse(data);
+                    plData = {};
+                    d.forEach(x=>{
+                        plData[x.id] = x;
+                    })
+                    render();
                 })
 
                 socket.on('newPlayer', data=>{
                     let d = JSON.parse(data);
                     plData[d.id] = {chunk: d.chunk, pos: d.pos};
+                    render();
                 })
 
                 document.body.addEventListener('keydown', e=>{

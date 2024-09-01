@@ -238,8 +238,10 @@ io.on('connection', (socket)=>{
             if (players[session].pos.x >= chunkW) {
                 players[session].pos.x = 0;
                 // emit to original chunk
-                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+                plRooms[players[session].chunk.y][players[session].chunk.x] = plRooms[players[session].chunk.y][players[session].chunk.x].filter(x=>x!=session);
                 players[session].chunk.x++;
+                plRooms[players[session].chunk.y][players[session].chunk.x].push(session);
                 // socket leave rooms
                 if (players[session].chunk.y > 0) {
                     sockets[session].leave(`${players[session].chunk.x-2},${players[session].chunk.y-1}`);
@@ -250,6 +252,7 @@ io.on('connection', (socket)=>{
                 }
                 // socket join rooms + get new map data to send to client
                 let newMapData = {};
+                let newPlayerData = [];
                 if (players[session].chunk.x < chunkX-1) {
                     if (players[session].chunk.y > 0) {
                         sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y-1}`);
@@ -268,13 +271,28 @@ io.on('connection', (socket)=>{
                         io.to(`${players[session].chunk.x+1},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                 }
-                // pm new map data
+
+                [-1, 0, 1].forEach(a=>{
+                    [-1, 0, 1].forEach(b=>{
+                        if (players[session].chunk.x+a >= 0 && players[session].chunk.x+a < chunkX && players[session].chunk.y+b >= 0 && players[session].chunk.y+b < chunkY) {
+                            plRooms[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
+                                // console.log(x);
+                                newPlayerData.push(players[x]);
+                            })
+                        }
+                    })
+                })
+
+                // pm new map data, new player data
                 io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
+                io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
 
                 // todo: sent map data after crossing chunk border
             }
-            // emit to new chunk (or original chunk if no chunk border passed)
-            emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+            else {
+                // emit to new chunk (or original chunk if no chunk border passed)
+                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+            }
         }
         else if (direction == 'a') {
             // world boundary check
@@ -287,8 +305,10 @@ io.on('connection', (socket)=>{
             if (players[session].pos.x < 0) {
                 players[session].pos.x = chunkW-1;
                 // emit to original chunk
-                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
+                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
+                plRooms[players[session].chunk.y][players[session].chunk.x] = plRooms[players[session].chunk.y][players[session].chunk.x].filter(x=>x!=session);
                 players[session].chunk.x--;
+                plRooms[players[session].chunk.y][players[session].chunk.x].push(session);
                 // socket leave rooms
                 if (players[session].chunk.y > 0) {
                     sockets[session].leave(`${players[session].chunk.x+2},${players[session].chunk.y-1}`);
@@ -299,6 +319,7 @@ io.on('connection', (socket)=>{
                 }
                 // socket join rooms + get new map data to send to client
                 let newMapData = {};
+                let newPlayerData = [];
                 if (players[session].chunk.x > 0) {
                     if (players[session].chunk.y > 0) {
                         sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y-1}`);
@@ -307,7 +328,7 @@ io.on('connection', (socket)=>{
                         io.to(`${players[session].chunk.x-1},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                     sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y}`);
-                    newMapData[`${players[session].chunk.x-1},${players[session].chunk.y}`] = world[players[session].chunk.y][players[session].chunk.x-1]
+                    newMapData[`${players[session].chunk.x-1},${players[session].chunk.y-1}`] = world[players[session].chunk.y][players[session].chunk.x-1]
 
                     io.to(`${players[session].chunk.x-1},${players[session].chunk.y}`).emit('newPlayer', JSON.stringify(players[session]));
                     if (players[session].chunk.y < chunkY-1) {
@@ -317,13 +338,29 @@ io.on('connection', (socket)=>{
                         io.to(`${players[session].chunk.x-1},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                 }
+
+                // get new 3x3 player data
+                [-1, 0, 1].forEach(a=>{
+                    [-1, 0, 1].forEach(b=>{
+                        if (players[session].chunk.x+a >= 0 && players[session].chunk.x+a < chunkX && players[session].chunk.y+b >= 0 && players[session].chunk.y+b < chunkY) {
+                            plRooms[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
+                                // console.log(x);
+                                newPlayerData.push(players[x]);
+                            })
+                        }
+                    })
+                })
+
                 // pm new map data
                 io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
+                io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
 
                 // todo: sent map data after crossing chunk border
             }
-            // emit to new chunk (or original chunk if no chunk border passed)
-            emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
+            else {
+                // emit to new chunk (or original chunk if no chunk border passed)
+                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
+            }
         }
         if (direction == 's') {
             // world boundary check
@@ -336,8 +373,13 @@ io.on('connection', (socket)=>{
             if (players[session].pos.y >= chunkH) {
                 players[session].pos.y = 0;
                 // emit to original chunk
-                emitToAdj(players[session].chunk, 'movement', [players[session].id, 's', thisCmd]);
+                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 's', thisCmd]);
+
+                // remove from original plRoom
+                plRooms[players[session].chunk.y][players[session].chunk.x] = plRooms[players[session].chunk.y][players[session].chunk.x].filter(x=>x!=session);
                 players[session].chunk.y++;
+                // add to new plRoom
+                plRooms[players[session].chunk.y][players[session].chunk.x].push(session);
                 // socket leave rooms
                 if (players[session].chunk.x > 0) {
                     sockets[session].leave(`${players[session].chunk.x-1},${players[session].chunk.y-2}`);
@@ -348,6 +390,7 @@ io.on('connection', (socket)=>{
                 }
                 // socket join rooms + get new map data to send to client
                 let newMapData = {};
+                let newPlayerData = [];
                 if (players[session].chunk.y < chunkY-1) {
                     if (players[session].chunk.x > 0) {
                         sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y+1}`);
@@ -365,14 +408,30 @@ io.on('connection', (socket)=>{
                         
                         io.to(`${players[session].chunk.x+1},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
+
+                    // get new 3x3 player data
+                    [-1, 0, 1].forEach(a=>{
+                        [-1, 0, 1].forEach(b=>{
+                            if (players[session].chunk.x+a >= 0 && players[session].chunk.x+a < chunkX && players[session].chunk.y+b >= 0 && players[session].chunk.y+b < chunkY) {
+                                plRooms[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
+                                    // console.log(x);
+                                    newPlayerData.push(players[x]);
+                                })
+                            }
+                        })
+                    })
                 }
+
                 // pm new map data
                 io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
+                io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
 
                 // todo: sent map data after crossing chunk border
             }
+            else {
             // emit to new chunk (or original chunk if no chunk border passed)
-            emitToAdj(players[session].chunk, 'movement', [players[session].id, 's', thisCmd]);
+                emitToAdj(players[session].chunk, 'movement', [players[session].id, 's', thisCmd]);
+            }
         }
         if (direction == 'w') {
             // world boundary check
@@ -385,8 +444,10 @@ io.on('connection', (socket)=>{
             if (players[session].pos.y < 0) {
                 players[session].pos.y = chunkH-1;
                 // emit to original chunk
-                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'w', thisCmd]);
+                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'w', thisCmd]);
+                plRooms[players[session].chunk.y][players[session].chunk.x] = plRooms[players[session].chunk.y][players[session].chunk.x].filter(x=>x!=session);
                 players[session].chunk.y--;
+                plRooms[players[session].chunk.y][players[session].chunk.x].push(session);
                 // socket leave rooms
                 if (players[session].chunk.x > 0) {
                     sockets[session].leave(`${players[session].chunk.x-1},${players[session].chunk.y+2}`);
@@ -397,6 +458,7 @@ io.on('connection', (socket)=>{
                 }
                 // socket join rooms + get new map data to send to client
                 let newMapData = {};
+                let newPlayerData = [];
                 if (players[session].chunk.y > 0) {
                     if (players[session].chunk.x > 0) {
                         sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y-1}`);
@@ -415,13 +477,28 @@ io.on('connection', (socket)=>{
                         io.to(`${players[session].chunk.x+1},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                 }
+
+                [-1, 0, 1].forEach(a=>{
+                    [-1, 0, 1].forEach(b=>{
+                        if (players[session].chunk.x+a >= 0 && players[session].chunk.x+a < chunkX && players[session].chunk.y+b >= 0 && players[session].chunk.y+b < chunkY) {
+                            plRooms[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
+                                // console.log(x);
+                                newPlayerData.push(players[x]);
+                            })
+                        }
+                    })
+                })
+
                 // pm new map data
                 io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
+                io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
 
                 // todo: sent map data after crossing chunk border
             }
-            // emit to new chunk (or original chunk if no chunk border passed)
-            emitToAdj(players[session].chunk, 'movement', [players[session].id, 'w', thisCmd]);
+            else {
+                // emit to new chunk (or original chunk if no chunk border passed)
+                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'w', thisCmd]);
+            }
         }
     })
 })
