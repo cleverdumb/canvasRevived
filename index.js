@@ -291,7 +291,8 @@ io.on('connection', (socket)=>{
             }
             else {
                 // emit to new chunk (or original chunk if no chunk border passed)
-                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+                emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
             }
         }
         else if (direction == 'a') {
@@ -359,7 +360,8 @@ io.on('connection', (socket)=>{
             }
             else {
                 // emit to new chunk (or original chunk if no chunk border passed)
-                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
+                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
+                emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
             }
         }
         if (direction == 's') {
@@ -430,7 +432,8 @@ io.on('connection', (socket)=>{
             }
             else {
             // emit to new chunk (or original chunk if no chunk border passed)
-                emitToAdj(players[session].chunk, 'movement', [players[session].id, 's', thisCmd]);
+                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 's', thisCmd]);
+                emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
             }
         }
         if (direction == 'w') {
@@ -497,7 +500,8 @@ io.on('connection', (socket)=>{
             }
             else {
                 // emit to new chunk (or original chunk if no chunk border passed)
-                emitToAdj(players[session].chunk, 'movement', [players[session].id, 'w', thisCmd]);
+                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'w', thisCmd]);
+                emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
             }
         }
     })
