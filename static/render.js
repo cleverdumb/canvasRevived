@@ -24,11 +24,11 @@ function render() {
             let chx = Math.floor(cx/chw); // absolute chunk, x, relative to 3x3 [-1, 0, +1]
             let chy = Math.floor(cy/chh); // absolute chunk, y, relative to 3x3 [-1, 0, +1]
             ctx.strokeRect(x*bw, y*bh, bw, bh);
-            if (pl.chunk.y-1+chy < 0) continue;
-            if (pl.chunk.x-1+chx < 0) continue;
-            if (pl.chunk.x-1+chx > chnx-1) continue;
-            if (pl.chunk.y-1+chy > chny-1) continue; 
-            switch (mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw]) {
+            if (plData[plId].chunk.y-1+chy < 0) continue;
+            if (plData[plId].chunk.x-1+chx < 0) continue;
+            if (plData[plId].chunk.x-1+chx > chnx-1) continue;
+            if (plData[plId].chunk.y-1+chy > chny-1) continue; 
+            switch (mapData[plData[plId].chunk.y-1+chy][plData[plId].chunk.x-1+chx][cy%chh][cx%chw]) {
                 case 0:
                     ctx.drawImage(sprite, 0, 0, 16, 16, x*bw, y*bh, bw, bh);
                     break;
@@ -43,7 +43,7 @@ function render() {
             for (q in plData) {
                 let p = plData[q];
                 // console.log(x);
-                if ((pl.chunk.y-1+chy == p.chunk.y) && (pl.chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
+                if ((plData[plId].chunk.y-1+chy == p.chunk.y) && (plData[plId].chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
                     ctx.drawImage(sprite, 0, 208, 16, 16, x*bw, y*bh, bw, bh);
                 }
             }
@@ -61,9 +61,9 @@ function loadSpriteMap(cb) {
     i.onload = ()=>{
         createImageBitmap(i).then(x=>{
             sprite = x;
-            signup('n1', 'p1', ()=>{
-                (cb)();
-            });
+            // signup('n1', 'p1', ()=>{
+            //     (cb)();
+            // });
             // start();
         });
     }

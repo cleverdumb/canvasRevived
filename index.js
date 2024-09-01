@@ -51,6 +51,14 @@ for (let y=0; y<chunkY; y++) {
     }
 }
 
+let plRooms = [];
+for (let y=0; y<chunkY; y++) {
+    plRooms.push([]);
+    for (let x=0; x<chunkX; x++) {
+        plRooms[y].push([]);
+    }
+}
+
 function *commandIdGenO() {
     let x = 0;
     while (true) {
@@ -143,16 +151,33 @@ app.post('/login', jsonParser, (req, res)=>{
             db.get('SELECT (data) FROM playerData WHERE userId=?', [id], (err, row) => {
                 if (err) throw err;
                 let data = JSON.parse(row.data);
-                players[ses] = data;
 
                 let initMapData = [
                     data.chunk.x == 0 || data.chunk.y == 0 ? null : world[data.chunk.y-1][data.chunk.x-1],        data.chunk.y == 0 ? null : world[data.chunk.y-1][data.chunk.x],        data.chunk.x == chunkX-1 || data.chunk.y == 0 ? null : world[data.chunk.y-1][data.chunk.x+1],
                     data.chunk.x == 0 ? null : world[data.chunk.y][data.chunk.x-1],                               world[data.chunk.y][data.chunk.x],                                     data.chunk.x == chunkX-1 ? null : world[data.chunk.y][data.chunk.x+1],
                     data.chunk.x == 0 || data.chunk.y == chunkY-1 ? null : world[data.chunk.y+1][data.chunk.x-1], data.chunk.y == chunkY-1 ? null : world[data.chunk.y+1][data.chunk.x], data.chunk.x == chunkX-1 || data.chunk.y == chunkY-1 ? null : world[data.chunk.y+1][data.chunk.x+1]
                 ]
-                // console.log(players);
 
-                res.send(`${ses.toString()}-${JSON.stringify(data)}-${JSON.stringify(initMapData)}`);
+                // send initial chunks player data
+                let initChunk = [0, 1]; // x, y
+                let initPlayerData = [];
+                [-1, 0, 1].forEach(a=>{
+                    [-1, 0, 1].forEach(b=>{
+                        if (initChunk[0]+a >= 0 && initChunk[0]+a < chunkX && initChunk[1]+b >= 0 && initChunk[1]+b < chunkY) {
+                            plRooms[initChunk[1]+b][initChunk[0]+a].forEach(x=>{
+                                initPlayerData.push(players[x]);
+                            })
+                        }
+                    })
+                })
+
+                players[ses] = data;
+
+                res.send(`${ses.toString()}-${JSON.stringify(data)}-${JSON.stringify(initMapData)}-${JSON.stringify(initPlayerData)}`);
+
+                if (!plRooms.some(x=>x.id==players[ses].id)) {
+                    plRooms[initChunk[1]][initChunk[0]].push(ses); // start coord determined in signup function, hard coded
+                }
                 return;
             })
         })
@@ -193,7 +218,9 @@ io.on('connection', (socket)=>{
         [-1, 1, 0].forEach(y=>{
             [-1, 1, 0].forEach(x=>{
                 if (data.chunk.x + x >= 0 && data.chunk.x + x < chunkX && data.chunk.y + y >= 0 && data.chunk.y + y < chunkY) {
+                    io.to(`${data.chunk.x + x},${data.chunk.y + y}`).emit('newPlayer', JSON.stringify(data));
                     socket.join(`${data.chunk.x + x},${data.chunk.y + y}`)
+                    // todo: emit to notify joining chunk
                 }
             })
         })
@@ -227,12 +254,18 @@ io.on('connection', (socket)=>{
                     if (players[session].chunk.y > 0) {
                         sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y-1}`);
                         newMapData[`${players[session].chunk.x+1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x+1]
+
+                        io.to(`${players[session].chunk.x+1},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                     sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y}`);
                     newMapData[`${players[session].chunk.x+1},${players[session].chunk.y}`] = world[players[session].chunk.y][players[session].chunk.x+1]
+
+                    io.to(`${players[session].chunk.x+1},${players[session].chunk.y}`).emit('newPlayer', JSON.stringify(players[session]));
                     if (players[session].chunk.y < chunkY-1) {
                         sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y+1}`);
                         newMapData[`${players[session].chunk.x+1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x+1]
+
+                        io.to(`${players[session].chunk.x+1},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                 }
                 // pm new map data
@@ -270,12 +303,18 @@ io.on('connection', (socket)=>{
                     if (players[session].chunk.y > 0) {
                         sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y-1}`);
                         newMapData[`${players[session].chunk.x-1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x-1]
+
+                        io.to(`${players[session].chunk.x-1},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                     sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y}`);
                     newMapData[`${players[session].chunk.x-1},${players[session].chunk.y}`] = world[players[session].chunk.y][players[session].chunk.x-1]
+
+                    io.to(`${players[session].chunk.x-1},${players[session].chunk.y}`).emit('newPlayer', JSON.stringify(players[session]));
                     if (players[session].chunk.y < chunkY-1) {
                         sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y+1}`);
                         newMapData[`${players[session].chunk.x-1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x-1]
+
+                        io.to(`${players[session].chunk.x-1},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                 }
                 // pm new map data
@@ -313,12 +352,18 @@ io.on('connection', (socket)=>{
                     if (players[session].chunk.x > 0) {
                         sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y+1}`);
                         newMapData[`${players[session].chunk.x-1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x-1]
+
+                        io.to(`${players[session].chunk.x-1},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                     sockets[session].join(`${players[session].chunk.x},${players[session].chunk.y+1}`);
                     newMapData[`${players[session].chunk.x},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x]
+
+                    io.to(`${players[session].chunk.x},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
                     if (players[session].chunk.x < chunkX-1) {
                         sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y+1}`);
                         newMapData[`${players[session].chunk.x+1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x+1]
+                        
+                        io.to(`${players[session].chunk.x+1},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                 }
                 // pm new map data
@@ -356,12 +401,18 @@ io.on('connection', (socket)=>{
                     if (players[session].chunk.x > 0) {
                         sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y-1}`);
                         newMapData[`${players[session].chunk.x-1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x-1]
+
+                        io.to(`${players[session].chunk.x-1},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                     sockets[session].join(`${players[session].chunk.x},${players[session].chunk.y-1}`);
                     newMapData[`${players[session].chunk.x},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x]
+
+                    io.to(`${players[session].chunk.x},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
                     if (players[session].chunk.x < chunkX-1) {
                         sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y-1}`);
                         newMapData[`${players[session].chunk.x+1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x+1]
+
+                        io.to(`${players[session].chunk.x+1},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
                     }
                 }
                 // pm new map data

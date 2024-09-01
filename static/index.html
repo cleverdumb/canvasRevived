@@ -29,7 +29,7 @@
                 })
 
                 socket.on('movement', (id, dir, cmdId) => {
-                    console.log(id, dir, cmdId);
+                    // console.log(id, dir, cmdId);
                     if (!executedCmdId.includes(cmdId)) {
                         if (dir == 'd') {
                             plData[id].pos.x++;
@@ -69,6 +69,11 @@
                     for (x in d) {
                         mapData[parseInt(x.split(',')[1])][parseInt(x.split(',')[0])] = d[x];
                     }
+                })
+
+                socket.on('newPlayer', data=>{
+                    let d = JSON.parse(data);
+                    plData[d.id] = {chunk: d.chunk, pos: d.pos};
                 })
 
                 document.body.addEventListener('keydown', e=>{

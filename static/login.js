@@ -25,7 +25,6 @@ for (let y=0; y<chny; y++) {
 //     }
 // }
 
-let pl = null;
 let plData = {}; // players data locally
 let plId = null;
 
@@ -70,10 +69,15 @@ function login(user, pass, cb) {
             else {
                 let resp = request.responseText;
                 session = resp.split('-')[0];
-                pl = JSON.parse(resp.split('-')[1]);
+                let pl = JSON.parse(resp.split('-')[1]);
                 plId = pl.id;
                 plData[pl.id] = ({chunk:pl.chunk, pos:pl.pos});
                 let resMapData = JSON.parse(resp.split('-')[2]);
+                let resAllPlData = JSON.parse(resp.split('-')[3]);
+                resAllPlData.forEach(x=>{
+                    delete plData[x.id];
+                    plData[x.id] = {chunk: x.chunk, pos: x.pos};
+                })
                 resMapData.forEach((x, i)=>{
                     if (!x) return;
                     mapData[pl.chunk.y - 1 + Math.floor(i/3)][pl.chunk.x - 1 + i%3] = x;
