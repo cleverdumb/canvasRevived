@@ -12,7 +12,7 @@ for (let y=0; y<chny; y++) {
         for (let a=0; a<chh; a++) {
             mapData[y][x].push([]);
             for (let b=0; b<chw; b++) {
-                mapData[y][x][a].push((a+b)%2?0:1);
+                mapData[y][x][a].push((Math.random()>0.5)%2?0:1);
             }
         }
     }
@@ -25,7 +25,8 @@ for (let y=0; y<chny; y++) {
 //     }
 // }
 
-let plData = {}; // players data locally
+let fakePl = {};
+let plData = {}; // players data locally (actual, authorised)
 let plId = null;
 
 function signup(user, pass, cb) {
@@ -71,7 +72,8 @@ function login(user, pass, cb) {
                 session = resp.split('-')[0];
                 let pl = JSON.parse(resp.split('-')[1]);
                 plId = pl.id;
-                plData[pl.id] = ({chunk:pl.chunk, pos:pl.pos});
+                plData[pl.id] = {chunk:pl.chunk, pos:pl.pos};
+                fakePl = JSON.parse(JSON.stringify({chunk: pl.chunk, pos: pl.pos}));
                 let resMapData = JSON.parse(resp.split('-')[2]);
                 let resAllPlData = JSON.parse(resp.split('-')[3]);
                 resAllPlData.forEach(x=>{

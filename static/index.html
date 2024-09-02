@@ -10,6 +10,9 @@
             let socketId = null;
             let executedCmdId = [];
 
+            let nextCmdId = 0;
+            let unauthCmd = {}; // unauthorised command record: id - cmdName    
+
             document.body.onload = ()=>{
                 loadSpriteMap(afterSpriteLoaded);
             }
@@ -74,9 +77,13 @@
                 socket.on('newPlayerData', data=>{
                     console.log(data);
                     let d = JSON.parse(data);
-                    plData = {};
+                    for (x in plData) {
+                        if (x != plId) delete plData[x];
+                    }
                     d.forEach(x=>{
-                        plData[x.id] = x;
+                        if (x.id != plId) {
+                            plData[x.id] = x;
+                        }
                     })
                     render();
                 })
@@ -87,14 +94,66 @@
                     render();
                 })
 
+                socket.on('authCmd', id=>{
+                    authedCmd(id);
+                })
+
+                function authedCmd(id) {
+                    if (unauthCmd.hasOwnProperty(id)) {
+                        fakePl = JSON.parse(JSON.stringify(plData[plId]));
+                        simulateCmd(unauthCmd[id]);
+                        plData[plId] = fakePl;
+                        delete unauthCmd[id];
+                        simulateAllUnauth();
+                    }
+                }
+
+                socket.on('rejectCmd', id=>{
+                    console.log('rejectCmd');
+                    for (x in unauthCmd) {
+                        if (x >= id) {
+                            delete unauthCmd[id];
+                        }
+                    }
+                    simulateAllUnauth();
+                })
+
                 document.body.addEventListener('keydown', e=>{
+                    let data = fakePl;
                     switch (e.key) {
-                        case 'd':
-                            socket.emit('movement', session, 'd');
-                            break;
                         case 'a':
-                            socket.emit('movement', session, 'a');
+                        case 'd':
+                            let multiplier = e.key == 'd' ? 1 : -1;
+                            // check player not on edge
+                            if (((data.chunk.x < chnx-1 || data.chunk.x < chw-1) && e.key == 'd') || ((data.chunk.x > 0 || data.pos.x > 0) && e.key == 'a')) {
+                                // check player not in dest
+                                let playerInDest = false;
+                                let destChunk = {
+                                    x: (data.chunk.x + Math.floor((data.pos.x + multiplier)/chw)),
+                                    y: data.chunk.y
+                                }
+                                let destPos = {
+                                    x: (data.pos.x + multiplier + chw)%chw,
+                                    y: data.pos.y
+                                }
+                                for (p in plData) {
+                                    if (p != plId && plData[p].chunk.x == destChunk.x && plData[p].chunk.y == destChunk.y && plData[p].pos.x == destPos.x && plData[p].pos.y == destPos.y) {
+                                        playerInDest = true;
+                                    }
+                                }
+                                if (!playerInDest) {
+                                    let newId = nextCmdId++;
+                                    socket.emit('movement', session, e.key, newId);
+                                    unauthCmd[newId] = 'mv' + e.key.toUpperCase();
+                                    // processCmd('mvD');
+
+                                    simulateAllUnauth();
+                                }
+                            }
                             break;
+                        // case 'a':
+                        //     socket.emit('movement', session, 'a');
+                        //     break;
                         case 's':
                             socket.emit('movement', session, 's');
                             break;
@@ -103,6 +162,43 @@
                             break;
                     }
                 })
+            }
+
+            function simulateCmd(name) {
+                switch (name) {
+                    case 'mvD':
+                        fakePl.pos.x++;
+                        if (fakePl.pos.x >= chw) {
+                            fakePl.pos.x = 0;
+                            fakePl.chunk.x++;
+                        }
+                        // console.log(`${fakePl.chunk.x},${fakePl.chunk.y},${fakePl.pos.x},${fakePl.pos.y}`);
+                        // console.log(`${plData[plId].chunk.x},${plData[plId].chunk.y},${plData[plId].pos.x},${plData[plId].pos.y}`);
+                        render();
+                        break;
+                    case 'mvA':
+                        fakePl.pos.x--;
+                        if (fakePl.pos.x < 0) {
+                            fakePl.pos.x = chw-1;
+                            fakePl.chunk.x--;
+                        }
+                        render();
+                        break;
+                }
+            }
+
+            function simulateAllUnauth() {
+                // console.log('simulate all');
+                // console.log(unauthCmd);
+                fakePl = JSON.parse(JSON.stringify(plData[plId]));
+                let ids = Object.keys(unauthCmd).sort((a, b)=>a-b);
+                ids.forEach(x=>{
+                    simulateCmd(unauthCmd[x]);
+                })
+                render();
+                // console.log('after simulate all');
+                // console.log(`${fakePl.chunk.x},${fakePl.chunk.y},${fakePl.pos.x},${fakePl.pos.y}`);
+                // console.log(`${plData[plId].chunk.x},${plData[plId].chunk.y},${plData[plId].pos.x},${plData[plId].pos.y}`);
             }
         </script>
         <script type="module">

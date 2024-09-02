@@ -27,6 +27,9 @@ db.run(`
     )
 `)
 
+// !turn this off in real thing
+let lagSim = 100;
+
 // db.run(`INSERT INTO accData (user, pass) VALUES ('n1', 'p1')`)
 
 // world[chunkY][chunkX][y][x]
@@ -45,7 +48,7 @@ for (let y=0; y<chunkY; y++) {
         for (let a=0; a<chunkH; a++) {
             world[y][x].push([]);
             for (let b=0; b<chunkW; b++) {
-                world[y][x][a].push(((a+b)%2)?0:1);
+                world[y][x][a].push((Math.random()>0.5)?0:1);
             }
         }
     }
@@ -226,62 +229,95 @@ io.on('connection', (socket)=>{
         })
     })
 
-    socket.on('movement', (session, direction) => {
-        if (direction == 'd') {
+    socket.on('movement', (session, direction, cmdId) => {
+        if (direction == 'd' || direction == 'a') {
             // world boundary check
-            if (players[session].chunk.x >= chunkX-1 && players[session].pos.x >= chunkW-1) return;
+            if (direction == 'd' && players[session].chunk.x >= chunkX-1 && players[session].pos.x >= chunkW-1) {
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, 1000);
+                return;
+            }
+
+            if (direction == 'a' && players[session].chunk.x <= 0 && players[session].pos.x <= 0) {
+                console.log('t');
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
+            }
+
+            let multiplier = direction == 'd' ? 1 : -1;
             
             let destChunk = {
-                x: players[session].chunk.x + Math.floor((players[session].pos.x+1)/chunkW),
+                x: players[session].chunk.x + Math.floor((players[session].pos.x+(multiplier))/chunkW),
                 y: players[session].chunk.y
             }
             let destPos = {
-                x: (players[session].pos.x+1)%chunkW,
+                x: (players[session].pos.x + multiplier + chunkW)%chunkW,
                 y: players[session].pos.y
             }
             // check if there is player in dest
             if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y)) {
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
                 return;
             }
             // inc pos
-            players[session].pos.x++;
-            // roll over chunk
-            if (players[session].pos.x >= chunkW) {
-                players[session].pos.x = 0;
+            players[session].pos.x += multiplier;
+            // !roll over chunk
+            if ((players[session].pos.x >= chunkW && direction == 'd') || (players[session].pos.x < 0 && direction == 'a')) {
+                players[session].pos.x = direction == 'd' ? 0 : chunkW - 1;
                 // emit to original chunk
                 // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
-                emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
+                setTimeout(()=>{
+                    let {x, y} = players[session].chunk;
+                    [-1, 0, 1].forEach(a=>{
+                        [-1, 0, 1].forEach(b=>{
+                            if (x+a >= 0 && x+a < chunkX && y+b >= 0 && y+b < chunkY) {
+                                socket.to(`${x+a},${y+b}`).emit('newPlayer', JSON.stringify(players[session]));
+                            }
+                        })
+                    })
+                },lagSim);
 
                 plRooms[players[session].chunk.y][players[session].chunk.x] = plRooms[players[session].chunk.y][players[session].chunk.x].filter(x=>x!=session);
-                players[session].chunk.x++;
+                players[session].chunk.x += multiplier;
                 plRooms[players[session].chunk.y][players[session].chunk.x].push(session);
                 // socket leave rooms
                 if (players[session].chunk.y > 0) {
-                    sockets[session].leave(`${players[session].chunk.x-2},${players[session].chunk.y-1}`);
+                    sockets[session].leave(`${players[session].chunk.x - (2*multiplier)},${players[session].chunk.y-1}`);
                 }
-                sockets[session].leave(`${players[session].chunk.x-2},${players[session].chunk.y}`);
+                sockets[session].leave(`${players[session].chunk.x - (2*multiplier)},${players[session].chunk.y}`);
                 if (players[session].chunk.y < chunkY-1) {
-                    sockets[session].leave(`${players[session].chunk.x-2},${players[session].chunk.y+1}`);
+                    sockets[session].leave(`${players[session].chunk.x - (2*multiplier)},${players[session].chunk.y+1}`);
                 }
                 // socket join rooms + get new map data to send to client
                 let newMapData = {};
                 let newPlayerData = [];
-                if (players[session].chunk.x < chunkX-1) {
+                if ((players[session].chunk.x + multiplier) < chunkX && (players[session].chunk.x + multiplier) >= 0) {
                     if (players[session].chunk.y > 0) {
-                        sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y-1}`);
-                        newMapData[`${players[session].chunk.x+1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x+1]
+                        sockets[session].join(`${players[session].chunk.x + multiplier},${players[session].chunk.y-1}`);
+                        newMapData[`${players[session].chunk.x + multiplier},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x + multiplier]
 
-                        io.to(`${players[session].chunk.x+1},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
+                        setTimeout(()=>{
+                            socket.to(`${players[session].chunk.x + multiplier},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
+                        }, lagSim)
                     }
-                    sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y}`);
-                    newMapData[`${players[session].chunk.x+1},${players[session].chunk.y}`] = world[players[session].chunk.y][players[session].chunk.x+1]
+                    sockets[session].join(`${players[session].chunk.x + multiplier},${players[session].chunk.y}`);
+                    newMapData[`${players[session].chunk.x + multiplier},${players[session].chunk.y}`] = world[players[session].chunk.y][players[session].chunk.x + multiplier]
 
-                    io.to(`${players[session].chunk.x+1},${players[session].chunk.y}`).emit('newPlayer', JSON.stringify(players[session]));
+                    setTimeout(()=>{
+                        socket.to(`${players[session].chunk.x + multiplier},${players[session].chunk.y}`).emit('newPlayer', JSON.stringify(players[session]));
+                    }, lagSim)
                     if (players[session].chunk.y < chunkY-1) {
-                        sockets[session].join(`${players[session].chunk.x+1},${players[session].chunk.y+1}`);
-                        newMapData[`${players[session].chunk.x+1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x+1]
-
-                        io.to(`${players[session].chunk.x+1},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
+                        sockets[session].join(`${players[session].chunk.x + multiplier},${players[session].chunk.y+1}`);
+                        newMapData[`${players[session].chunk.x + multiplier},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x + multiplier]
+                        
+                        setTimeout(()=>{
+                            socket.to(`${players[session].chunk.x + multiplier},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
+                        }, lagSim)
                     }
                 }
 
@@ -297,96 +333,121 @@ io.on('connection', (socket)=>{
                 })
 
                 // pm new map data, new player data
-                io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
-                io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
+                setTimeout(()=>{
+                    io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
+                    io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
+                }, lagSim)
 
                 // todo: sent map data after crossing chunk border
             }
             
             // emit to new chunk (or original chunk if no chunk border passed)
             // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
-            emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
-        }
-        else if (direction == 'a') {
-            // world boundary check
-            if (players[session].chunk.x <= 0 && players[session].pos.x <= 0) return;
-            let destChunk = {
-                x: players[session].chunk.x + Math.floor((players[session].pos.x-1)/chunkW),
-                y: players[session].chunk.y
-            }
-            let destPos = {
-                x: (players[session].pos.x-1+chunkW)%chunkW,
-                y: players[session].pos.y
-            }
-            // check if there is player in dest
-            if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y)) {
-                return;
-            }
-            // inc pos
-            players[session].pos.x--;
-            // roll over chunk
-            if (players[session].pos.x < 0) {
-                players[session].pos.x = chunkW-1;
-                // emit to original chunk
-                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
-                plRooms[players[session].chunk.y][players[session].chunk.x] = plRooms[players[session].chunk.y][players[session].chunk.x].filter(x=>x!=session);
-                players[session].chunk.x--;
-                plRooms[players[session].chunk.y][players[session].chunk.x].push(session);
-                // socket leave rooms
-                if (players[session].chunk.y > 0) {
-                    sockets[session].leave(`${players[session].chunk.x+2},${players[session].chunk.y-1}`);
-                }
-                sockets[session].leave(`${players[session].chunk.x+2},${players[session].chunk.y}`);
-                if (players[session].chunk.y < chunkY-1) {
-                    sockets[session].leave(`${players[session].chunk.x+2},${players[session].chunk.y+1}`);
-                }
-                // socket join rooms + get new map data to send to client
-                let newMapData = {};
-                let newPlayerData = [];
-                if (players[session].chunk.x > 0) {
-                    if (players[session].chunk.y > 0) {
-                        sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y-1}`);
-                        newMapData[`${players[session].chunk.x-1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x-1]
-
-                        io.to(`${players[session].chunk.x-1},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
-                    }
-                    sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y}`);
-                    newMapData[`${players[session].chunk.x-1},${players[session].chunk.y-1}`] = world[players[session].chunk.y][players[session].chunk.x-1]
-
-                    io.to(`${players[session].chunk.x-1},${players[session].chunk.y}`).emit('newPlayer', JSON.stringify(players[session]));
-                    if (players[session].chunk.y < chunkY-1) {
-                        sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y+1}`);
-                        newMapData[`${players[session].chunk.x-1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x-1]
-
-                        io.to(`${players[session].chunk.x-1},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
-                    }
-                }
-
-                // get new 3x3 player data
+            setTimeout(()=>{
+                // emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
+                let {x, y} = players[session].chunk;
                 [-1, 0, 1].forEach(a=>{
                     [-1, 0, 1].forEach(b=>{
-                        if (players[session].chunk.x+a >= 0 && players[session].chunk.x+a < chunkX && players[session].chunk.y+b >= 0 && players[session].chunk.y+b < chunkY) {
-                            plRooms[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
-                                // console.log(x);
-                                newPlayerData.push(players[x]);
-                            })
+                        if (x+a >= 0 && x+a < chunkX && y+b >= 0 && y+b < chunkY) {
+                            socket.to(`${x+a},${y+b}`).emit('newPlayer', JSON.stringify(players[session]));
                         }
                     })
                 })
+                
+                io.to(socket.id).emit('authCmd', cmdId);
+            }, lagSim);
 
-                // pm new map data
-                io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
-                io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
-
-                // todo: sent map data after crossing chunk border
-            }
-            else {
-                // emit to new chunk (or original chunk if no chunk border passed)
-                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
-                emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
-            }
+            console.log(players[session]);
         }
-        if (direction == 's') {
+        // else if (direction == 'a') {
+        //     // world boundary check
+        //     if (players[session].chunk.x <= 0 && players[session].pos.x <= 0) return;
+        //     let destChunk = {
+        //         x: players[session].chunk.x + Math.floor((players[session].pos.x-1)/chunkW),
+        //         y: players[session].chunk.y
+        //     }
+        //     let destPos = {
+        //         x: (players[session].pos.x-1+chunkW)%chunkW,
+        //         y: players[session].pos.y
+        //     }
+        //     // check if there is player in dest
+        //     if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y)) {
+        //         return;
+        //     }
+        //     // inc pos
+        //     players[session].pos.x--;
+        //     // roll over chunk
+        //     if (players[session].pos.x < 0) {
+        //         players[session].pos.x = chunkW-1;
+        //         // emit to original chunk
+        //         // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
+        //         emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
+        //         plRooms[players[session].chunk.y][players[session].chunk.x] = plRooms[players[session].chunk.y][players[session].chunk.x].filter(x=>x!=session);
+        //         players[session].chunk.x--;
+        //         plRooms[players[session].chunk.y][players[session].chunk.x].push(session);
+        //         // socket leave rooms
+        //         if (players[session].chunk.y > 0) {
+        //             sockets[session].leave(`${players[session].chunk.x+2},${players[session].chunk.y-1}`);
+        //         }
+        //         sockets[session].leave(`${players[session].chunk.x+2},${players[session].chunk.y}`);
+        //         if (players[session].chunk.y < chunkY-1) {
+        //             sockets[session].leave(`${players[session].chunk.x+2},${players[session].chunk.y+1}`);
+        //         }
+        //         // socket join rooms + get new map data to send to client
+        //         let newMapData = {};
+        //         let newPlayerData = [];
+        //         if (players[session].chunk.x > 0) {
+        //             if (players[session].chunk.y > 0) {
+        //                 sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y-1}`);
+        //                 newMapData[`${players[session].chunk.x-1},${players[session].chunk.y-1}`] = world[players[session].chunk.y-1][players[session].chunk.x-1]
+
+        //                 setTimeout(()=>{
+        //                     io.to(`${players[session].chunk.x-1},${players[session].chunk.y-1}`).emit('newPlayer', JSON.stringify(players[session]));
+        //                 },2000);
+        //             }
+        //             sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y}`);
+        //             newMapData[`${players[session].chunk.x-1},${players[session].chunk.y-1}`] = world[players[session].chunk.y][players[session].chunk.x-1]
+
+        //             setTimeout(()=>{
+        //                 io.to(`${players[session].chunk.x-1},${players[session].chunk.y}`).emit('newPlayer', JSON.stringify(players[session]));
+        //             },2000);
+        //             if (players[session].chunk.y < chunkY-1) {
+        //                 sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y+1}`);
+        //                 newMapData[`${players[session].chunk.x-1},${players[session].chunk.y+1}`] = world[players[session].chunk.y+1][players[session].chunk.x-1]
+
+        //                 setTimeout(()=>{
+        //                     io.to(`${players[session].chunk.x-1},${players[session].chunk.y+1}`).emit('newPlayer', JSON.stringify(players[session]));
+        //                 },2000);
+        //             }
+        //         }
+
+        //         // get new 3x3 player data
+        //         [-1, 0, 1].forEach(a=>{
+        //             [-1, 0, 1].forEach(b=>{
+        //                 if (players[session].chunk.x+a >= 0 && players[session].chunk.x+a < chunkX && players[session].chunk.y+b >= 0 && players[session].chunk.y+b < chunkY) {
+        //                     plRooms[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
+        //                         // console.log(x);
+        //                         newPlayerData.push(players[x]);
+        //                     })
+        //                 }
+        //             })
+        //         })
+
+        //         // pm new map data
+        //         io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
+        //         io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
+
+        //         // todo: sent map data after crossing chunk border
+        //     }
+        //     else {
+        //         // emit to new chunk (or original chunk if no chunk border passed)
+        //         // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'a', thisCmd]);
+        //         setTimeout(()=>{
+        //             emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
+        //         }, 2000)
+        //     }
+        // }
+        else if (direction == 's') {
             // world boundary check
             if (players[session].chunk.y >= chunkY-1 && players[session].pos.y >= chunkH-1) return;
             let destChunk = {
@@ -408,7 +469,7 @@ io.on('connection', (socket)=>{
                 players[session].pos.y = 0;
                 // emit to original chunk
                 // emitToAdj(players[session].chunk, 'movement', [players[session].id, 's', thisCmd]);
-
+                emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
                 // remove from original plRoom
                 plRooms[players[session].chunk.y][players[session].chunk.x] = plRooms[players[session].chunk.y][players[session].chunk.x].filter(x=>x!=session);
                 players[session].chunk.y++;
@@ -468,7 +529,7 @@ io.on('connection', (socket)=>{
                 emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
             }
         }
-        if (direction == 'w') {
+        else if (direction == 'w') {
             // world boundary check
             if (players[session].chunk.y <= 0 && players[session].pos.y <= 0) return;
             let destChunk = {
@@ -489,6 +550,7 @@ io.on('connection', (socket)=>{
             if (players[session].pos.y < 0) {
                 players[session].pos.y = chunkH-1;
                 // emit to original chunk
+                emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
                 // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'w', thisCmd]);
                 plRooms[players[session].chunk.y][players[session].chunk.x] = plRooms[players[session].chunk.y][players[session].chunk.x].filter(x=>x!=session);
                 players[session].chunk.y--;
