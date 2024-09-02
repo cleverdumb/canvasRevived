@@ -123,6 +123,7 @@
                     switch (e.key) {
                         case 'a':
                         case 'd':
+                        {
                             let multiplier = e.key == 'd' ? 1 : -1;
                             // check player not on edge
                             if (((data.chunk.x < chnx-1 || data.chunk.x < chw-1) && e.key == 'd') || ((data.chunk.x > 0 || data.pos.x > 0) && e.key == 'a')) {
@@ -151,15 +152,42 @@
                                 }
                             }
                             break;
+                        }
                         // case 'a':
                         //     socket.emit('movement', session, 'a');
                         //     break;
                         case 's':
-                            socket.emit('movement', session, 's');
-                            break;
                         case 'w':
-                            socket.emit('movement', session, 'w');
+                        {
+                            let multiplier = e.key == 's' ? 1 : -1;
+                            // check player not on edge
+                            if (((data.chunk.y < chny-1 || data.chunk.y < chh-1) && e.key == 's') || ((data.chunk.y > 0 || data.pos.y > 0) && e.key == 'w')) {
+                                // check player not in dest
+                                let playerInDest = false;
+                                let destChunk = {
+                                    x: data.chunk.x,
+                                    y: (data.chunk.y + Math.floor((data.pos.y + multiplier)/chh))
+                                }
+                                let destPos = {
+                                    x: data.pos.x,
+                                    y: (data.pos.y + multiplier + chh)%chh
+                                }
+                                for (p in plData) {
+                                    if (p != plId && plData[p].chunk.x == destChunk.x && plData[p].chunk.y == destChunk.y && plData[p].pos.x == destPos.x && plData[p].pos.y == destPos.y) {
+                                        playerInDest = true;
+                                    }
+                                }
+                                if (!playerInDest) {
+                                    let newId = nextCmdId++;
+                                    socket.emit('movement', session, e.key, newId);
+                                    unauthCmd[newId] = 'mv' + e.key.toUpperCase();
+                                    // processCmd('mvD');
+
+                                    simulateAllUnauth();
+                                }
+                            }
                             break;
+                        }
                     }
                 })
             }
@@ -172,8 +200,6 @@
                             fakePl.pos.x = 0;
                             fakePl.chunk.x++;
                         }
-                        // console.log(`${fakePl.chunk.x},${fakePl.chunk.y},${fakePl.pos.x},${fakePl.pos.y}`);
-                        // console.log(`${plData[plId].chunk.x},${plData[plId].chunk.y},${plData[plId].pos.x},${plData[plId].pos.y}`);
                         render();
                         break;
                     case 'mvA':
@@ -181,6 +207,22 @@
                         if (fakePl.pos.x < 0) {
                             fakePl.pos.x = chw-1;
                             fakePl.chunk.x--;
+                        }
+                        render();
+                        break;
+                    case 'mvS':
+                        fakePl.pos.y++;
+                        if (fakePl.pos.y >= chh) {
+                            fakePl.pos.y = 0;
+                            fakePl.chunk.y++;
+                        }
+                        render();
+                        break;
+                    case 'mvW':
+                        fakePl.pos.y--;
+                        if (fakePl.pos.y < 0) {
+                            fakePl.pos.y = chh-1;
+                            fakePl.chunk.y--;
                         }
                         render();
                         break;
