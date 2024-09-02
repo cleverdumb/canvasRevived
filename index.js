@@ -230,8 +230,19 @@ io.on('connection', (socket)=>{
         if (direction == 'd') {
             // world boundary check
             if (players[session].chunk.x >= chunkX-1 && players[session].pos.x >= chunkW-1) return;
-
-            let thisCmd = commandIdGen.next().value;
+            
+            let destChunk = {
+                x: players[session].chunk.x + Math.floor((players[session].pos.x+1)/chunkW),
+                y: players[session].chunk.y
+            }
+            let destPos = {
+                x: (players[session].pos.x+1)%chunkW,
+                y: players[session].pos.y
+            }
+            // check if there is player in dest
+            if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y)) {
+                return;
+            }
             // inc pos
             players[session].pos.x++;
             // roll over chunk
@@ -239,6 +250,8 @@ io.on('connection', (socket)=>{
                 players[session].pos.x = 0;
                 // emit to original chunk
                 // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+                emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
+
                 plRooms[players[session].chunk.y][players[session].chunk.x] = plRooms[players[session].chunk.y][players[session].chunk.x].filter(x=>x!=session);
                 players[session].chunk.x++;
                 plRooms[players[session].chunk.y][players[session].chunk.x].push(session);
@@ -289,17 +302,26 @@ io.on('connection', (socket)=>{
 
                 // todo: sent map data after crossing chunk border
             }
-            else {
-                // emit to new chunk (or original chunk if no chunk border passed)
-                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
-                emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
-            }
+            
+            // emit to new chunk (or original chunk if no chunk border passed)
+            // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
+            emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
         }
         else if (direction == 'a') {
             // world boundary check
             if (players[session].chunk.x <= 0 && players[session].pos.x <= 0) return;
-
-            let thisCmd = commandIdGen.next().value;
+            let destChunk = {
+                x: players[session].chunk.x + Math.floor((players[session].pos.x-1)/chunkW),
+                y: players[session].chunk.y
+            }
+            let destPos = {
+                x: (players[session].pos.x-1+chunkW)%chunkW,
+                y: players[session].pos.y
+            }
+            // check if there is player in dest
+            if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y)) {
+                return;
+            }
             // inc pos
             players[session].pos.x--;
             // roll over chunk
@@ -367,8 +389,18 @@ io.on('connection', (socket)=>{
         if (direction == 's') {
             // world boundary check
             if (players[session].chunk.y >= chunkY-1 && players[session].pos.y >= chunkH-1) return;
-
-            let thisCmd = commandIdGen.next().value;
+            let destChunk = {
+                x: players[session].chunk.x,
+                y: players[session].chunk.y + Math.floor((players[session].pos.y+1)/chunkH)
+            }
+            let destPos = {
+                x: players[session].pos.x,
+                y: (players[session].pos.y+1)%chunkH
+            }
+            // check if there is player in dest
+            if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y)) {
+                return;
+            }
             // inc pos
             players[session].pos.y++;
             // roll over chunk
@@ -439,8 +471,18 @@ io.on('connection', (socket)=>{
         if (direction == 'w') {
             // world boundary check
             if (players[session].chunk.y <= 0 && players[session].pos.y <= 0) return;
-
-            let thisCmd = commandIdGen.next().value;
+            let destChunk = {
+                x: players[session].chunk.x,
+                y: players[session].chunk.y + Math.floor((players[session].pos.y-1)/chunkH)
+            }
+            let destPos = {
+                x: players[session].pos.x,
+                y: (players[session].pos.y-1+chunkH)%chunkH
+            }
+            // check if there is player in dest
+            if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y)) {
+                return;
+            }
             // inc pos
             players[session].pos.y--;
             // roll over chunk
