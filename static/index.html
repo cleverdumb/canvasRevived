@@ -126,7 +126,7 @@
                         {
                             let multiplier = e.key == 'd' ? 1 : -1;
                             // check player not on edge
-                            if (((data.chunk.x < chnx-1 || data.chunk.x < chw-1) && e.key == 'd') || ((data.chunk.x > 0 || data.pos.x > 0) && e.key == 'a')) {
+                            if (((data.chunk.x < (chnx-1) || data.pos.x < (chw-1)) && e.key == 'd') || ((data.chunk.x > 0 || data.pos.x > 0) && e.key == 'a')) {
                                 // check player not in dest
                                 let playerInDest = false;
                                 let destChunk = {
@@ -161,7 +161,7 @@
                         {
                             let multiplier = e.key == 's' ? 1 : -1;
                             // check player not on edge
-                            if (((data.chunk.y < chny-1 || data.chunk.y < chh-1) && e.key == 's') || ((data.chunk.y > 0 || data.pos.y > 0) && e.key == 'w')) {
+                            if (((data.chunk.y < chny-1 || data.pos.y < chh-1) && e.key == 's') || ((data.chunk.y > 0 || data.pos.y > 0) && e.key == 'w')) {
                                 // check player not in dest
                                 let playerInDest = false;
                                 let destChunk = {
