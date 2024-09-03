@@ -7,3 +7,7 @@ const B = {
     TREE3: 5,
     STUMP: 6
 }
+
+const I = {
+    WOOD: 0
+}

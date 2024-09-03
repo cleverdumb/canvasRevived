@@ -8,4 +8,11 @@ const B = {
     STUMP: 6
 }
 
-module.exports = B;
+const I = {
+    WOOD: 0
+}
+
+module.exports = {
+    B: B,
+    I: I
+};

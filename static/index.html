@@ -21,6 +21,9 @@
 
             const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3];
             const passable = [B.GRASS, B.STUMP];
+            
+            let lastInput = 0;
+            let inputCd = 250;
 
             document.body.onload = ()=>{
                 loadSpriteMap(afterSpriteLoaded);
@@ -29,7 +32,7 @@
             function afterSpriteLoaded() {
                 render();
                 // initial emit, to be put into channel
-                socket = ioT('http://localhost:3276/');
+                socket = ioT(window.location.href);
                 socket.on('connect', ()=>{
                     socketId = socket.id;
                     socket.emit('initiate', session);
@@ -135,12 +138,16 @@
                 })
 
                 document.body.addEventListener('keydown', e=>{
+                    if ((Date.now() - lastInput) < 250) return;
+                    else {
+                        lastInput = Date.now();
+                    }  
                     let data = fakePl;
                     switch (e.key) {
                         case 'a':
                         case 'd':
                         {
-                            let multiplier = (e.key == 'd' || e.key == 's') ? 1 : -1;
+                            let multiplier = e.key == 'd' ? 1 : -1;
                             // check player not on edge
                             if (((data.chunk.x < (chnx-1) || data.pos.x < (chw-1)) && e.key == 'd') || ((data.chunk.x > 0 || data.pos.x > 0) && e.key == 'a')) {
                                 // check player not in dest
@@ -306,6 +313,16 @@
                 }
                 else if (type == B.TREE3) {
                     fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = B.STUMP;
+                    // addToInventory(I.WOOD);
+                }
+            }
+            
+            function addToInventory(itemId) {
+                if (fakePl.inv.hasOwnProperty(itemId)) {
+                    fakePl.inv[itemId]++;
+                }
+                else {
+                    fakePl.inv[itemId] = 1;
                 }
             }
 
