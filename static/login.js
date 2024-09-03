@@ -83,8 +83,9 @@ function login(user, pass, cb) {
                 fakePl = JSON.parse(JSON.stringify({chunk: pl.chunk, pos: pl.pos}));
                 let resMapData = JSON.parse(resp.split('-')[2]);
                 let resAllPlData = JSON.parse(resp.split('-')[3]);
+                console.log(resAllPlData);
                 resAllPlData.forEach(x=>{
-                    delete plData[x.id];
+                    // delete plData[x.id];
                     plData[x.id] = {chunk: x.chunk, pos: x.pos};
                 })
                 resMapData.forEach((x, i)=>{

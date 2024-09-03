@@ -182,7 +182,7 @@ app.post('/login', jsonParser, (req, res)=>{
                 ]
 
                 // send initial chunks player data
-                let initChunk = [0, 1]; // x, y
+                let initChunk = [0, 0]; // x, y
                 let initPlayerData = [];
                 [-1, 0, 1].forEach(a=>{
                     [-1, 0, 1].forEach(b=>{
@@ -195,7 +195,7 @@ app.post('/login', jsonParser, (req, res)=>{
                 })
 
                 players[ses] = data;
-
+                
                 res.send(`${ses.toString()}-${JSON.stringify(data)}-${JSON.stringify(initMapData)}-${JSON.stringify(initPlayerData)}`);
 
                 if (!plRooms.some(x=>x.id==players[ses].id)) {
@@ -221,6 +221,7 @@ server.listen(port, ()=>{
 })
 
 let sockets = {};
+let reverseSockets = {};
 
 function emitToAdj(cpos, msg, arg) {
     let {x, y} = cpos;
@@ -237,6 +238,7 @@ io.on('connection', (socket)=>{
     socket.on('initiate', ses=>{
         if (!players.hasOwnProperty(ses)) return;
         sockets[ses] = socket;
+        reverseSockets[socket.id] = ses;
         let data = players[ses];
         [-1, 1, 0].forEach(y=>{
             [-1, 1, 0].forEach(x=>{
@@ -296,7 +298,7 @@ io.on('connection', (socket)=>{
                 }, lagSim);
                 return;
             }
-            
+
             // inc pos
             players[session].pos.x += multiplier;
             // roll over chunk
@@ -357,7 +359,6 @@ io.on('connection', (socket)=>{
                     [-1, 0, 1].forEach(b=>{
                         if (players[session].chunk.x+a >= 0 && players[session].chunk.x+a < chunkX && players[session].chunk.y+b >= 0 && players[session].chunk.y+b < chunkY) {
                             plRooms[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
-                                // console.log(x);
                                 newPlayerData.push(players[x]);
                             })
                         }
@@ -495,7 +496,6 @@ io.on('connection', (socket)=>{
                     [-1, 0, 1].forEach(b=>{
                         if (players[session].chunk.x+a >= 0 && players[session].chunk.x+a < chunkX && players[session].chunk.y+b >= 0 && players[session].chunk.y+b < chunkY) {
                             plRooms[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
-                                // console.log(x);
                                 newPlayerData.push(players[x]);
                             })
                         }
@@ -525,5 +525,13 @@ io.on('connection', (socket)=>{
 
             console.log(players[session]);
         }
+    })
+
+    socket.on('disconnect', reason=>{
+        let ses = reverseSockets[socket.id];
+        let data = players[ses];
+        plRooms[data.chunk.y][data.chunk.x] = plRooms[data.chunk.y][data.chunk.x].filter(x=>x!=ses);
+    
+        delete players[ses];
     })
 })
