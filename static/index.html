@@ -137,103 +137,134 @@
                     render();
                 })
 
+                let keyMap = {};
+
                 document.body.addEventListener('keydown', e=>{
-                    if ((Date.now() - lastInput) < 250) return;
-                    else {
+                    // if (inputQueue.length > 0) {
+                    //     if (inputQueue.length < inputQueueLimit) {
+                    //         inputQueue.push(e.key);
+                    //     }
+                    // }
+                    // else {
+                    //     if (currInputCd <= 0) {
+                    //         keyPressed(e.key);
+                    //         currInputCd = 250;
+                    //     }
+                    // }
+                    if ((Date.now() - lastInput) >= 100) {
                         lastInput = Date.now();
-                    }  
-                    let data = fakePl;
-                    switch (e.key) {
-                        case 'a':
-                        case 'd':
-                        {
-                            let multiplier = e.key == 'd' ? 1 : -1;
-                            // check player not on edge
-                            if (((data.chunk.x < (chnx-1) || data.pos.x < (chw-1)) && e.key == 'd') || ((data.chunk.x > 0 || data.pos.x > 0) && e.key == 'a')) {
-                                // check player not in dest
-                                let playerInDest = false;
-                                let destChunk = {
-                                    x: (data.chunk.x + Math.floor((data.pos.x + multiplier)/chw)),
-                                    y: data.chunk.y
-                                }
-                                let destPos = {
-                                    x: (data.pos.x + multiplier + chw)%chw,
-                                    y: data.pos.y
-                                }
-                                for (p in plData) {
-                                    if (p != plId && plData[p].chunk.x == destChunk.x && plData[p].chunk.y == destChunk.y && plData[p].pos.x == destPos.x && plData[p].pos.y == destPos.y) {
-                                        playerInDest = true;
+                        if (!keyMap[e.key]) {
+                            keyPressed(e.key);
+                            keyMap[e.key] = setInterval(()=>{
+                                for (x in keyMap) {
+                                    if (keyMap[x]) {
+                                        keyPressed(x);
                                     }
                                 }
-                                if (!playerInDest) {
-                                    if (passable.includes(mapData[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
-                                        if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
-                                            let newId = nextCmdId++;
-                                            socket.emit('movement', session, e.key, newId);
-                                            unauthCmd[newId] = 'mv' + e.key.toUpperCase();
-
-                                            simulateAllUnauth();
-                                        }
-                                        else {
-                                            if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
-                                                let newId = nextCmdId++;
-                                                socket.emit('interact', session, e.key, newId);
-                                                unauthCmd[newId] = `in${e.key.toUpperCase()}`;
-
-                                                simulateAllUnauth();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                        case 's':
-                        case 'w':
-                        {
-                            let multiplier = e.key == 's' ? 1 : -1;
-                            // check player not on edge
-                            if (((data.chunk.y < chny-1 || data.pos.y < chh-1) && e.key == 's') || ((data.chunk.y > 0 || data.pos.y > 0) && e.key == 'w')) {
-                                // check player not in dest
-                                let playerInDest = false;
-                                let destChunk = {
-                                    x: data.chunk.x,
-                                    y: (data.chunk.y + Math.floor((data.pos.y + multiplier)/chh))
-                                }
-                                let destPos = {
-                                    x: data.pos.x,
-                                    y: (data.pos.y + multiplier + chh)%chh
-                                }
-                                for (p in plData) {
-                                    if (p != plId && plData[p].chunk.x == destChunk.x && plData[p].chunk.y == destChunk.y && plData[p].pos.x == destPos.x && plData[p].pos.y == destPos.y) {
-                                        playerInDest = true;
-                                    }
-                                }
-                                if (!playerInDest) {
-                                    if (passable.includes(mapData[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
-                                        if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
-                                            let newId = nextCmdId++;
-                                            socket.emit('movement', session, e.key, newId);
-                                            unauthCmd[newId] = 'mv' + e.key.toUpperCase();
-
-                                            simulateAllUnauth();
-                                        }
-                                        else {
-                                            if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
-                                                let newId = nextCmdId++;
-                                                socket.emit('interact', session, e.key, newId);
-                                                unauthCmd[newId] = `in${e.key.toUpperCase()}`;
-
-                                                simulateAllUnauth();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            break;
+                            }, inputCd);
                         }
                     }
+                    // keyPressed(e.key);
                 })
+
+                document.body.addEventListener('keyup', e=>{
+                    clearInterval(keyMap[e.key]);
+                    delete keyMap[e.key];
+                })
+            }
+
+            function keyPressed(key) {
+                let data = fakePl;
+                switch (key) {
+                    case 'a':
+                    case 'd':
+                    {
+                        let multiplier = key == 'd' ? 1 : -1;
+                        // check player not on edge
+                        if (((data.chunk.x < (chnx-1) || data.pos.x < (chw-1)) && key == 'd') || ((data.chunk.x > 0 || data.pos.x > 0) && key == 'a')) {
+                            // check player not in dest
+                            let playerInDest = false;
+                            let destChunk = {
+                                x: (data.chunk.x + Math.floor((data.pos.x + multiplier)/chw)),
+                                y: data.chunk.y
+                            }
+                            let destPos = {
+                                x: (data.pos.x + multiplier + chw)%chw,
+                                y: data.pos.y
+                            }
+                            for (p in plData) {
+                                if (p != plId && plData[p].chunk.x == destChunk.x && plData[p].chunk.y == destChunk.y && plData[p].pos.x == destPos.x && plData[p].pos.y == destPos.y) {
+                                    playerInDest = true;
+                                }
+                            }
+                            if (!playerInDest) {
+                                if (passable.includes(mapData[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                    if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                        let newId = nextCmdId++;
+                                        socket.emit('movement', session, key, newId);
+                                        unauthCmd[newId] = 'mv' + key.toUpperCase();
+
+                                        simulateAllUnauth();
+                                    }
+                                    else {
+                                        if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                            let newId = nextCmdId++;
+                                            socket.emit('interact', session, key, newId);
+                                            unauthCmd[newId] = `in${key.toUpperCase()}`;
+
+                                            simulateAllUnauth();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case 's':
+                    case 'w':
+                    {
+                        let multiplier = key == 's' ? 1 : -1;
+                        // check player not on edge
+                        if (((data.chunk.y < chny-1 || data.pos.y < chh-1) && key == 's') || ((data.chunk.y > 0 || data.pos.y > 0) && key == 'w')) {
+                            // check player not in dest
+                            let playerInDest = false;
+                            let destChunk = {
+                                x: data.chunk.x,
+                                y: (data.chunk.y + Math.floor((data.pos.y + multiplier)/chh))
+                            }
+                            let destPos = {
+                                x: data.pos.x,
+                                y: (data.pos.y + multiplier + chh)%chh
+                            }
+                            for (p in plData) {
+                                if (p != plId && plData[p].chunk.x == destChunk.x && plData[p].chunk.y == destChunk.y && plData[p].pos.x == destPos.x && plData[p].pos.y == destPos.y) {
+                                    playerInDest = true;
+                                }
+                            }
+                            if (!playerInDest) {
+                                if (passable.includes(mapData[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                    if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                        let newId = nextCmdId++;
+                                        socket.emit('movement', session, key, newId);
+                                        unauthCmd[newId] = 'mv' + key.toUpperCase();
+
+                                        simulateAllUnauth();
+                                    }
+                                    else {
+                                        if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                            let newId = nextCmdId++;
+                                            socket.emit('interact', session, key, newId);
+                                            unauthCmd[newId] = `in${key.toUpperCase()}`;
+
+                                            simulateAllUnauth();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
             }
 
             function simulateCmd(name) {
