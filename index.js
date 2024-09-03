@@ -33,7 +33,7 @@ const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3];
 const passable = [B.GRASS, B.STUMP];
 
 // ! testing use
-let lagSim = 1000;
+let lagSim = 0;
 
 // db.run(`INSERT INTO accData (user, pass) VALUES ('n1', 'p1')`)
 
@@ -54,7 +54,7 @@ for (let y=0; y<chunkY; y++) {
         for (let a=0; a<chunkH; a++) {
             baseMap[y][x].push([]);
             for (let b=0; b<chunkW; b++) {
-                baseMap[y][x][a].push((a%10 && b%10) ? B.GRASS : B.WATER);
+                baseMap[y][x][a].push(B.GRASS);
             }
         }
     }
@@ -67,7 +67,7 @@ for (let y=0; y<chunkY; y++) {
         for (let a=0; a<chunkH; a++) {
             world[y][x].push([]);
             for (let b=0; b<chunkW; b++) {
-                world[y][x][a].push(null);
+                world[y][x][a].push((a+b)%4 ? null : B.TREE);
             }
         }
     }

@@ -4,6 +4,11 @@
     </head>
     <body>
         <canvas id='cvs'></canvas>
+        <input placeholder='username' id='user'>
+        <input placeholder='password' id='pass'>
+        <button id='signupBtn' onclick='signup(document.getElementById(`user`).value, document.getElementById(`pass`).value, afterSpriteLoaded)'>SIGN UP</button>
+        <button id='loginBtn' onclick='login(document.getElementById(`user`).value, document.getElementById(`pass`).value, afterSpriteLoaded)'>LOG IN</button>
+        <p id='feedback'></p>
         <script src='./blockIds.js'></script>
         <script>
             let ioT = null;
@@ -312,7 +317,7 @@
                     simulateCmd(unauthCmd[x]);
                 })
                 render();
-            }
+            } 
         </script>
         <script type="module">
             import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";

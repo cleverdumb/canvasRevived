@@ -12,7 +12,7 @@ for (let y=0; y<chny; y++) {
         for (let a=0; a<chh; a++) {
             mapData[y][x].push([]);
             for (let b=0; b<chw; b++) {
-                mapData[y][x][a].push((a%10 && b%10) ? B.GRASS : B.WATER);
+                mapData[y][x][a].push(B.GRASS);
             }
         }
     }
@@ -60,12 +60,15 @@ function signup(user, pass, cb) {
             let res = request.responseText;
             if (res == '0') {
                 console.log('%cSuccess', 'color: green');
+                document.getElementById('feedback').innerText = 'Successful signup';
             }
             else if (res == '1') {
                 console.log('%cUsername used', 'color: red');
+                document.getElementById('feedback').innerText = 'Username used';
             }
             else if (res == '2') {
-                console.log('%cInvalid data', 'color: red')
+                console.log('%cInvalid data', 'color: red');
+                document.getElementById('feedback').innerText = 'Invalid data';
             }
         }
     }
@@ -82,11 +85,19 @@ function login(user, pass, cb) {
         if (request.readyState == XMLHttpRequest.DONE) {
             if (request.responseText == '0') {
                 console.log('%cIncorrect user or pass', 'color: red');
+                document.getElementById('feedback').innerText = 'Incorrect';
             }
             else if (request.responseText == '1') {
                 console.log('%cInvalid data', 'color: red')
+                document.getElementById('feedback').innerText = 'Invalid data';
             }
             else {
+                document.getElementById('user').style.display = 'none';
+                document.getElementById('pass').style.display = 'none';
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('signupBtn').style.display = 'none';
+                document.getElementById('feedback').style.display = 'none';
+
                 let resp = request.responseText;
                 session = resp.split('-')[0];
                 let pl = JSON.parse(resp.split('-')[1]);
