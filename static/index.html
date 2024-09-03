@@ -13,6 +13,8 @@
             let nextCmdId = 0;
             let unauthCmd = {}; // unauthorised command record: id - cmdName    
 
+            const interactable = [2];
+
             document.body.onload = ()=>{
                 loadSpriteMap(afterSpriteLoaded);
             }
@@ -118,13 +120,19 @@
                     simulateAllUnauth();
                 })
 
+                socket.on('blockChange', (chunk, pos, type) => {
+                    overMap[JSON.parse(chunk).y][JSON.parse(chunk).x][JSON.parse(pos).y][JSON.parse(pos).x] = type;
+                    
+                    render();
+                })
+
                 document.body.addEventListener('keydown', e=>{
                     let data = fakePl;
                     switch (e.key) {
                         case 'a':
                         case 'd':
                         {
-                            let multiplier = e.key == 'd' ? 1 : -1;
+                            let multiplier = (e.key == 'd' || e.key == 's') ? 1 : -1;
                             // check player not on edge
                             if (((data.chunk.x < (chnx-1) || data.pos.x < (chw-1)) && e.key == 'd') || ((data.chunk.x > 0 || data.pos.x > 0) && e.key == 'a')) {
                                 // check player not in dest
@@ -143,12 +151,23 @@
                                     }
                                 }
                                 if (!playerInDest) {
-                                    if (mapData[destChunk.y][destChunk.x][destPos.y][destPos.x] == 0 && overMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null) {
-                                        let newId = nextCmdId++;
-                                        socket.emit('movement', session, e.key, newId);
-                                        unauthCmd[newId] = 'mv' + e.key.toUpperCase();
+                                    if (mapData[destChunk.y][destChunk.x][destPos.y][destPos.x] == 0) {
+                                        if (overMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null) {
+                                            let newId = nextCmdId++;
+                                            socket.emit('movement', session, e.key, newId);
+                                            unauthCmd[newId] = 'mv' + e.key.toUpperCase();
 
-                                        simulateAllUnauth();
+                                            simulateAllUnauth();
+                                        }
+                                        else {
+                                            if (interactable.includes(overMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                                let newId = nextCmdId++;
+                                                socket.emit('interact', session, e.key, newId);
+                                                unauthCmd[newId] = `in${e.key.toUpperCase()}`;
+
+                                                simulateAllUnauth();
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -176,12 +195,23 @@
                                     }
                                 }
                                 if (!playerInDest) {
-                                    if (mapData[destChunk.y][destChunk.x][destPos.y][destPos.x] == 0 && overMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null) {
-                                        let newId = nextCmdId++;
-                                        socket.emit('movement', session, e.key, newId);
-                                        unauthCmd[newId] = 'mv' + e.key.toUpperCase();
+                                    if (mapData[destChunk.y][destChunk.x][destPos.y][destPos.x] == 0) {
+                                        if (overMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null) {
+                                            let newId = nextCmdId++;
+                                            socket.emit('movement', session, e.key, newId);
+                                            unauthCmd[newId] = 'mv' + e.key.toUpperCase();
 
-                                        simulateAllUnauth();
+                                            simulateAllUnauth();
+                                        }
+                                        else {
+                                            if (interactable.includes(overMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                                let newId = nextCmdId++;
+                                                socket.emit('interact', session, e.key, newId);
+                                                unauthCmd[newId] = `in${e.key.toUpperCase()}`;
+
+                                                simulateAllUnauth();
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -225,6 +255,40 @@
                         }
                         render();
                         break;
+                    case 'inD':
+                    case 'inA': {
+                        let xMult = name[2] == 'D' ? 1 : -1;
+                        let destChunk = {
+                            x: (fakePl.chunk.x + Math.floor((fakePl.pos.x + xMult)/chw)),
+                            y: fakePl.chunk.y
+                        }
+                        let destPos = {
+                            x: (fakePl.pos.x + xMult + chw)%chw,
+                            y: fakePl.pos.y
+                        }
+                        interact(overMap[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos);
+                        break;
+                    }
+                    case 'inS':
+                    case 'inW': {
+                        let yMult = name[2] == 'S' ? 1 : -1;
+                        let destChunk = {
+                            x: fakePl.chunk.x,
+                            y: (fakePl.chunk.y + Math.floor((fakePl.pos.y + yMult)/chh))
+                        }
+                        let destPos = {
+                            x: fakePl.pos.x,
+                            y: (fakePl.pos.y + yMult + chh)%chh
+                        }
+                        interact(overMap[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos);
+                        break;
+                    }
+                }
+            }
+
+            function interact(type, chunk, pos) {
+                if (type == 2) {
+                    overMap[chunk.y][chunk.x][pos.y][pos.x] = 3;
                 }
             }
 

@@ -27,6 +27,8 @@ db.run(`
     )
 `)
 
+const interactable = [2];
+
 // ! testing use
 let lagSim = 100;
 
@@ -228,7 +230,22 @@ function emitToAdj(cpos, msg, arg) {
     [-1, 0, 1].forEach(a=>{
         [-1, 0, 1].forEach(b=>{
             if (x+a >= 0 && x+a < chunkX && y+b >= 0 && y+b < chunkY) {
-                io.to(`${x+a},${y+b}`).emit(msg, ...arg);
+                setTimeout(()=>{
+                    io.to(`${x+a},${y+b}`).emit(msg, ...arg);
+                }, lagSim)
+            }
+        })
+    })
+}
+
+function emitToAdjNoSender(cpos, msg, arg, socket) {
+    let {x, y} = cpos;
+    [-1, 0, 1].forEach(a=>{
+        [-1, 0, 1].forEach(b=>{
+            if (x+a >= 0 && x+a < chunkX && y+b >= 0 && y+b < chunkY) {
+                setTimeout(()=>{
+                    socket.to(`${x+a},${y+b}`).emit(msg, ...arg);
+                }, lagSim)
             }
         })
     })
@@ -386,7 +403,7 @@ io.on('connection', (socket)=>{
                 io.to(socket.id).emit('authCmd', cmdId);
             }, lagSim);
 
-            console.log(players[session]);
+            // console.log(players[session]);
         }
         else if (direction == 's' || direction == 'w') {
             // world boundary check
@@ -523,15 +540,90 @@ io.on('connection', (socket)=>{
                 io.to(socket.id).emit('authCmd', cmdId);
             }, lagSim);
 
-            console.log(players[session]);
+            // console.log(players[session]);
         }
     })
 
-    socket.on('disconnect', reason=>{
+    socket.on('interact', (session, direction, cmdId) => {
+        let data = players[session];
+        let destChunk, destPos;
+        if (direction == 'a' || direction == 'd') {
+            if (direction == 'd' && players[session].chunk.x >= chunkX-1 && players[session].pos.x >= chunkW-1) {
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
+            }
+
+            if (direction == 'a' && players[session].chunk.x <= 0 && players[session].pos.x <= 0) {
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
+            }
+
+            let xMult = direction == 'd' ? 1 : -1;
+            destChunk = {
+                x: (data.chunk.x + Math.floor((data.pos.x + xMult)/chunkW)),
+                y: data.chunk.y
+            }
+            destPos = {
+                x: (data.pos.x + xMult + chunkW)%chunkW,
+                y: data.pos.y
+            }
+        }
+        else if (direction == 's' || direction == 'w') {
+            if (direction == 's' && players[session].chunk.y >= chunkY-1 && players[session].pos.y >= chunkH-1) {
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
+            }
+
+            if (direction == 'w' && players[session].chunk.y <= 0 && players[session].pos.y <= 0) {
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
+            }
+
+            let yMult = direction == 's' ? 1 : -1;
+            destChunk = {
+                x: data.chunk.x,
+                y: (data.chunk.y + Math.floor((data.pos.y + yMult)/chunkH))
+            }
+            destPos = {
+                x: data.pos.x,
+                y: (data.pos.y + yMult + chunkH)%chunkH
+            }
+        }
+
+        if (!interactable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+            setTimeout(()=>{
+                io.to(socket.id).emit('rejectCmd', cmdId);
+            }, lagSim);
+            return;
+        }
+
+        interact(world[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos, socket);
+        io.to(socket.id).emit('authCmd', cmdId);
+    })
+
+    socket.on('disconnect', ()=>{
         let ses = reverseSockets[socket.id];
         let data = players[ses];
-        plRooms[data.chunk.y][data.chunk.x] = plRooms[data.chunk.y][data.chunk.x].filter(x=>x!=ses);
-    
-        delete players[ses];
+        if (data) {
+            plRooms[data.chunk.y][data.chunk.x] = plRooms[data.chunk.y][data.chunk.x].filter(x=>x!=ses);
+            
+        
+            delete players[ses];
+        }
     })
 })
+
+function interact(type, chunk, pos, socket) {
+    if (type == 2) {
+        world[chunk.y][chunk.x][pos.y][pos.x] = 3; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), 3], socket);
+    }
+}

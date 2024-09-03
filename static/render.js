@@ -64,6 +64,8 @@ function renderTile(x, y, type) {
         case 2:
             ctx.drawImage(sprite, 16, 0, 16, 16, x*bw, y*bh, bw, bh);
             break;
+        case 3:
+            ctx.drawImage(sprite, 80, 0, 16, 16, x*bw, y*bh, bw, bh);
     }
 }
 
