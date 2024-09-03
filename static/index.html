@@ -23,7 +23,9 @@
             const passable = [B.GRASS, B.STUMP];
             
             let lastInput = 0;
-            let inputCd = 250;
+            let inputCd = 300;
+
+            let keyMap = {};
 
             document.body.onload = ()=>{
                 loadSpriteMap(afterSpriteLoaded);
@@ -137,8 +139,6 @@
                     render();
                 })
 
-                let keyMap = {};
-
                 document.body.addEventListener('keydown', e=>{
                     // if (inputQueue.length > 0) {
                     //     if (inputQueue.length < inputQueueLimit) {
@@ -154,6 +154,9 @@
                     if ((Date.now() - lastInput) >= 100) {
                         lastInput = Date.now();
                         if (!keyMap[e.key]) {
+                            if (Object.keys(keyMap).filter(x=>x!=e.key).length > 0) {
+                                return;
+                            }
                             keyPressed(e.key);
                             keyMap[e.key] = setInterval(()=>{
                                 for (x in keyMap) {
