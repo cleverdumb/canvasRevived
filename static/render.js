@@ -31,8 +31,8 @@ function render() {
             // let currentTile = null;
             
             renderTile(x, y, mapData[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw]);
-            if (overMap[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw] !== null) {
-                renderTile(x, y, overMap[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw]);
+            if (fakeOverMap[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw] !== null) {
+                renderTile(x, y, fakeOverMap[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw]);
             }
             
             if (x == 19 && y == 12) {
@@ -65,7 +65,17 @@ function renderTile(x, y, type) {
             ctx.drawImage(sprite, 16, 0, 16, 16, x*bw, y*bh, bw, bh);
             break;
         case 3:
+            ctx.drawImage(sprite, 32, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case 4:
+            ctx.drawImage(sprite, 48, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case 5:
+            ctx.drawImage(sprite, 64, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case 6:
             ctx.drawImage(sprite, 80, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
     }
 }
 

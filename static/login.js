@@ -32,6 +32,20 @@ for (let y=0; y<chny; y++) {
     }
 }
 
+let fakeOverMap = [];
+for (let y=0; y<chny; y++) {
+    fakeOverMap.push([]);
+    for (let x=0; x<chnx; x++) {
+        fakeOverMap[y].push([]);
+        for (let a=0; a<chh; a++) {
+            fakeOverMap[y][x].push([]);
+            for (let b=0; b<chw; b++) {
+                fakeOverMap[y][x][a].push(null);
+            }
+        }
+    }
+}
+
 let fakePl = {};
 let plData = {}; // players data locally (actual, authorised)
 let plId = null;
@@ -83,7 +97,6 @@ function login(user, pass, cb) {
                 fakePl = JSON.parse(JSON.stringify({chunk: pl.chunk, pos: pl.pos}));
                 let resMapData = JSON.parse(resp.split('-')[2]);
                 let resAllPlData = JSON.parse(resp.split('-')[3]);
-                console.log(resAllPlData);
                 resAllPlData.forEach(x=>{
                     // delete plData[x.id];
                     plData[x.id] = {chunk: x.chunk, pos: x.pos};
@@ -91,6 +104,7 @@ function login(user, pass, cb) {
                 resMapData.forEach((x, i)=>{
                     if (!x) return;
                     overMap[pl.chunk.y - 1 + Math.floor(i/3)][pl.chunk.x - 1 + i%3] = x;
+                    fakeOverMap[pl.chunk.y - 1 + Math.floor(i/3)][pl.chunk.x - 1 + i%3] = x;
                 })
                 console.log(`%cSuccess. Session: ${session}`, 'color: green');
                 // console.log(mapData);

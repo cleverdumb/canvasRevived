@@ -27,7 +27,7 @@ db.run(`
     )
 `)
 
-const interactable = [2];
+const interactable = [2,3,4,5];
 
 // ! testing use
 let lagSim = 100;
@@ -625,5 +625,17 @@ function interact(type, chunk, pos, socket) {
     if (type == 2) {
         world[chunk.y][chunk.x][pos.y][pos.x] = 3; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), 3], socket);
+    }
+    else if (type == 3) {
+        world[chunk.y][chunk.x][pos.y][pos.x] = 4; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), 4], socket);
+    }
+    else if (type == 4) {
+        world[chunk.y][chunk.x][pos.y][pos.x] = 5; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), 5], socket);
+    }
+    else if (type == 5) {
+        world[chunk.y][chunk.x][pos.y][pos.x] = 6; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), 6], socket);
     }
 }
