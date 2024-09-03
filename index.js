@@ -12,6 +12,8 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
+const B = require('./blockIds.js');
+
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
         userId INTEGER PRIMARY KEY NOT NULL UNIQUE,
@@ -27,17 +29,15 @@ db.run(`
     )
 `)
 
-const interactable = [2,3,4,5];
+const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3];
+const passable = [B.GRASS, B.STUMP];
 
 // ! testing use
-let lagSim = 100;
+let lagSim = 1000;
 
 // db.run(`INSERT INTO accData (user, pass) VALUES ('n1', 'p1')`)
 
 // world[chunkY][chunkX][y][x]
-// 0 - ground
-// 1 - ice
-// 2 - tree
 let players = {};
 let world = [];
 let chunkX = 16;
@@ -54,7 +54,7 @@ for (let y=0; y<chunkY; y++) {
         for (let a=0; a<chunkH; a++) {
             baseMap[y][x].push([]);
             for (let b=0; b<chunkW; b++) {
-                baseMap[y][x][a].push((a%10 && b%10) ? 0 : 1);
+                baseMap[y][x][a].push((a%10 && b%10) ? B.GRASS : B.WATER);
             }
         }
     }
@@ -74,7 +74,7 @@ for (let y=0; y<chunkY; y++) {
 }
 
 // ! testing use
-world[0][0][8][8] = 2;
+world[0][0][8][8] = B.TREE;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -132,7 +132,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                     pos:{
                         x: 4,
                         y: 4
-                    }
+                    },
+                    inv: {}
                 })], err => {
                     if (err) throw err;
                     res.send('0');
@@ -302,14 +303,14 @@ io.on('connection', (socket)=>{
                 return;
             }
 
-            if (baseMap[destChunk.y][destChunk.x][destPos.y][destPos.x] != 0) {
+            if (!passable.includes(baseMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
                 setTimeout(()=>{
                     io.to(socket.id).emit('rejectCmd', cmdId);
                 }, lagSim);
                 return;
             }
 
-            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x] !== null) {
+            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x] !== null && (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x]))) {
                 setTimeout(()=>{
                     io.to(socket.id).emit('rejectCmd', cmdId);
                 }, lagSim);
@@ -439,14 +440,14 @@ io.on('connection', (socket)=>{
                 return;
             }
 
-            if (baseMap[destChunk.y][destChunk.x][destPos.y][destPos.x] != 0) {
+            if (!passable.includes(baseMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
                 setTimeout(()=>{
                     io.to(socket.id).emit('rejectCmd', cmdId);
                 }, lagSim);
                 return;
             }
 
-            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x] !== null) {
+            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x] !== null && (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x]))) {
                 setTimeout(()=>{
                     io.to(socket.id).emit('rejectCmd', cmdId);
                 }, lagSim);
@@ -606,7 +607,10 @@ io.on('connection', (socket)=>{
         }
 
         interact(world[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos, socket);
-        io.to(socket.id).emit('authCmd', cmdId);
+        setTimeout(()=>{
+            io.to(socket.id).emit('authCmd', cmdId);
+        }, lagSim)
+        return;
     })
 
     socket.on('disconnect', ()=>{
@@ -615,27 +619,26 @@ io.on('connection', (socket)=>{
         if (data) {
             plRooms[data.chunk.y][data.chunk.x] = plRooms[data.chunk.y][data.chunk.x].filter(x=>x!=ses);
             
-        
             delete players[ses];
         }
     })
 })
 
 function interact(type, chunk, pos, socket) {
-    if (type == 2) {
-        world[chunk.y][chunk.x][pos.y][pos.x] = 3; 
-        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), 3], socket);
+    if (type == B.TREE) {
+        world[chunk.y][chunk.x][pos.y][pos.x] = B.TREE1; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE1], socket);
     }
-    else if (type == 3) {
-        world[chunk.y][chunk.x][pos.y][pos.x] = 4; 
-        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), 4], socket);
+    else if (type == B.TREE1) {
+        world[chunk.y][chunk.x][pos.y][pos.x] = B.TREE2; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE2], socket);
     }
-    else if (type == 4) {
-        world[chunk.y][chunk.x][pos.y][pos.x] = 5; 
-        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), 5], socket);
+    else if (type == B.TREE2) {
+        world[chunk.y][chunk.x][pos.y][pos.x] = B.TREE3; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE3], socket);
     }
-    else if (type == 5) {
-        world[chunk.y][chunk.x][pos.y][pos.x] = 6; 
-        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), 6], socket);
+    else if (type == B.TREE3) {
+        world[chunk.y][chunk.x][pos.y][pos.x] = B.STUMP; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.STUMP], socket);
     }
 }

@@ -12,7 +12,7 @@ for (let y=0; y<chny; y++) {
         for (let a=0; a<chh; a++) {
             mapData[y][x].push([]);
             for (let b=0; b<chw; b++) {
-                mapData[y][x][a].push((a%10 && b%10) ? 0 : 1);
+                mapData[y][x][a].push((a%10 && b%10) ? B.GRASS : B.WATER);
             }
         }
     }
@@ -60,11 +60,9 @@ function signup(user, pass, cb) {
             let res = request.responseText;
             if (res == '0') {
                 console.log('%cSuccess', 'color: green');
-                login('n1', 'p1', cb);
             }
             else if (res == '1') {
                 console.log('%cUsername used', 'color: red');
-                login('n1', 'p1', cb);
             }
             else if (res == '2') {
                 console.log('%cInvalid data', 'color: red')
@@ -93,13 +91,13 @@ function login(user, pass, cb) {
                 session = resp.split('-')[0];
                 let pl = JSON.parse(resp.split('-')[1]);
                 plId = pl.id;
-                plData[pl.id] = {chunk:pl.chunk, pos:pl.pos};
-                fakePl = JSON.parse(JSON.stringify({chunk: pl.chunk, pos: pl.pos}));
+                plData[pl.id] = pl;
+                fakePl = JSON.parse(JSON.stringify(pl));
                 let resMapData = JSON.parse(resp.split('-')[2]);
                 let resAllPlData = JSON.parse(resp.split('-')[3]);
                 resAllPlData.forEach(x=>{
                     // delete plData[x.id];
-                    plData[x.id] = {chunk: x.chunk, pos: x.pos};
+                    plData[x.id] = x;
                 })
                 resMapData.forEach((x, i)=>{
                     if (!x) return;

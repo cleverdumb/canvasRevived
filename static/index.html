@@ -4,6 +4,7 @@
     </head>
     <body>
         <canvas id='cvs'></canvas>
+        <script src='./blockIds.js'></script>
         <script>
             let ioT = null;
             let socket = null;
@@ -13,7 +14,8 @@
             let nextCmdId = 0;
             let unauthCmd = {}; // unauthorised command record: id - cmdName    
 
-            const interactable = [2,3,4,5];
+            const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3];
+            const passable = [B.GRASS, B.STUMP];
 
             document.body.onload = ()=>{
                 loadSpriteMap(afterSpriteLoaded);
@@ -152,8 +154,8 @@
                                     }
                                 }
                                 if (!playerInDest) {
-                                    if (mapData[destChunk.y][destChunk.x][destPos.y][destPos.x] == 0) {
-                                        if (overMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null) {
+                                    if (passable.includes(mapData[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                        if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
                                             let newId = nextCmdId++;
                                             socket.emit('movement', session, e.key, newId);
                                             unauthCmd[newId] = 'mv' + e.key.toUpperCase();
@@ -161,7 +163,7 @@
                                             simulateAllUnauth();
                                         }
                                         else {
-                                            if (interactable.includes(overMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                            if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
                                                 let newId = nextCmdId++;
                                                 socket.emit('interact', session, e.key, newId);
                                                 unauthCmd[newId] = `in${e.key.toUpperCase()}`;
@@ -196,8 +198,8 @@
                                     }
                                 }
                                 if (!playerInDest) {
-                                    if (mapData[destChunk.y][destChunk.x][destPos.y][destPos.x] == 0) {
-                                        if (overMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null) {
+                                    if (passable.includes(mapData[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                        if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
                                             let newId = nextCmdId++;
                                             socket.emit('movement', session, e.key, newId);
                                             unauthCmd[newId] = 'mv' + e.key.toUpperCase();
@@ -205,7 +207,7 @@
                                             simulateAllUnauth();
                                         }
                                         else {
-                                            if (interactable.includes(overMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                            if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
                                                 let newId = nextCmdId++;
                                                 socket.emit('interact', session, e.key, newId);
                                                 unauthCmd[newId] = `in${e.key.toUpperCase()}`;
@@ -267,7 +269,7 @@
                             x: (fakePl.pos.x + xMult + chw)%chw,
                             y: fakePl.pos.y
                         }
-                        interact(overMap[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos);
+                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos);
                         break;
                     }
                     case 'inS':
@@ -281,24 +283,24 @@
                             x: fakePl.pos.x,
                             y: (fakePl.pos.y + yMult + chh)%chh
                         }
-                        interact(overMap[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos);
+                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos);
                         break;
                     }
                 }
             }
 
             function interact(type, chunk, pos) {
-                if (type == 2) {
-                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = 3;
+                if (type == B.TREE) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = B.TREE1;
                 }
-                else if (type == 3) {
-                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = 4;
+                else if (type == B.TREE1) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = B.TREE2;
                 }
-                else if (type == 4) {
-                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = 5;
+                else if (type == B.TREE2) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = B.TREE3;
                 }
-                else if (type == 5) {
-                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = 6;
+                else if (type == B.TREE3) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = B.STUMP;
                 }
             }
 
