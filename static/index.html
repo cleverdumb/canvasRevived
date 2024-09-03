@@ -69,7 +69,7 @@
                 socket.on('newMapData', data=>{
                     let d = JSON.parse(data);
                     for (x in d) {
-                        mapData[parseInt(x.split(',')[1])][parseInt(x.split(',')[0])] = d[x];
+                        overMap[parseInt(x.split(',')[1])][parseInt(x.split(',')[0])] = d[x];
                     }
                     render();
                 })
@@ -143,19 +143,17 @@
                                     }
                                 }
                                 if (!playerInDest) {
-                                    let newId = nextCmdId++;
-                                    socket.emit('movement', session, e.key, newId);
-                                    unauthCmd[newId] = 'mv' + e.key.toUpperCase();
-                                    // processCmd('mvD');
+                                    if (mapData[destChunk.y][destChunk.x][destPos.y][destPos.x] == 0 && overMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null) {
+                                        let newId = nextCmdId++;
+                                        socket.emit('movement', session, e.key, newId);
+                                        unauthCmd[newId] = 'mv' + e.key.toUpperCase();
 
-                                    simulateAllUnauth();
+                                        simulateAllUnauth();
+                                    }
                                 }
                             }
                             break;
                         }
-                        // case 'a':
-                        //     socket.emit('movement', session, 'a');
-                        //     break;
                         case 's':
                         case 'w':
                         {
@@ -178,12 +176,13 @@
                                     }
                                 }
                                 if (!playerInDest) {
-                                    let newId = nextCmdId++;
-                                    socket.emit('movement', session, e.key, newId);
-                                    unauthCmd[newId] = 'mv' + e.key.toUpperCase();
-                                    // processCmd('mvD');
+                                    if (mapData[destChunk.y][destChunk.x][destPos.y][destPos.x] == 0 && overMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null) {
+                                        let newId = nextCmdId++;
+                                        socket.emit('movement', session, e.key, newId);
+                                        unauthCmd[newId] = 'mv' + e.key.toUpperCase();
 
-                                    simulateAllUnauth();
+                                        simulateAllUnauth();
+                                    }
                                 }
                             }
                             break;
@@ -230,17 +229,12 @@
             }
 
             function simulateAllUnauth() {
-                // console.log('simulate all');
-                // console.log(unauthCmd);
                 fakePl = JSON.parse(JSON.stringify(plData[plId]));
                 let ids = Object.keys(unauthCmd).sort((a, b)=>a-b);
                 ids.forEach(x=>{
                     simulateCmd(unauthCmd[x]);
                 })
                 render();
-                // console.log('after simulate all');
-                // console.log(`${fakePl.chunk.x},${fakePl.chunk.y},${fakePl.pos.x},${fakePl.pos.y}`);
-                // console.log(`${plData[plId].chunk.x},${plData[plId].chunk.y},${plData[plId].pos.x},${plData[plId].pos.y}`);
             }
         </script>
         <script type="module">

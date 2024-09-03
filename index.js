@@ -27,7 +27,7 @@ db.run(`
     )
 `)
 
-// !turn this off in real thing
+// ! testing use
 let lagSim = 100;
 
 // db.run(`INSERT INTO accData (user, pass) VALUES ('n1', 'p1')`)
@@ -35,12 +35,29 @@ let lagSim = 100;
 // world[chunkY][chunkX][y][x]
 // 0 - ground
 // 1 - ice
+// 2 - tree
 let players = {};
 let world = [];
 let chunkX = 16;
 let chunkY = 24;
 let chunkW = 50;
 let chunkH = 25;
+
+// client has a copy, for read only
+let baseMap = [];
+for (let y=0; y<chunkY; y++) {
+    baseMap.push([]);
+    for (let x=0; x<chunkX; x++) {
+        baseMap[y].push([]);
+        for (let a=0; a<chunkH; a++) {
+            baseMap[y][x].push([]);
+            for (let b=0; b<chunkW; b++) {
+                baseMap[y][x][a].push((a%10 && b%10) ? 0 : 1);
+            }
+        }
+    }
+}
+
 for (let y=0; y<chunkY; y++) {
     world.push([]);
     for (let x=0; x<chunkX; x++) {
@@ -48,11 +65,14 @@ for (let y=0; y<chunkY; y++) {
         for (let a=0; a<chunkH; a++) {
             world[y][x].push([]);
             for (let b=0; b<chunkW; b++) {
-                world[y][x][a].push((Math.random()>0.5)?0:1);
+                world[y][x][a].push(null);
             }
         }
     }
 }
+
+// ! testing use
+world[0][0][8][8] = 2;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -104,8 +124,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                     id: row.userId,
                     name: user,
                     chunk: {
-                        x: 15,
-                        y: 23
+                        x: 0,
+                        y: 0
                     },
                     pos:{
                         x: 4,
@@ -223,7 +243,6 @@ io.on('connection', (socket)=>{
                 if (data.chunk.x + x >= 0 && data.chunk.x + x < chunkX && data.chunk.y + y >= 0 && data.chunk.y + y < chunkY) {
                     io.to(`${data.chunk.x + x},${data.chunk.y + y}`).emit('newPlayer', JSON.stringify(data));
                     socket.join(`${data.chunk.x + x},${data.chunk.y + y}`)
-                    // todo: emit to notify joining chunk
                 }
             })
         })
@@ -263,13 +282,27 @@ io.on('connection', (socket)=>{
                 }, lagSim);
                 return;
             }
+
+            if (baseMap[destChunk.y][destChunk.x][destPos.y][destPos.x] != 0) {
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
+            }
+
+            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x] !== null) {
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
+            }
+            
             // inc pos
             players[session].pos.x += multiplier;
             // roll over chunk
             if ((players[session].pos.x >= chunkW && direction == 'd') || (players[session].pos.x < 0 && direction == 'a')) {
                 players[session].pos.x = direction == 'd' ? 0 : chunkW - 1;
                 // emit to original chunk
-                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
                 setTimeout(()=>{
                     let {x, y} = players[session].chunk;
                     [-1, 0, 1].forEach(a=>{
@@ -336,14 +369,10 @@ io.on('connection', (socket)=>{
                     io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
                     io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
                 }, lagSim)
-
-                // todo: sent map data after crossing chunk border
             }
             
             // emit to new chunk (or original chunk if no chunk border passed)
-            // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
             setTimeout(()=>{
-                // emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
                 let {x, y} = players[session].chunk;
                 [-1, 0, 1].forEach(a=>{
                     [-1, 0, 1].forEach(b=>{
@@ -391,13 +420,27 @@ io.on('connection', (socket)=>{
                 }, lagSim);
                 return;
             }
+
+            if (baseMap[destChunk.y][destChunk.x][destPos.y][destPos.x] != 0) {
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
+            }
+
+            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x] !== null) {
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
+            }
+
             // inc pos
             players[session].pos.y += multiplier;
             // roll over chunk
             if ((players[session].pos.y >= chunkH && direction == 's') || (players[session].pos.y < 0 && direction == 'w')) {
                 players[session].pos.y = direction == 's' ? 0 : chunkH - 1;
                 // emit to original chunk
-                // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
                 setTimeout(()=>{
                     let {x, y} = players[session].chunk;
                     [-1, 0, 1].forEach(a=>{
@@ -464,14 +507,10 @@ io.on('connection', (socket)=>{
                     io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
                     io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
                 }, lagSim)
-
-                // todo: sent map data after crossing chunk border
             }
             
             // emit to new chunk (or original chunk if no chunk border passed)
-            // emitToAdj(players[session].chunk, 'movement', [players[session].id, 'd', thisCmd]);
             setTimeout(()=>{
-                // emitToAdj(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])]);
                 let {x, y} = players[session].chunk;
                 [-1, 0, 1].forEach(a=>{
                     [-1, 0, 1].forEach(b=>{

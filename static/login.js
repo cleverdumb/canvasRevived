@@ -12,18 +12,25 @@ for (let y=0; y<chny; y++) {
         for (let a=0; a<chh; a++) {
             mapData[y][x].push([]);
             for (let b=0; b<chw; b++) {
-                mapData[y][x][a].push((Math.random()>0.5)%2?0:1);
+                mapData[y][x][a].push((a%10 && b%10) ? 0 : 1);
             }
         }
     }
 }
 
-// for (let y=0; y<chny; y++) {
-//     mapData.push([]);
-//     for (let x=0; x<chnx; x++) {
-//         mapData[y].push(null);
-//     }
-// }
+let overMap = [];
+for (let y=0; y<chny; y++) {
+    overMap.push([]);
+    for (let x=0; x<chnx; x++) {
+        overMap[y].push([]);
+        for (let a=0; a<chh; a++) {
+            overMap[y][x].push([]);
+            for (let b=0; b<chw; b++) {
+                overMap[y][x][a].push(null);
+            }
+        }
+    }
+}
 
 let fakePl = {};
 let plData = {}; // players data locally (actual, authorised)
@@ -82,7 +89,7 @@ function login(user, pass, cb) {
                 })
                 resMapData.forEach((x, i)=>{
                     if (!x) return;
-                    mapData[pl.chunk.y - 1 + Math.floor(i/3)][pl.chunk.x - 1 + i%3] = x;
+                    overMap[pl.chunk.y - 1 + Math.floor(i/3)][pl.chunk.x - 1 + i%3] = x;
                 })
                 console.log(`%cSuccess. Session: ${session}`, 'color: green');
                 // console.log(mapData);

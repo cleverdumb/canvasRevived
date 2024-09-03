@@ -28,14 +28,13 @@ function render() {
             if (fakePl.chunk.x-1+chx < 0) continue;
             if (fakePl.chunk.x-1+chx > chnx-1) continue;
             if (fakePl.chunk.y-1+chy > chny-1) continue; 
-            switch (mapData[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw]) {
-                case 0:
-                    ctx.drawImage(sprite, 0, 0, 16, 16, x*bw, y*bh, bw, bh);
-                    break;
-                case 1:
-                    ctx.drawImage(sprite, 0, 64, 16, 16, x*bw, y*bh, bw, bh);
-                    break;
+            // let currentTile = null;
+            
+            renderTile(x, y, mapData[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw]);
+            if (overMap[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw] !== null) {
+                renderTile(x, y, overMap[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw]);
             }
+            
             if (x == 19 && y == 12) {
                 // ctx.fillStyle = 'cyan';
                 ctx.drawImage(sprite, 0, 208, 16, 16, x*bw, y*bh, bw, bh);
@@ -51,6 +50,20 @@ function render() {
             // ctx.fillStyle = 'black';
             // ctx.fillText(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw],x*bw+2, y*bh+10);
         }
+    }
+}
+
+function renderTile(x, y, type) {
+    switch (type) {
+        case 0:
+            ctx.drawImage(sprite, 0, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case 1:
+            ctx.drawImage(sprite, 0, 64, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case 2:
+            ctx.drawImage(sprite, 16, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
     }
 }
 
