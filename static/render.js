@@ -26,7 +26,7 @@ function render() {
     let py = chh + fakePl.pos.y; // absolute pos of player, y, relative to 3x3
     let playerColumn = fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x];
     let roofOnTop = false;
-    playerColumn.toReversed().forEach((x,i)=>{
+    playerColumn.slice().reverse().forEach((x,i)=>{
         let depth = layers - i;
         if (x !== null && depth > fakePl.z) {
             roofOnTop = true;

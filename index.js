@@ -325,7 +325,7 @@ io.on('connection', (socket)=>{
                 return;
             }
 
-            let destColumn = world[destChunk.y][destChunk.x][destPos.y][destPos.x].slice(0, destPos.z).toReversed();
+            let destColumn = world[destChunk.y][destChunk.x][destPos.y][destPos.x].slice(0, destPos.z).slice().reverse();
             for (let i=0; i<destColumn.length; i++) {
                 if (destColumn[i] !== null) {
                     destPos.z -= i;
@@ -466,7 +466,7 @@ io.on('connection', (socket)=>{
                 return;
             }
 
-            let destColumn = world[destChunk.y][destChunk.x][destPos.y][destPos.x].slice(0, destPos.z).toReversed();
+            let destColumn = world[destChunk.y][destChunk.x][destPos.y][destPos.x].slice(0, destPos.z).slice().reverse();
             for (let i=0; i<destColumn.length; i++) {
                 if (destColumn[i] !== null) {
                     destPos.z -= i;
