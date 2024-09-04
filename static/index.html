@@ -3,13 +3,12 @@
         <title>Canvas revived</title>
     </head>
     <body>
-        <canvas id='cvs'></canvas>
         <input placeholder='username' id='user'>
         <input placeholder='password' id='pass'>
         <button id='signupBtn' onclick='signup(document.getElementById(`user`).value, document.getElementById(`pass`).value, afterSpriteLoaded)'>SIGN UP</button>
         <button id='loginBtn' onclick='login(document.getElementById(`user`).value, document.getElementById(`pass`).value, afterSpriteLoaded)'>LOG IN</button>
         <p id='feedback'></p>
-        <div id='inv'></div>
+        <canvas id='cvs'></canvas>
         <script src='./blockIds.js'></script>
         <script>
             let ioT = null;
