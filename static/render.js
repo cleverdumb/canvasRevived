@@ -121,6 +121,10 @@ function renderTile(x, y, type) {
             break;
         case B.SAND:
             ctx.drawImage(sprite, 16, 64, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case B.WOODWALL:
+            ctx.drawImage(sprite, 112, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
     }
 }
 

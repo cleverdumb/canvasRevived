@@ -87,6 +87,7 @@ world[0][0][2][8][4] = B.STUMP;
 
 world[0][0][4][4][2] = B.SAND;
 world[0][0][4][3][1] = B.SAND;
+world[0][0][4][5][2] = B.SAND;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -318,7 +319,7 @@ io.on('connection', (socket)=>{
                 return;
             }
 
-            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] !== null && (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]))) {
+            if ((world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] !== null && (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]))) && (destPos.z < 5)) {
                 setTimeout(()=>{
                     io.to(socket.id).emit('rejectCmd', cmdId);
                 }, lagSim);
@@ -459,7 +460,7 @@ io.on('connection', (socket)=>{
                 return;
             }
 
-            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] !== null && (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]))) {
+            if ((world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] !== null && (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]))) && (destPos.z < 5)) {
                 setTimeout(()=>{
                     io.to(socket.id).emit('rejectCmd', cmdId);
                 }, lagSim);
@@ -636,9 +637,22 @@ io.on('connection', (socket)=>{
         return;
     })
 
-    socket.on('ascend', session=>{
-        players[session].z ++;
-        console.log(players[session]);
+    socket.on('placeBlock', (session, blockId, cmdId) => {
+        let data = players[session];
+        if (data.z > 4) {
+            setTimeout(()=>{
+                io.to(socket.id).emit('rejectCmd', cmdId);
+            }, lagSim);
+            return;
+        }
+
+        world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = blockId;
+        emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), blockId], socket);
+        while (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][players[session].z] !== null && players[session].z < 5) {
+            players[session].z++;
+        }
+        emitToAdjNoSender(data.chunk, 'newPlayer', JSON.stringify(data), socket);
+        io.to(socket.id).emit('authCmd', cmdId);
     })
 
     socket.on('disconnect', ()=>{

@@ -106,17 +106,6 @@
                 })
 
                 document.body.addEventListener('keydown', e=>{
-                    // if (inputQueue.length > 0) {
-                    //     if (inputQueue.length < inputQueueLimit) {
-                    //         inputQueue.push(e.key);
-                    //     }
-                    // }
-                    // else {
-                    //     if (currInputCd <= 0) {
-                    //         keyPressed(e.key);
-                    //         currInputCd = 250;
-                    //     }
-                    // }
                     if ((Date.now() - lastInput) >= 100) {
                         lastInput = Date.now();
                         if (!keyMap[e.key]) {
@@ -168,7 +157,7 @@
                                 }
                             }
                             if (!playerInDest) {
-                                if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
+                                if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]) || fakePl.z >= 5) {
                                     console.log('m2');
                                     let newId = nextCmdId++;
                                     socket.emit('movement', session, key, newId);
@@ -212,7 +201,7 @@
                                 }
                             }
                             if (!playerInDest) {
-                                if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
+                                if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]) || fakePl.z >= 5) {
                                     let newId = nextCmdId++;
                                     socket.emit('movement', session, key, newId);
                                     unauthCmd[newId] = 'mv' + key.toUpperCase();
@@ -231,6 +220,16 @@
                             }
                         }
                         break;
+                    }
+                    case 'p':
+                    {
+                        if (fakePl.z < 5) {
+                            let newId = nextCmdId++;
+                            socket.emit('placeBlock', session, B.WOODWALL, newId);
+                            unauthCmd[newId] = `pl${B.WOODWALL}`;
+
+                            simulateAllUnauth();
+                        }
                     }
                 }
             }
@@ -337,6 +336,18 @@
                         interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos);
                         break;
                     }
+                    default:
+                        if (name.startsWith('pl')) {
+                            console.log(name);
+                            let blockId = parseInt(name.substr(2));
+                            console.log(blockId);
+                            fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] = blockId;
+                            fakePl.z++;
+                            while (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] !== null && fakePl.z < 5) {
+                                fakePl.z++;
+                            }
+                        }
+                        break;
                 }
             }
 
