@@ -9,6 +9,7 @@
         <button id='signupBtn' onclick='signup(document.getElementById(`user`).value, document.getElementById(`pass`).value, afterSpriteLoaded)'>SIGN UP</button>
         <button id='loginBtn' onclick='login(document.getElementById(`user`).value, document.getElementById(`pass`).value, afterSpriteLoaded)'>LOG IN</button>
         <p id='feedback'></p>
+        <div id='inv'></div>
         <script src='./blockIds.js'></script>
         <script>
             let ioT = null;
@@ -347,7 +348,7 @@
                 }
                 else if (type == B.TREE3) {
                     fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = B.STUMP;
-                    // addToInventory(I.WOOD);
+                    addToInventory(I.WOOD);
                 }
             }
             

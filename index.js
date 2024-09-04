@@ -606,7 +606,7 @@ io.on('connection', (socket)=>{
             return;
         }
 
-        interact(world[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos, socket);
+        interact(world[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos, socket, session);
         setTimeout(()=>{
             io.to(socket.id).emit('authCmd', cmdId);
         }, lagSim)
@@ -624,7 +624,7 @@ io.on('connection', (socket)=>{
     })
 })
 
-function interact(type, chunk, pos, socket) {
+function interact(type, chunk, pos, socket, session) {
     if (type == B.TREE) {
         world[chunk.y][chunk.x][pos.y][pos.x] = B.TREE1; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE1], socket);
@@ -640,5 +640,15 @@ function interact(type, chunk, pos, socket) {
     else if (type == B.TREE3) {
         world[chunk.y][chunk.x][pos.y][pos.x] = B.STUMP; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.STUMP], socket);
+        addToInv(session, I.WOOD)
+    }
+}
+
+function addToInv(ses, item) {
+    if (players[ses].inv.hasOwnProperty(item)) {
+        players[ses].inv[item]++;
+    }
+    else {
+        players[ses].inv[item] = 1;
     }
 }

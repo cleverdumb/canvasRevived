@@ -9,12 +9,19 @@ let bh = 20; // px
 let bx = 39; // boxes
 let by = 25; // boxes
 
+let invBoxW = 40;
+let invBoxH = 55;
+let invImgH = 40;
+let invStartX = 60;
+let invStartY = by*bh + 30;
+let invBoxX = 15;
+
 cvs.width = bw * bx;
-cvs.height = bh * by;
+cvs.height = bh * by + 300;
 cvs.border = '1px solid black';
 
 function render() {
-    ctx.clearRect(0, 0, bw * bx, bh * by);
+    ctx.clearRect(0, 0, bw * bx, bh * by + 300);
     let px = chw + fakePl.pos.x; // absolute pos of player, x, relative to 3x3
     let py = chh + fakePl.pos.y; // absolute pos of player, y, relative to 3x3
     for (let y=0; y<by; y++) {
@@ -49,6 +56,21 @@ function render() {
             // console.log(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw])
             // ctx.fillStyle = 'black';
             // ctx.fillText(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw],x*bw+2, y*bh+10);
+        }
+    }
+    let currBoxX = 0;
+    let currBoxY = 0;
+    for (x in fakePl.inv) {
+        ctx.strokeRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
+        if (x == I.WOOD) {
+            ctx.drawImage(sprite, 96, 0, 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
+        }
+        ctx.font = '20px monospace';
+        ctx.fillText(fakePl.inv[x], currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 10);
+        currBoxX++;
+        if (currBoxX >= invBoxX) {
+            currBoxY++;
+            currBoxX = 0;
         }
     }
 }
