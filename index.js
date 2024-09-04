@@ -32,6 +32,8 @@ db.run(`
 const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3];
 const passable = [B.GRASS, B.STUMP];
 
+const treeRegrowTime = 10000
+
 // ! testing use
 let lagSim = 0;
 
@@ -641,6 +643,10 @@ function interact(type, chunk, pos, socket, session) {
         world[chunk.y][chunk.x][pos.y][pos.x] = B.STUMP; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.STUMP], socket);
         addToInv(session, I.WOOD)
+        setTimeout(()=>{
+            emitToAdj(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE]);
+            world[chunk.y][chunk.x][pos.y][pos.x] = B.TREE;
+        }, treeRegrowTime)
     }
 }
 

@@ -85,6 +85,7 @@
                     let d = JSON.parse(data);
                     for (x in d) {
                         overMap[parseInt(x.split(',')[1])][parseInt(x.split(',')[0])] = d[x];
+                        fakeOverMap[parseInt(x.split(',')[1])][parseInt(x.split(',')[0])] = d[x];
                     }
                     render();
                 })
@@ -136,6 +137,7 @@
 
                 socket.on('blockChange', (chunk, pos, type) => {
                     overMap[JSON.parse(chunk).y][JSON.parse(chunk).x][JSON.parse(pos).y][JSON.parse(pos).x] = type;
+                    fakeOverMap[JSON.parse(chunk).y][JSON.parse(chunk).x][JSON.parse(pos).y][JSON.parse(pos).x] = type;
                     
                     render();
                 })
