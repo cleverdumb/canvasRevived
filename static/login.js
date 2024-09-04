@@ -2,21 +2,22 @@ const chw = 50;  // CHunk Width
 const chh = 25;  // CHunk Height
 const chnx = 16; // CHunk Number X
 const chny = 24; // CHunk Number Y
+const layers = 5;
 
 let session = null;
-let mapData = [];
-for (let y=0; y<chny; y++) {
-    mapData.push([]);
-    for (let x=0; x<chnx; x++) {
-        mapData[y].push([]);
-        for (let a=0; a<chh; a++) {
-            mapData[y][x].push([]);
-            for (let b=0; b<chw; b++) {
-                mapData[y][x][a].push(B.GRASS);
-            }
-        }
-    }
-}
+// let mapData = [];
+// for (let y=0; y<chny; y++) {
+//     mapData.push([]);
+//     for (let x=0; x<chnx; x++) {
+//         mapData[y].push([]);
+//         for (let a=0; a<chh; a++) {
+//             mapData[y][x].push([]);
+//             for (let b=0; b<chw; b++) {
+//                 mapData[y][x][a].push(B.GRASS);
+//             }
+//         }
+//     }
+// }
 
 let overMap = [];
 for (let y=0; y<chny; y++) {
@@ -26,7 +27,10 @@ for (let y=0; y<chny; y++) {
         for (let a=0; a<chh; a++) {
             overMap[y][x].push([]);
             for (let b=0; b<chw; b++) {
-                overMap[y][x][a].push(null);
+                overMap[y][x][a].push([]);
+                for (let z=0; z<layers; z++) {
+                    overMap[y][x][a][b].push(null);
+                }
             }
         }
     }
@@ -40,7 +44,10 @@ for (let y=0; y<chny; y++) {
         for (let a=0; a<chh; a++) {
             fakeOverMap[y][x].push([]);
             for (let b=0; b<chw; b++) {
-                fakeOverMap[y][x][a].push(null);
+                fakeOverMap[y][x][a].push([]);
+                for (let z=0; z<layers; z++) {
+                    fakeOverMap[y][x][a][b].push(null);
+                }
             }
         }
     }

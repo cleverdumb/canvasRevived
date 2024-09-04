@@ -24,6 +24,15 @@ function render() {
     ctx.clearRect(0, 0, bw * bx, bh * by + 300);
     let px = chw + fakePl.pos.x; // absolute pos of player, x, relative to 3x3
     let py = chh + fakePl.pos.y; // absolute pos of player, y, relative to 3x3
+    let playerColumn = fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x];
+    let roofOnTop = false;
+    playerColumn.toReversed().forEach((x,i)=>{
+        let depth = layers - i;
+        if (x !== null && depth > fakePl.z) {
+            roofOnTop = true;
+        }
+    })
+    console.log(roofOnTop);
     for (let y=0; y<by; y++) {
         for (let x=0; x<bx; x++) {
             let cx = x + (px - 19); // absolute pos, x, relative to 3x3
@@ -37,9 +46,21 @@ function render() {
             if (fakePl.chunk.y-1+chy > chny-1) continue; 
             // let currentTile = null;
             
-            renderTile(x, y, mapData[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw]);
-            if (fakeOverMap[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw] !== null) {
-                renderTile(x, y, fakeOverMap[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw]);
+            // renderTile(x, y, mapData[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw]);
+            let column = fakeOverMap[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw];
+            if (roofOnTop) {
+                column.slice(0, fakePl.z + 1).forEach(b=>{
+                    if (b !== null) {
+                        renderTile(x, y, b);
+                    }
+                })
+            }
+            else {
+                column.forEach(b=>{
+                    if (b !== null) {
+                        renderTile(x, y, b);
+                    }
+                })
             }
             
             if (x == 19 && y == 12) {
@@ -77,27 +98,29 @@ function render() {
 
 function renderTile(x, y, type) {
     switch (type) {
-        case 0:
+        case B.GRASS:
             ctx.drawImage(sprite, 0, 0, 16, 16, x*bw, y*bh, bw, bh);
             break;
-        case 1:
+        case B.WATER:
             ctx.drawImage(sprite, 0, 64, 16, 16, x*bw, y*bh, bw, bh);
             break;
-        case 2:
+        case B.TREE:
             ctx.drawImage(sprite, 16, 0, 16, 16, x*bw, y*bh, bw, bh);
             break;
-        case 3:
+        case B.TREE1:
             ctx.drawImage(sprite, 32, 0, 16, 16, x*bw, y*bh, bw, bh);
             break;
-        case 4:
+        case B.TREE2:
             ctx.drawImage(sprite, 48, 0, 16, 16, x*bw, y*bh, bw, bh);
             break;
-        case 5:
+        case B.TREE3:
             ctx.drawImage(sprite, 64, 0, 16, 16, x*bw, y*bh, bw, bh);
             break;
-        case 6:
+        case B.STUMP:
             ctx.drawImage(sprite, 80, 0, 16, 16, x*bw, y*bh, bw, bh);
             break;
+        case B.SAND:
+            ctx.drawImage(sprite, 16, 64, 16, 16, x*bw, y*bh, bw, bh);
     }
 }
 

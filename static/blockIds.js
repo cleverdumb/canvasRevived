@@ -5,7 +5,8 @@ const B = {
     TREE1: 3,
     TREE2: 4,
     TREE3: 5,
-    STUMP: 6
+    STUMP: 6,
+    SAND: 7
 }
 
 const I = {

@@ -39,28 +39,14 @@ let lagSim = 0;
 
 // db.run(`INSERT INTO accData (user, pass) VALUES ('n1', 'p1')`)
 
-// world[chunkY][chunkX][y][x]
+// world[chunkY][chunkX][y][x][z]
 let players = {};
 let world = [];
 let chunkX = 16;
 let chunkY = 24;
 let chunkW = 50;
 let chunkH = 25;
-
-// client has a copy, for read only
-let baseMap = [];
-for (let y=0; y<chunkY; y++) {
-    baseMap.push([]);
-    for (let x=0; x<chunkX; x++) {
-        baseMap[y].push([]);
-        for (let a=0; a<chunkH; a++) {
-            baseMap[y][x].push([]);
-            for (let b=0; b<chunkW; b++) {
-                baseMap[y][x][a].push(B.GRASS);
-            }
-        }
-    }
-}
+let layers = 5;  // 0 is ground, 1/2/3 go up, 3 is top
 
 for (let y=0; y<chunkY; y++) {
     world.push([]);
@@ -69,14 +55,38 @@ for (let y=0; y<chunkY; y++) {
         for (let a=0; a<chunkH; a++) {
             world[y][x].push([]);
             for (let b=0; b<chunkW; b++) {
-                world[y][x][a].push((a+b)%4 ? null : B.TREE);
+                world[y][x][a].push([]);
+                for (let z=0; z<layers; z++) {
+                    world[y][x][a][b].push(z==0 ? B.GRASS : null);
+                }
             }
         }
     }
 }
 
+
 // ! testing use
-world[0][0][8][8] = B.TREE;
+// world[0][0][8][8][1] = B.TREE;
+world[0][0][2][4][1] = B.SAND;
+world[0][0][2][5][1] = B.SAND;
+world[0][0][2][6][1] = B.SAND;
+world[0][0][2][7][1] = B.SAND;
+world[0][0][2][8][1] = B.SAND;
+
+world[0][0][2][5][2] = B.WATER;
+world[0][0][2][6][2] = B.WATER;
+world[0][0][2][7][2] = B.WATER;
+world[0][0][2][8][2] = B.WATER;
+
+world[0][0][2][6][3] = B.TREE;
+world[0][0][2][7][3] = B.TREE;
+world[0][0][2][8][3] = B.TREE;
+
+world[0][0][2][7][4] = B.STUMP;
+world[0][0][2][8][4] = B.STUMP;
+
+world[0][0][4][4][2] = B.SAND;
+world[0][0][4][3][1] = B.SAND;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -135,6 +145,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                         x: 4,
                         y: 4
                     },
+                    z: 3,
                     inv: {}
                 })], err => {
                     if (err) throw err;
@@ -295,30 +306,34 @@ io.on('connection', (socket)=>{
             }
             let destPos = {
                 x: (players[session].pos.x + multiplier + chunkW)%chunkW,
-                y: players[session].pos.y
+                y: players[session].pos.y,
+                z: players[session].z
             }
+
             // check if there is player in dest
-            if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y)) {
+            if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y && players[p].z == destPos.z)) {
                 setTimeout(()=>{
                     io.to(socket.id).emit('rejectCmd', cmdId);
                 }, lagSim);
                 return;
             }
 
-            if (!passable.includes(baseMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] !== null && (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]))) {
                 setTimeout(()=>{
                     io.to(socket.id).emit('rejectCmd', cmdId);
                 }, lagSim);
                 return;
             }
 
-            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x] !== null && (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x]))) {
-                setTimeout(()=>{
-                    io.to(socket.id).emit('rejectCmd', cmdId);
-                }, lagSim);
-                return;
+            let destColumn = world[destChunk.y][destChunk.x][destPos.y][destPos.x].slice(0, destPos.z).toReversed();
+            for (let i=0; i<destColumn.length; i++) {
+                if (destColumn[i] !== null) {
+                    destPos.z -= i;
+                    break;
+                }
             }
 
+            players[session].z = destPos.z;
             // inc pos
             players[session].pos.x += multiplier;
             // roll over chunk
@@ -432,29 +447,33 @@ io.on('connection', (socket)=>{
             }
             let destPos = {
                 x: players[session].pos.x,
-                y: (players[session].pos.y + multiplier + chunkH)%chunkH
+                y: (players[session].pos.y + multiplier + chunkH)%chunkH,
+                z: players[session].z
             }
+
             // check if there is player in dest
-            if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y)) {
+            if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y && players[p].z == destPos.z)) {
                 setTimeout(()=>{
                     io.to(socket.id).emit('rejectCmd', cmdId);
                 }, lagSim);
                 return;
             }
 
-            if (!passable.includes(baseMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] !== null && (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]))) {
                 setTimeout(()=>{
                     io.to(socket.id).emit('rejectCmd', cmdId);
                 }, lagSim);
                 return;
             }
 
-            if (world[destChunk.y][destChunk.x][destPos.y][destPos.x] !== null && (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x]))) {
-                setTimeout(()=>{
-                    io.to(socket.id).emit('rejectCmd', cmdId);
-                }, lagSim);
-                return;
+            let destColumn = world[destChunk.y][destChunk.x][destPos.y][destPos.x].slice(0, destPos.z).toReversed();
+            for (let i=0; i<destColumn.length; i++) {
+                if (destColumn[i] !== null) {
+                    destPos.z -= i;
+                    break;
+                }
             }
+            players[session].z = destPos.z;
 
             // inc pos
             players[session].pos.y += multiplier;
@@ -572,7 +591,8 @@ io.on('connection', (socket)=>{
             }
             destPos = {
                 x: (data.pos.x + xMult + chunkW)%chunkW,
-                y: data.pos.y
+                y: data.pos.y,
+                z: data.z
             }
         }
         else if (direction == 's' || direction == 'w') {
@@ -597,22 +617,28 @@ io.on('connection', (socket)=>{
             }
             destPos = {
                 x: data.pos.x,
-                y: (data.pos.y + yMult + chunkH)%chunkH
+                y: (data.pos.y + yMult + chunkH)%chunkH,
+                z: data.z
             }
         }
 
-        if (!interactable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+        if (!interactable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
             setTimeout(()=>{
                 io.to(socket.id).emit('rejectCmd', cmdId);
             }, lagSim);
             return;
         }
 
-        interact(world[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos, socket, session);
+        interact(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, socket, session);
         setTimeout(()=>{
             io.to(socket.id).emit('authCmd', cmdId);
         }, lagSim)
         return;
+    })
+
+    socket.on('ascend', session=>{
+        players[session].z ++;
+        console.log(players[session]);
     })
 
     socket.on('disconnect', ()=>{
@@ -628,24 +654,24 @@ io.on('connection', (socket)=>{
 
 function interact(type, chunk, pos, socket, session) {
     if (type == B.TREE) {
-        world[chunk.y][chunk.x][pos.y][pos.x] = B.TREE1; 
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE1], socket);
     }
     else if (type == B.TREE1) {
-        world[chunk.y][chunk.x][pos.y][pos.x] = B.TREE2; 
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE2; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE2], socket);
     }
     else if (type == B.TREE2) {
-        world[chunk.y][chunk.x][pos.y][pos.x] = B.TREE3; 
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE3; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE3], socket);
     }
     else if (type == B.TREE3) {
-        world[chunk.y][chunk.x][pos.y][pos.x] = B.STUMP; 
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STUMP; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.STUMP], socket);
         addToInv(session, I.WOOD)
         setTimeout(()=>{
             emitToAdj(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE]);
-            world[chunk.y][chunk.x][pos.y][pos.x] = B.TREE;
+            world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE;
         }, treeRegrowTime)
     }
 }

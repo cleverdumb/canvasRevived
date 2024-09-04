@@ -44,42 +44,6 @@
                     console.log('test signal received');
                 })
 
-                socket.on('movement', (id, dir, cmdId) => {
-                    // console.log(id, dir, cmdId);
-                    if (!executedCmdId.includes(cmdId)) {
-                        if (dir == 'd') {
-                            plData[id].pos.x++;
-                            if (plData[id].pos.x >= chw) {
-                                plData[id].pos.x = 0;
-                                plData[id].chunk.x++;
-                            }
-                        }
-                        else if (dir == 'a') {
-                            plData[id].pos.x--;
-                            if (plData[id].pos.x < 0) {
-                                plData[id].pos.x = chw-1;
-                                plData[id].chunk.x--;
-                            }
-                        }
-                        else if (dir == 's') {
-                            plData[id].pos.y++;
-                            if (plData[id].pos.y >= chh) {
-                                plData[id].pos.y = 0;
-                                plData[id].chunk.y++;
-                            }
-                        }
-                        else if (dir == 'w') {
-                            plData[id].pos.y--;
-                            if (plData[id].pos.y < 0) {
-                                plData[id].pos.y = chh-1;
-                                plData[id].chunk.y--;
-                            }
-                        }
-                        render();
-                        executedCmdId.push(cmdId);
-                    }
-                })
-
                 socket.on('newMapData', data=>{
                     let d = JSON.parse(data);
                     for (x in d) {
@@ -104,7 +68,7 @@
 
                 socket.on('newPlayer', data=>{
                     let d = JSON.parse(data);
-                    plData[d.id] = {chunk: d.chunk, pos: d.pos};
+                    plData[d.id] = d;
                     render();
                 })
 
@@ -135,8 +99,8 @@
                 })
 
                 socket.on('blockChange', (chunk, pos, type) => {
-                    overMap[JSON.parse(chunk).y][JSON.parse(chunk).x][JSON.parse(pos).y][JSON.parse(pos).x] = type;
-                    fakeOverMap[JSON.parse(chunk).y][JSON.parse(chunk).x][JSON.parse(pos).y][JSON.parse(pos).x] = type;
+                    overMap[JSON.parse(chunk).y][JSON.parse(chunk).x][JSON.parse(pos).y][JSON.parse(pos).x][JSON.parse(pos).z] = type;
+                    fakeOverMap[JSON.parse(chunk).y][JSON.parse(chunk).x][JSON.parse(pos).y][JSON.parse(pos).x][JSON.parse(pos).z] = type;
                     
                     render();
                 })
@@ -195,30 +159,30 @@
                             }
                             let destPos = {
                                 x: (data.pos.x + multiplier + chw)%chw,
-                                y: data.pos.y
+                                y: data.pos.y,
+                                z: data.z
                             }
                             for (p in plData) {
-                                if (p != plId && plData[p].chunk.x == destChunk.x && plData[p].chunk.y == destChunk.y && plData[p].pos.x == destPos.x && plData[p].pos.y == destPos.y) {
+                                if (p != plId && plData[p].chunk.x == destChunk.x && plData[p].chunk.y == destChunk.y && plData[p].pos.x == destPos.x && plData[p].pos.y == destPos.y && plData[p].z == destPos.z) {
                                     playerInDest = true;
                                 }
                             }
                             if (!playerInDest) {
-                                if (passable.includes(mapData[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
-                                    if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
+                                    console.log('m2');
+                                    let newId = nextCmdId++;
+                                    socket.emit('movement', session, key, newId);
+                                    unauthCmd[newId] = 'mv' + key.toUpperCase();
+
+                                    simulateAllUnauth();
+                                }
+                                else {
+                                    if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
                                         let newId = nextCmdId++;
-                                        socket.emit('movement', session, key, newId);
-                                        unauthCmd[newId] = 'mv' + key.toUpperCase();
+                                        socket.emit('interact', session, key, newId);
+                                        unauthCmd[newId] = `in${key.toUpperCase()}`;
 
                                         simulateAllUnauth();
-                                    }
-                                    else {
-                                        if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
-                                            let newId = nextCmdId++;
-                                            socket.emit('interact', session, key, newId);
-                                            unauthCmd[newId] = `in${key.toUpperCase()}`;
-
-                                            simulateAllUnauth();
-                                        }
                                     }
                                 }
                             }
@@ -239,30 +203,29 @@
                             }
                             let destPos = {
                                 x: data.pos.x,
-                                y: (data.pos.y + multiplier + chh)%chh
+                                y: (data.pos.y + multiplier + chh)%chh,
+                                z: data.z
                             }
                             for (p in plData) {
-                                if (p != plId && plData[p].chunk.x == destChunk.x && plData[p].chunk.y == destChunk.y && plData[p].pos.x == destPos.x && plData[p].pos.y == destPos.y) {
+                                if (p != plId && plData[p].chunk.x == destChunk.x && plData[p].chunk.y == destChunk.y && plData[p].pos.x == destPos.x && plData[p].pos.y == destPos.y && plData[p].z == destPos.z) {
                                     playerInDest = true;
                                 }
                             }
                             if (!playerInDest) {
-                                if (passable.includes(mapData[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
-                                    if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
+                                if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
+                                    let newId = nextCmdId++;
+                                    socket.emit('movement', session, key, newId);
+                                    unauthCmd[newId] = 'mv' + key.toUpperCase();
+
+                                    simulateAllUnauth();
+                                }
+                                else {
+                                    if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
                                         let newId = nextCmdId++;
-                                        socket.emit('movement', session, key, newId);
-                                        unauthCmd[newId] = 'mv' + key.toUpperCase();
+                                        socket.emit('interact', session, key, newId);
+                                        unauthCmd[newId] = `in${key.toUpperCase()}`;
 
                                         simulateAllUnauth();
-                                    }
-                                    else {
-                                        if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x])) {
-                                            let newId = nextCmdId++;
-                                            socket.emit('interact', session, key, newId);
-                                            unauthCmd[newId] = `in${key.toUpperCase()}`;
-
-                                            simulateAllUnauth();
-                                        }
                                     }
                                 }
                             }
@@ -280,6 +243,16 @@
                             fakePl.pos.x = 0;
                             fakePl.chunk.x++;
                         }
+                        destZ = fakePl.z;
+                        destColumn = overMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
+                        // destColumn.reverse();
+                        for (let i=0; i<destColumn.length; i++) {
+                            if (destColumn[i] !== null) {
+                                destZ -= i;
+                                break;
+                            }
+                        }
+                        fakePl.z = destZ;
                         render();
                         break;
                     case 'mvA':
@@ -288,6 +261,16 @@
                             fakePl.pos.x = chw-1;
                             fakePl.chunk.x--;
                         }
+                        destZ = fakePl.z;
+                        destColumn = overMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
+                        
+                        for (let i=0; i<destColumn.length; i++) {
+                            if (destColumn[i] !== null) {
+                                destZ -= i;
+                                break;
+                            }
+                        }
+                        fakePl.z = destZ;
                         render();
                         break;
                     case 'mvS':
@@ -296,6 +279,15 @@
                             fakePl.pos.y = 0;
                             fakePl.chunk.y++;
                         }
+                        destZ = fakePl.z;
+                        destColumn = overMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
+                        for (let i=0; i<destColumn.length; i++) {
+                            if (destColumn[i] !== null) {
+                                destZ -= i;
+                                break;
+                            }
+                        }
+                        fakePl.z = destZ;
                         render();
                         break;
                     case 'mvW':
@@ -304,6 +296,15 @@
                             fakePl.pos.y = chh-1;
                             fakePl.chunk.y--;
                         }
+                        destZ = fakePl.z;
+                        destColumn = overMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
+                        for (let i=0; i<destColumn.length; i++) {
+                            if (destColumn[i] !== null) {
+                                destZ -= i;
+                                break;
+                            }
+                        }
+                        fakePl.z = destZ;
                         render();
                         break;
                     case 'inD':
@@ -315,9 +316,10 @@
                         }
                         let destPos = {
                             x: (fakePl.pos.x + xMult + chw)%chw,
-                            y: fakePl.pos.y
+                            y: fakePl.pos.y,
+                            z: fakePl.z
                         }
-                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos);
+                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos);
                         break;
                     }
                     case 'inS':
@@ -329,9 +331,10 @@
                         }
                         let destPos = {
                             x: fakePl.pos.x,
-                            y: (fakePl.pos.y + yMult + chh)%chh
+                            y: (fakePl.pos.y + yMult + chh)%chh,
+                            z: fakePl.z
                         }
-                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x], destChunk, destPos);
+                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos);
                         break;
                     }
                 }
@@ -339,16 +342,16 @@
 
             function interact(type, chunk, pos) {
                 if (type == B.TREE) {
-                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = B.TREE1;
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1;
                 }
                 else if (type == B.TREE1) {
-                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = B.TREE2;
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE2;
                 }
                 else if (type == B.TREE2) {
-                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = B.TREE3;
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE3;
                 }
                 else if (type == B.TREE3) {
-                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x] = B.STUMP;
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STUMP;
                     addToInventory(I.WOOD);
                 }
             }
