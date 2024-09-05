@@ -32,7 +32,6 @@ function render() {
             roofOnTop = true;
         }
     })
-    console.log(roofOnTop);
     for (let y=0; y<by; y++) {
         for (let x=0; x<bx; x++) {
             let cx = x + (px - 19); // absolute pos, x, relative to 3x3
@@ -49,14 +48,14 @@ function render() {
             // renderTile(x, y, mapData[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw]);
             let column = fakeOverMap[fakePl.chunk.y-1+chy][fakePl.chunk.x-1+chx][cy%chh][cx%chw];
             if (roofOnTop) {
-                column.slice(0, fakePl.z + 1).forEach(b=>{
+                column.slice(0, fakePl.z + 1).forEach((b, i)=>{
                     if (b !== null) {
                         renderTile(x, y, b);
                     }
                 })
             }
             else {
-                column.forEach(b=>{
+                column.forEach((b, i)=>{
                     if (b !== null) {
                         renderTile(x, y, b);
                     }
@@ -85,6 +84,9 @@ function render() {
         ctx.strokeRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
         if (x == I.WOOD) {
             ctx.drawImage(sprite, 96, 0, 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
+        }
+        else if (x == I.APPLE) {
+            ctx.drawImage(sprite, 304, 160, 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
         }
         ctx.font = '20px monospace';
         ctx.fillText(fakePl.inv[x], currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 10);

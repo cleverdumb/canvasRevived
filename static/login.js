@@ -123,7 +123,6 @@ function login(user, pass, cb) {
                     fakeOverMap[pl.chunk.y - 1 + Math.floor(i/3)][pl.chunk.x - 1 + i%3] = x;
                 })
                 console.log(`%cSuccess. Session: ${session}`, 'color: green');
-                // console.log(mapData);
 
                 (cb)();
             }

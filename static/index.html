@@ -17,7 +17,8 @@
             let executedCmdId = [];
 
             let nextCmdId = 0;
-            let unauthCmd = {}; // unauthorised command record: id - cmdName    
+            let unauthCmd = {}; // unauthorised command record: id - cmdName  
+            let randomSeeds = {}; // random seed for each command: id - seed  
 
             const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3];
             const passable = [B.GRASS, B.STUMP];
@@ -80,7 +81,7 @@
                     if (unauthCmd.hasOwnProperty(id)) {
                         fakePl = JSON.parse(JSON.stringify(plData[plId]));
                         fakeOverMap = JSON.parse(JSON.stringify(overMap));
-                        simulateCmd(unauthCmd[id]);
+                        simulateCmd(unauthCmd[id], id);
                         plData[plId] = fakePl;
                         overMap = fakeOverMap;
                         delete unauthCmd[id];
@@ -158,7 +159,6 @@
                             }
                             if (!playerInDest) {
                                 if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]) || fakePl.z >= 5) {
-                                    console.log('m2');
                                     let newId = nextCmdId++;
                                     socket.emit('movement', session, key, newId);
                                     unauthCmd[newId] = 'mv' + key.toUpperCase();
@@ -168,8 +168,10 @@
                                 else {
                                     if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
                                         let newId = nextCmdId++;
-                                        socket.emit('interact', session, key, newId);
+                                        let seed = Math.round(Math.random() * 1e5);
+                                        socket.emit('interact', session, key, newId, seed);
                                         unauthCmd[newId] = `in${key.toUpperCase()}`;
+                                        randomSeeds[newId] = seed;
 
                                         simulateAllUnauth();
                                     }
@@ -211,8 +213,10 @@
                                 else {
                                     if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
                                         let newId = nextCmdId++;
-                                        socket.emit('interact', session, key, newId);
+                                        let seed = Math.round(Math.random() * 1e5);
+                                        socket.emit('interact', session, key, newId, seed);
                                         unauthCmd[newId] = `in${key.toUpperCase()}`;
+                                        randomSeeds[newId] = seed;
 
                                         simulateAllUnauth();
                                     }
@@ -234,7 +238,7 @@
                 }
             }
 
-            function simulateCmd(name) {
+            function simulateCmd(name, cmdId) {
                 switch (name) {
                     case 'mvD':
                         fakePl.pos.x++;
@@ -318,7 +322,7 @@
                             y: fakePl.pos.y,
                             z: fakePl.z
                         }
-                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos);
+                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, randomSeeds[cmdId]);
                         break;
                     }
                     case 'inS':
@@ -333,14 +337,12 @@
                             y: (fakePl.pos.y + yMult + chh)%chh,
                             z: fakePl.z
                         }
-                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos);
+                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, randomSeeds[cmdId]);
                         break;
                     }
                     default:
                         if (name.startsWith('pl')) {
-                            console.log(name);
                             let blockId = parseInt(name.substr(2));
-                            console.log(blockId);
                             fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] = blockId;
                             fakePl.z++;
                             while (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] !== null && fakePl.z < 5) {
@@ -351,7 +353,7 @@
                 }
             }
 
-            function interact(type, chunk, pos) {
+            function interact(type, chunk, pos, seed) {
                 if (type == B.TREE) {
                     fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1;
                 }
@@ -364,6 +366,9 @@
                 else if (type == B.TREE3) {
                     fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STUMP;
                     addToInventory(I.WOOD);
+                    if (seed % 2 === 0) {
+                        addToInventory(I.APPLE);
+                    }
                 }
             }
             
@@ -381,7 +386,7 @@
                 fakeOverMap = JSON.parse(JSON.stringify(overMap));
                 let ids = Object.keys(unauthCmd).sort((a, b)=>a-b);
                 ids.forEach(x=>{
-                    simulateCmd(unauthCmd[x]);
+                    simulateCmd(unauthCmd[x], x);
                 })
                 render();
             } 

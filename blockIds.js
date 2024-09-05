@@ -10,7 +10,8 @@ const B = {
 }
 
 const I = {
-    WOOD: 0
+    WOOD: 0,
+    APPLE: 1
 }
 
 module.exports = {

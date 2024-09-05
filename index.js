@@ -32,7 +32,9 @@ db.run(`
 const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3];
 const passable = [B.GRASS, B.STUMP];
 
-const treeRegrowTime = 10000
+const treeRegrowTime = 10000;
+
+// ! Ceilings go in the floor below, passable but players fall on top
 
 // ! testing use
 let lagSim = 0;
@@ -57,7 +59,7 @@ for (let y=0; y<chunkY; y++) {
             for (let b=0; b<chunkW; b++) {
                 world[y][x][a].push([]);
                 for (let z=0; z<layers; z++) {
-                    world[y][x][a][b].push(z==0 ? B.GRASS : null);
+                    world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1) ? B.TREE : null);
                 }
             }
         }
@@ -67,27 +69,27 @@ for (let y=0; y<chunkY; y++) {
 
 // ! testing use
 // world[0][0][8][8][1] = B.TREE;
-world[0][0][2][4][1] = B.SAND;
-world[0][0][2][5][1] = B.SAND;
-world[0][0][2][6][1] = B.SAND;
-world[0][0][2][7][1] = B.SAND;
-world[0][0][2][8][1] = B.SAND;
+// world[0][0][2][4][1] = B.SAND;
+// world[0][0][2][5][1] = B.SAND;
+// world[0][0][2][6][1] = B.SAND;
+// world[0][0][2][7][1] = B.SAND;
+// world[0][0][2][8][1] = B.SAND;
 
-world[0][0][2][5][2] = B.WATER;
-world[0][0][2][6][2] = B.WATER;
-world[0][0][2][7][2] = B.WATER;
-world[0][0][2][8][2] = B.WATER;
+// world[0][0][2][5][2] = B.WATER;
+// world[0][0][2][6][2] = B.WATER;
+// world[0][0][2][7][2] = B.WATER;
+// world[0][0][2][8][2] = B.WATER;
 
-world[0][0][2][6][3] = B.TREE;
-world[0][0][2][7][3] = B.TREE;
-world[0][0][2][8][3] = B.TREE;
+// world[0][0][2][6][3] = B.TREE;
+// world[0][0][2][7][3] = B.TREE;
+// world[0][0][2][8][3] = B.TREE;
 
-world[0][0][2][7][4] = B.STUMP;
-world[0][0][2][8][4] = B.STUMP;
+// world[0][0][2][7][4] = B.STUMP;
+// world[0][0][2][8][4] = B.STUMP;
 
-world[0][0][4][4][2] = B.SAND;
-world[0][0][4][3][1] = B.SAND;
-world[0][0][4][5][2] = B.SAND;
+// world[0][0][4][4][2] = B.SAND;
+// world[0][0][4][3][1] = B.SAND;
+// world[0][0][4][5][2] = B.SAND;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -421,8 +423,6 @@ io.on('connection', (socket)=>{
                 
                 io.to(socket.id).emit('authCmd', cmdId);
             }, lagSim);
-
-            // console.log(players[session]);
         }
         else if (direction == 's' || direction == 'w') {
             // world boundary check
@@ -562,12 +562,10 @@ io.on('connection', (socket)=>{
                 
                 io.to(socket.id).emit('authCmd', cmdId);
             }, lagSim);
-
-            // console.log(players[session]);
         }
     })
 
-    socket.on('interact', (session, direction, cmdId) => {
+    socket.on('interact', (session, direction, cmdId, seed) => {
         let data = players[session];
         let destChunk, destPos;
         if (direction == 'a' || direction == 'd') {
@@ -630,7 +628,7 @@ io.on('connection', (socket)=>{
             return;
         }
 
-        interact(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, socket, session);
+        interact(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, socket, session, seed);
         setTimeout(()=>{
             io.to(socket.id).emit('authCmd', cmdId);
         }, lagSim)
@@ -666,7 +664,7 @@ io.on('connection', (socket)=>{
     })
 })
 
-function interact(type, chunk, pos, socket, session) {
+function interact(type, chunk, pos, socket, session, seed) {
     if (type == B.TREE) {
         world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE1], socket);
@@ -687,6 +685,9 @@ function interact(type, chunk, pos, socket, session) {
             emitToAdj(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE]);
             world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE;
         }, treeRegrowTime)
+        if (seed % 2 == 0) {
+            addToInv(session, I.APPLE);
+        }
     }
 }
 
