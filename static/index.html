@@ -20,8 +20,8 @@
             let unauthCmd = {}; // unauthorised command record: id - cmdName  
             let randomSeeds = {}; // random seed for each command: id - seed  
 
-            const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3];
-            const passable = [B.GRASS, B.STUMP];
+            const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3, B.STONE, B.STONE1, B.STONE2, B.STONE3, B.IRON, B.IRON1, B.IRON2, B.IRON3];
+            const passable = [B.GRASS, B.STUMP, B.STONEBASE, B.IRONBASE];
             
             let lastInput = 0;
             let inputCd = 300;
@@ -369,6 +369,34 @@
                     if (seed % 2 === 0) {
                         addToInventory(I.APPLE);
                     }
+                }
+
+                else if (type == B.STONE) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONE1;
+                }
+                else if (type == B.STONE1) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONE2;
+                }
+                else if (type == B.STONE2) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONE3;
+                }
+                else if (type == B.STONE3) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONEBASE;
+                    addToInventory(I.STONE);
+                }
+
+                else if (type == B.IRON) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRON1;
+                }
+                else if (type == B.IRON1) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRON2;
+                }
+                else if (type == B.IRON2) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRON3;
+                }
+                else if (type == B.IRON3) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRONBASE;
+                    addToInventory(I.IRONORE);
                 }
             }
             

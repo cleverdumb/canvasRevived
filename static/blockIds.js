@@ -7,10 +7,22 @@ const B = {
     TREE3: 5,
     STUMP: 6,
     SAND: 7,
-    WOODWALL: 8
+    WOODWALL: 8,
+    STONE: 9,
+    STONE1: 10,
+    STONE2: 11,
+    STONE3: 12,
+    STONEBASE: 13,
+    IRON: 14,
+    IRON1: 15,
+    IRON2: 16,
+    IRON3: 17,
+    IRONBASE: 18
 }
 
 const I = {
     WOOD: 0,
-    APPLE: 1
+    APPLE: 1,
+    STONE: 2,
+    IRONORE: 3
 }

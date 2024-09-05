@@ -29,10 +29,11 @@ db.run(`
     )
 `)
 
-const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3];
-const passable = [B.GRASS, B.STUMP];
+const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3, B.STONE, B.STONE1, B.STONE2, B.STONE3, B.IRON, B.IRON1, B.IRON2, B.IRON3];
+const passable = [B.GRASS, B.STUMP, B.STONEBASE, B.IRONBASE];
 
 const treeRegrowTime = 10000;
+const stoneRegrowTime = 10000;
 
 // ! Ceilings go in the floor below, passable but players fall on top
 
@@ -59,7 +60,7 @@ for (let y=0; y<chunkY; y++) {
             for (let b=0; b<chunkW; b++) {
                 world[y][x][a].push([]);
                 for (let z=0; z<layers; z++) {
-                    world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1) ? B.TREE : null);
+                    world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1) ? ((a+b)%2 ? B.STONE : B.IRON) : null);
                 }
             }
         }
@@ -688,6 +689,50 @@ function interact(type, chunk, pos, socket, session, seed) {
         if (seed % 2 == 0) {
             addToInv(session, I.APPLE);
         }
+    }
+    else if (type == B.STONE) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONE1; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.STONE1], socket);
+    }
+    else if (type == B.STONE1) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONE2; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.STONE2], socket);
+    }
+    else if (type == B.STONE2) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONE3; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.STONE3], socket);
+    }
+    else if (type == B.STONE3) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONEBASE; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.STONEBASE], socket);
+        addToInv(session, I.STONE);
+        setTimeout(()=>{
+            emitToAdj(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.STONE]);
+            world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONE;
+        }, stoneRegrowTime)
+    }
+
+    else if (type == B.IRON) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRON1; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.IRON1], socket);
+    }
+    else if (type == B.IRON1) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRON2; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.IRON2], socket);
+    }
+    else if (type == B.IRON2) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRON3; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.IRON3], socket);
+    }
+    else if (type == B.IRON3) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRONBASE; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.IRONBASE], socket);
+        addToInv(session, I.IRONORE);
+
+        setTimeout(()=>{
+            emitToAdj(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.IRON]);
+            world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRON;
+        }, stoneRegrowTime)
     }
 }
 

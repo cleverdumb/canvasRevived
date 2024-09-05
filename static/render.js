@@ -88,6 +88,12 @@ function render() {
         else if (x == I.APPLE) {
             ctx.drawImage(sprite, 304, 160, 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
         }
+        else if (x == I.STONE) {
+            ctx.drawImage(sprite, 256, 0, 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
+        }
+        else if (x == I.IRONORE) {
+            ctx.drawImage(sprite, 160, 992, 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
+        }
         ctx.font = '20px monospace';
         ctx.fillText(fakePl.inv[x], currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 10);
         currBoxX++;
@@ -126,6 +132,38 @@ function renderTile(x, y, type) {
             break;
         case B.WOODWALL:
             ctx.drawImage(sprite, 112, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+
+        case B.STONE:
+            ctx.drawImage(sprite, 176, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case B.STONE1:
+            ctx.drawImage(sprite, 192, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case B.STONE2:
+            ctx.drawImage(sprite, 208, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case B.STONE3:
+            ctx.drawImage(sprite, 224, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case B.STONEBASE:
+            ctx.drawImage(sprite, 240, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+
+        case B.IRON:
+            ctx.drawImage(sprite, 176, 0, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case B.IRON1:
+            ctx.drawImage(sprite, 224, 992, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case B.IRON2:
+            ctx.drawImage(sprite, 240, 992, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case B.IRON3:
+            ctx.drawImage(sprite, 256, 992, 16, 16, x*bw, y*bh, bw, bh);
+            break;
+        case B.IRONBASE:
+            ctx.drawImage(sprite, 272, 992, 16, 16, x*bw, y*bh, bw, bh);
             break;
     }
 }
