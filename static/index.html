@@ -3,6 +3,7 @@
         <title>Canvas revived</title>
     </head>
     <body>
+        <p>Controls: wasd to move, p to build up, c to toggle crafting menu</p>
         <input placeholder='username' id='user'>
         <input placeholder='password' id='pass'>
         <button id='signupBtn' onclick='signup(document.getElementById(`user`).value, document.getElementById(`pass`).value, afterSpriteLoaded)'>SIGN UP</button>
@@ -130,6 +131,18 @@
                     clearInterval(keyMap[e.key]);
                     delete keyMap[e.key];
                 })
+
+                cvs.addEventListener('mousedown', e=>{
+                    let x = e.clientX - cvs.getBoundingClientRect().x;
+                    let y = e.clientY - cvs.getBoundingClientRect().y;
+
+                    buttons.forEach(b=>{
+                        if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+                            // console.log(r);
+                            (b.cb)();
+                        }
+                    })
+                })
             }
 
             function keyPressed(key) {
@@ -234,6 +247,11 @@
 
                             simulateAllUnauth();
                         }
+                    }
+                    case 'c':
+                    {
+                        craftMenuOpen = !craftMenuOpen;
+                        render();
                     }
                 }
             }

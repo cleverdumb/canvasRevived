@@ -16,6 +16,25 @@ let invStartX = 60;
 let invStartY = by*bh + 30;
 let invBoxX = 15;
 
+let craftMenuOpen = false;
+let craftBoxW = 20;
+let craftBoxH = 20;
+let craftBoxMargX = 20;
+let craftBoxMargY = 20;
+let craftBoxX = 12;
+let craftBgX = 40;
+let craftBgY = 40;
+let craftBgW = (craftBoxW + craftBoxMargX) * craftBoxX - craftBoxMargX;
+let craftBgH = 400;
+let craftBoxBorderWidth = 5;
+let craftCurrSel = null;
+let craftGapBetweenSec = 30;
+let craftSec2X = 40;
+let sec1H = 100;
+let sec2H = 300;
+
+let buttons = []; // {x, y, w, h, cb}
+
 cvs.width = bw * bx;
 cvs.height = bh * by + 300;
 cvs.border = '1px solid black';
@@ -78,23 +97,15 @@ function render() {
             // ctx.fillText(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw],x*bw+2, y*bh+10);
         }
     }
+    buttons = [];
+
     let currBoxX = 0;
     let currBoxY = 0;
     for (x in fakePl.inv) {
         ctx.strokeRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
-        if (x == I.WOOD) {
-            ctx.drawImage(sprite, 96, 0, 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
-        }
-        else if (x == I.APPLE) {
-            ctx.drawImage(sprite, 304, 160, 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
-        }
-        else if (x == I.STONE) {
-            ctx.drawImage(sprite, 256, 0, 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
-        }
-        else if (x == I.IRONORE) {
-            ctx.drawImage(sprite, 160, 992, 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
-        }
+        ctx.drawImage(sprite, iSprPos[x][0], iSprPos[x][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
         ctx.font = '20px monospace';
+        ctx.fillStyle = 'black';
         ctx.fillText(fakePl.inv[x], currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 10);
         currBoxX++;
         if (currBoxX >= invBoxX) {
@@ -102,70 +113,58 @@ function render() {
             currBoxX = 0;
         }
     }
+
+    if (craftMenuOpen) {
+        let currX = craftBgX;
+        let currY = craftBgY;
+        ctx.fillStyle = '#685232';
+        ctx.fillRect(currX-10, currY-10, craftBgW+20, craftBgH+20);
+        buttons = [];
+        let i = 0;
+        for (let r in R) {
+            i++;
+            ctx.fillStyle = '#CEBF8B';
+            ctx.fillRect(currX - craftBoxBorderWidth, currY - craftBoxBorderWidth, craftBoxW + 2 * craftBoxBorderWidth, craftBoxH + 2 * craftBoxBorderWidth);
+            ctx.drawImage(sprite, iSprPos[I[r]][0], iSprPos[I[r]][1], 16, 16, currX, currY, craftBoxW, craftBoxH);
+            buttons.push({
+                x: currX - craftBoxBorderWidth,
+                y: currY - craftBoxBorderWidth,
+                w: craftBoxW + 2 * craftBoxBorderWidth,
+                h: craftBoxH + 2 * craftBoxBorderWidth,
+                cb: function () {
+                    craftCurrSel = r;
+                    // console.log(r);
+                    render();
+                }
+            })
+            currX += craftBoxW + craftBoxMargX;
+            if (currX >= craftBgW + craftBgX) {
+                currX = craftBgX;
+                currY += craftBoxH + craftBoxMargY;
+            }
+        }
+
+        if (craftCurrSel !== null) {
+            currX = craftSec2X;
+            currY += sec1H + craftGapBetweenSec;
+            ctx.font = '15px monospace';
+            ctx.fillStyle = 'white';
+            ctx.fillText('COST: ',currX+7.5, currY);
+            currY += 15 + 5;
+    
+            ctx.font = '15px monospace';
+            for (x in R[craftCurrSel]) {
+                ctx.fillStyle = ((fakePl.inv[I[x]] || 0) >= (R[craftCurrSel][x])) ? '#44AF69' : '#E8090A'; 
+                ctx.drawImage(sprite, iSprPos[I[x]][0], iSprPos[I[x]][1], 16, 16, currX, currY, 15, 15);
+                ctx.fillText(`${fakePl.inv[I[x]] || 0}/${R[craftCurrSel][x]}`, currX + 15 + 5, currY + 12);
+                currY += 15 + 5;
+            }
+        }
+    }
 }
 
 function renderTile(x, y, type) {
-    switch (type) {
-        case B.GRASS:
-            ctx.drawImage(sprite, 0, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.WATER:
-            ctx.drawImage(sprite, 0, 64, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.TREE:
-            ctx.drawImage(sprite, 16, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.TREE1:
-            ctx.drawImage(sprite, 32, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.TREE2:
-            ctx.drawImage(sprite, 48, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.TREE3:
-            ctx.drawImage(sprite, 64, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.STUMP:
-            ctx.drawImage(sprite, 80, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.SAND:
-            ctx.drawImage(sprite, 16, 64, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.WOODWALL:
-            ctx.drawImage(sprite, 112, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-
-        case B.STONE:
-            ctx.drawImage(sprite, 176, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.STONE1:
-            ctx.drawImage(sprite, 192, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.STONE2:
-            ctx.drawImage(sprite, 208, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.STONE3:
-            ctx.drawImage(sprite, 224, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.STONEBASE:
-            ctx.drawImage(sprite, 240, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-
-        case B.IRON:
-            ctx.drawImage(sprite, 176, 0, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.IRON1:
-            ctx.drawImage(sprite, 224, 992, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.IRON2:
-            ctx.drawImage(sprite, 240, 992, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.IRON3:
-            ctx.drawImage(sprite, 256, 992, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-        case B.IRONBASE:
-            ctx.drawImage(sprite, 272, 992, 16, 16, x*bw, y*bh, bw, bh);
-            break;
-    }
+    ctx.drawImage(sprite, sprPos[type][0], sprPos[type][1], 16, 16, x*bw, y*bh, bw, bh);
 }
 
 function loadSpriteMap(cb) {

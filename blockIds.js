@@ -24,10 +24,16 @@ const I = {
     WOOD: 0,
     APPLE: 1,
     STONE: 2,
-    IRONORE: 3
+    IRONORE: 3,
+    WOODWALL: 4
+}
+
+const R = {
+    WOODWALL: {wood: 4}
 }
 
 module.exports = {
     B: B,
-    I: I
+    I: I,
+    R: R
 };
