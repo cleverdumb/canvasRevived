@@ -16,7 +16,7 @@ let invStartX = 60;
 let invStartY = by*bh + 30;
 let invBoxX = 15;
 
-let craftMenuOpen = false;
+let craftMenuOpen = true;
 let craftBoxW = 20;
 let craftBoxH = 20;
 let craftBoxMargX = 20;
@@ -27,11 +27,12 @@ let craftBgY = 40;
 let craftBgW = (craftBoxW + craftBoxMargX) * craftBoxX - craftBoxMargX;
 let craftBgH = 400;
 let craftBoxBorderWidth = 5;
-let craftCurrSel = null;
+let craftCurrSel = 'STONEWALL';
 let craftGapBetweenSec = 30;
 let craftSec2X = 40;
 let sec1H = 100;
 let sec2H = 300;
+let craftCurrCount = 1;
 
 let buttons = []; // {x, y, w, h, cb}
 
@@ -133,6 +134,7 @@ function render() {
                 h: craftBoxH + 2 * craftBoxBorderWidth,
                 cb: function () {
                     craftCurrSel = r;
+                    craftCurrCount = 1;
                     // console.log(r);
                     render();
                 }
@@ -147,16 +149,50 @@ function render() {
         if (craftCurrSel !== null) {
             currX = craftSec2X;
             currY += sec1H + craftGapBetweenSec;
-            ctx.font = '15px monospace';
+            ctx.strokeStyle = 'white';
+            ctx.strokeRect(currX, currY, 32, 47);
+            ctx.drawImage(sprite, iSprPos[I[craftCurrSel]][0], iSprPos[I[craftCurrSel]][1], 16, 16, currX, currY, 32, 32);
+            ctx.drawImage(sprite, 0, 160, 16, 16, currX + 50, currY, 32, 32);
+            ctx.drawImage(sprite, 16, 160, 16, 16, currX + 50, currY, 32, 32);
+            ctx.drawImage(sprite, 16, 160, 16, 16, currX + 100, currY, 32, 32);
+            ctx.strokeStyle = 'black';
+            ctx.strokeRect(currX + 50, currY, 32, 32);
+            ctx.strokeRect(currX + 100, currY, 32, 32);
+            buttons.push({
+                x: currX + 50,
+                y: currY,
+                w: 32, 
+                h: 32,
+                cb: ()=>{
+                    craftCurrCount++;
+                    render();
+                }
+            })
+            buttons.push({
+                x: currX + 100,
+                y: currY,
+                w: 32, 
+                h: 32,
+                cb: ()=>{
+                    craftCurrCount--;
+                    craftCurrCount = Math.max(1, craftCurrCount);
+                    render();
+                }
+            })
+            currY += 32;
+            ctx.font = '12px monospace';
             ctx.fillStyle = 'white';
-            ctx.fillText('COST: ',currX+7.5, currY);
+            ctx.fillText(craftCurrCount, currX + 15 - ctx.measureText(craftCurrCount).width/2, currY + 12);
+            currY += 27;
+            ctx.font = '15px monospace'
+            ctx.fillText('COST: ',currX, currY+7.5);
             currY += 15 + 5;
     
             ctx.font = '15px monospace';
             for (x in R[craftCurrSel]) {
-                ctx.fillStyle = ((fakePl.inv[I[x]] || 0) >= (R[craftCurrSel][x])) ? '#44AF69' : '#E8090A'; 
+                ctx.fillStyle = ((fakePl.inv[I[x]] || 0) >= (R[craftCurrSel][x] * craftCurrCount)) ? '#44AF69' : '#E8090A'; 
                 ctx.drawImage(sprite, iSprPos[I[x]][0], iSprPos[I[x]][1], 16, 16, currX, currY, 15, 15);
-                ctx.fillText(`${fakePl.inv[I[x]] || 0}/${R[craftCurrSel][x]}`, currX + 15 + 5, currY + 12);
+                ctx.fillText(`${fakePl.inv[I[x]] || 0}/${R[craftCurrSel][x] * craftCurrCount}`, currX + 15 + 5, currY + 12);
                 currY += 15 + 5;
             }
         }
@@ -178,7 +214,7 @@ function loadSpriteMap(cb) {
             //     (cb)();
             // });
             // start();
-            // login('n1','p1',afterSpriteLoaded);
+            login('n1','p1',afterSpriteLoaded);
         });
     }
 }
