@@ -191,13 +191,15 @@
                                                 return;
                                             }
                                         }
-                                        let newId = nextCmdId++;
-                                        let seed = Math.round(Math.random() * 1e5);
-                                        socket.emit('interact', session, key, newId, seed);
-                                        unauthCmd[newId] = `in${key.toUpperCase()}`;
-                                        randomSeeds[newId] = seed;
+                                        if (fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins] >= 1) {
+                                            let newId = nextCmdId++;
+                                            let seed = Math.round(Math.random() * 1e5);
+                                            socket.emit('interact', session, key, newId, seed);
+                                            unauthCmd[newId] = `in${key.toUpperCase()}`;
+                                            randomSeeds[newId] = seed;
 
-                                        simulateAllUnauth();
+                                            simulateAllUnauth();
+                                        }
                                     }
                                 }
                             }
@@ -452,6 +454,10 @@
             }
 
             function interact(type, chunk, pos, seed) {
+                if (fakePl.holding.id != I.WOODPICK) {
+                    fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins]--;
+                }
+
                 if (type == B.TREE) {
                     fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1;
                 }

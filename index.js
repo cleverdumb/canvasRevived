@@ -131,6 +131,10 @@ app.post('/signup', jsonParser, (req, res)=>{
                         6: {
                             instances: 2,
                             duras: [10, 9]
+                        },
+                        8: {
+                            instances: 1,
+                            duras: [10]
                         }
                     },
                     hp: 75,
@@ -725,6 +729,13 @@ io.on('connection', (socket)=>{
 })
 
 function interact(type, chunk, pos, socket, session, seed, cmdId) {
+    if (players[session].inv[players[session].holding.id].duras[players[session].holding.ins] < 1) {
+        setTimeout(()=>{
+            io.to(socket.id).emit('rejectCmd', cmdId);
+        }, lagSim)
+        return;
+    }
+
     if (requireAxe.includes(type)) {
         if (players[session].holding === null || !axe.includes(parseInt(players[session].holding.id))) {
             setTimeout(()=>{
@@ -746,6 +757,10 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
         setTimeout(()=>{
             io.to(socket.id).emit('authCmd', cmdId);
         }, lagSim)
+    }
+
+    if (players[session].holding.id != I.WOODPICK) {
+        players[session].inv[players[session].holding.id].duras[players[session].holding.ins]--;
     }
 
     if (type == B.TREE) {

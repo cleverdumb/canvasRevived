@@ -49,7 +49,10 @@ const iSprPos = {
     3: [160, 992],
     4: [112, 0],
     5: [288, 0],
-    6: [32, 64]
+    6: [32, 64],
+    7: [64, 64],
+    8: [48, 64],
+    9: [80, 64]
 }
 
 const I = {
@@ -60,19 +63,21 @@ const I = {
     WOODWALL: 4,
     STONEWALL: 5,
     WOODPICK: 6,
-    WOODAXE: 7
+    WOODAXE: 7,
+    STONEPICK: 8,
+    STONEAXE: 9
 }
 
 const unstack = [
-    6, 7
+    6, 7, 8, 9
 ]
 
 const axe = [
-    7
+    7, 9
 ]
 
 const pickaxe = [
-    6
+    6, 8
 ]
 
 const requireAxe = [
