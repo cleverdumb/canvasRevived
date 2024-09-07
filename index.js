@@ -150,7 +150,9 @@ app.post('/signup', jsonParser, (req, res)=>{
                         y: 4
                     },
                     z: 3,
-                    inv: {}
+                    inv: {},
+                    hp: 75,
+                    maxHp: 100
                 })], err => {
                     if (err) throw err;
                     res.send('0');

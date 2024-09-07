@@ -13,7 +13,7 @@ let invBoxW = 40;
 let invBoxH = 60;
 let invImgH = 40;
 let invStartX = 60;
-let invStartY = by*bh + 30;
+let invStartY = by*bh + 50;
 let invBoxX = 15;
 
 let craftMenuOpen = true;
@@ -99,6 +99,14 @@ function render() {
         }
     }
     buttons = [];
+
+    ctx.fillStyle = 'black';
+    ctx.fillRect(invStartX, by*bh + 30, 300, 15);
+    ctx.fillStyle = 'red';
+    ctx.fillRect(invStartX, by*bh + 30, 300 * (fakePl.hp/fakePl.maxHp), 15);
+    ctx.font = '10px monospace';
+    ctx.fillStyle = 'black';
+    ctx.fillText(`HP: ${fakePl.hp}/${fakePl.maxHp}`, invStartX, by*bh + 25)
 
     let currBoxX = 0;
     let currBoxY = 0;
@@ -239,7 +247,7 @@ function loadSpriteMap(cb) {
             //     (cb)();
             // });
             // start();
-            login('n1','p1',afterSpriteLoaded);
+            // login('n1','p1',afterSpriteLoaded);
         });
     }
 }
