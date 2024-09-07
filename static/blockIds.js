@@ -61,6 +61,6 @@ const I = {
 }
 
 const R = {
-    STONEWALL: {STONE: 4},
+    STONEWALL: {STONE: 1},
     WOODWALL: {WOOD: 4}
 }

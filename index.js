@@ -654,6 +654,35 @@ io.on('connection', (socket)=>{
         io.to(socket.id).emit('authCmd', cmdId);
     })
 
+    socket.on('craft', (session, type, amount, cmdId) => {
+        let possible = true;
+        for (let part in R[type]) {
+            if (players[session].inv[part] < R[type][part] * amount) {
+                possible = false;
+            }
+        }
+
+        if (possible) {
+            for (let part in R[type]) {
+                players[session].inv[part] -= R[type][part] * amount;
+                if (players[session].inv[part] <= 0) {
+                    delete players[session].inv[part];
+                }
+            }
+
+            for (let x=0; x<amount; x++) {
+                addToInv(session, type);
+            }
+
+            io.to(socket.id).emit('authCmd', cmdId);
+            return;
+        }
+        else {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+    })
+
     socket.on('disconnect', ()=>{
         let ses = reverseSockets[socket.id];
         let data = players[ses];

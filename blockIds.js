@@ -29,7 +29,8 @@ const I = {
 }
 
 const R = {
-    WOODWALL: {wood: 4}
+    STONEWALL: {STONE: 1},
+    WOODWALL: {WOOD: 4}
 }
 
 module.exports = {

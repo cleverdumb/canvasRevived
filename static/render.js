@@ -10,7 +10,7 @@ let bx = 39; // boxes
 let by = 25; // boxes
 
 let invBoxW = 40;
-let invBoxH = 55;
+let invBoxH = 60;
 let invImgH = 40;
 let invStartX = 60;
 let invStartY = by*bh + 30;
@@ -107,7 +107,7 @@ function render() {
         ctx.drawImage(sprite, iSprPos[x][0], iSprPos[x][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
         ctx.font = '20px monospace';
         ctx.fillStyle = 'black';
-        ctx.fillText(fakePl.inv[x], currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 10);
+        ctx.fillText(fakePl.inv[x], currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 15);
         currBoxX++;
         if (currBoxX >= invBoxX) {
             currBoxY++;
@@ -179,13 +179,38 @@ function render() {
                     render();
                 }
             })
+            ctx.font = '15px monospace';
+            ctx.fillText('CRAFT', currX + 150 + 10, currY+18);
+            ctx.strokeRect(currX + 150, currY, ctx.measureText('CRAFT').width + 20, 15 + 10);
+            buttons.push({
+                x: currX + 150,
+                y: currY,
+                w: ctx.measureText('CRAFT').width + 20,
+                h: 15 + 10,
+                cb: () => {
+                    let possible = true;
+                    for (let part in R[craftCurrSel]) {
+                        if ((!fakePl.inv.hasOwnProperty(I[part])) || (fakePl.inv[I[part]] < R[craftCurrSel][part] * craftCurrCount)) {
+                            possible = false;
+                        }
+                    }
+                    if (possible) {
+                        craft(craftCurrSel, craftCurrCount);
+                    }
+                }
+            })
+
             currY += 32;
+
             ctx.font = '12px monospace';
             ctx.fillStyle = 'white';
             ctx.fillText(craftCurrCount, currX + 15 - ctx.measureText(craftCurrCount).width/2, currY + 12);
+
             currY += 27;
+
             ctx.font = '15px monospace'
             ctx.fillText('COST: ',currX, currY+7.5);
+
             currY += 15 + 5;
     
             ctx.font = '15px monospace';

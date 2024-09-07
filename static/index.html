@@ -367,8 +367,28 @@
                                 fakePl.z++;
                             }
                         }
+                        else if (name.startsWith('cr')) {
+                            let arg = name.substr(2);
+                            let type = arg.split('-')[0];
+                            let amount = parseInt(arg.split('-')[1]);
+                            for (let part in R[type]) {
+                                fakePl.inv[I[part]] -= R[type][part] * amount;
+                                if (fakePl.inv[I[part]] <= 0) {
+                                    delete fakePl.inv[I[part]];
+                                }
+                            }
+                            for (let x=0; x<amount; x++) {
+                                addToInventory(I[type]);
+                            }
+                        }
                         break;
                 }
+            }
+
+            function craft(type, amount) {
+                let cmdId = nextCmdId++;
+                socket.emit('craft', session, type, amount, cmdId);
+                unauthCmd[cmdId] = `cr${type}-${amount}`;
             }
 
             function interact(type, chunk, pos, seed) {
