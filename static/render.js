@@ -174,7 +174,7 @@ function render() {
                 ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW, 5);
                 ctx.fillStyle = 'green';
                 ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW * (fakePl.inv[x].duras[i]/10), 5);
-                if (fakePl.equip.some(e=>e.id == x && e.ins == i)) {
+                if (fakePl.holding !== null && fakePl.holding.id == x && fakePl.holding.ins == i) {
                     ctx.fillStyle = 'black';
                     ctx.font = '10px monospace'
                     ctx.fillText('E', currBoxX * invBoxW + invStartX + 5, currBoxY * invBoxH + invStartY + invImgH + 5 + 10)

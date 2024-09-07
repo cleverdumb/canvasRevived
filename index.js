@@ -67,30 +67,7 @@ for (let y=0; y<chunkY; y++) {
     }
 }
 
-
 // ! testing use
-// world[0][0][8][8][1] = B.TREE;
-// world[0][0][2][4][1] = B.SAND;
-// world[0][0][2][5][1] = B.SAND;
-// world[0][0][2][6][1] = B.SAND;
-// world[0][0][2][7][1] = B.SAND;
-// world[0][0][2][8][1] = B.SAND;
-
-// world[0][0][2][5][2] = B.WATER;
-// world[0][0][2][6][2] = B.WATER;
-// world[0][0][2][7][2] = B.WATER;
-// world[0][0][2][8][2] = B.WATER;
-
-// world[0][0][2][6][3] = B.TREE;
-// world[0][0][2][7][3] = B.TREE;
-// world[0][0][2][8][3] = B.TREE;
-
-// world[0][0][2][7][4] = B.STUMP;
-// world[0][0][2][8][4] = B.STUMP;
-
-// world[0][0][4][4][2] = B.SAND;
-// world[0][0][4][3][1] = B.SAND;
-// world[0][0][4][5][2] = B.SAND;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -158,7 +135,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                     },
                     hp: 75,
                     maxHp: 100,
-                    equip: []
+                    holding: null
                 })], err => {
                     if (err) throw err;
                     res.send('0');
@@ -693,7 +670,7 @@ io.on('connection', (socket)=>{
         }
     })
 
-    socket.on('equip', (session, item, instance, cmdId) => {
+    socket.on('hold', (session, item, instance, cmdId) => {
         if (!players[session].inv.hasOwnProperty(item)) {
             io.to(socket.id).emit('rejectCmd', cmdId);
             return;
@@ -707,12 +684,12 @@ io.on('connection', (socket)=>{
         if (!unstack.includes(parseInt(item))) {
             io.to(socket.id).emit('rejectCmd', cmdId);
         }
-
-        players[session].equip.push({id: item, ins: instance});
+        
+        players[session].holding = {id: item, ins: instance};
         io.to(socket.id).emit('authCmd', cmdId);
     })
 
-    socket.on('unequip', (session, item, instance, cmdId) => {
+    socket.on('unhold', (session, item, instance, cmdId) => {
         if (!players[session].inv.hasOwnProperty(item)) {
             io.to(socket.id).emit('rejectCmd', cmdId);
             return;
@@ -723,7 +700,7 @@ io.on('connection', (socket)=>{
             return;
         }
 
-        if (!players[session].equip.some(x=>x.id == item && x.ins == instance)) {
+        if (players[session] === null || players[session].holding.id != item || players[session].holding.ins != instance) {
             io.to(socket.id).emit('rejectCmd', cmdId);
             return;
         }
@@ -732,7 +709,7 @@ io.on('connection', (socket)=>{
             io.to(socket.id).emit('rejectCmd', cmdId);
         }
 
-        players[session].equip = players[session].equip.filter(x=>!(x.id == item && x.ins == instance));
+        players[session].holding = null;
         io.to(socket.id).emit('authCmd', cmdId);
     })
 
@@ -749,7 +726,7 @@ io.on('connection', (socket)=>{
 
 function interact(type, chunk, pos, socket, session, seed, cmdId) {
     if (requireAxe.includes(type)) {
-        if (!players[session].equip.some(x=>axe.includes(parseInt(x.id)))) {
+        if (players[session].holding === null || !axe.includes(parseInt(players[session].holding.id))) {
             setTimeout(()=>{
                 io.to(socket.id).emit('rejectCmd', cmdId);
             }, lagSim)
@@ -760,7 +737,7 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
         }, lagSim)
     }
     if (requirePickaxe.includes(type)) {
-        if (!players[session].equip.some(x=>pickaxe.includes(parseInt(x.id)))) {
+        if (players[session].holding === null || !pickaxe.includes(parseInt(players[session].holding.id))) {
             setTimeout(()=>{
                 io.to(socket.id).emit('rejectCmd', cmdId);
             }, lagSim)
@@ -770,7 +747,7 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
             io.to(socket.id).emit('authCmd', cmdId);
         }, lagSim)
     }
-    
+
     if (type == B.TREE) {
         world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE1], socket);

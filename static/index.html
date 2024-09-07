@@ -182,12 +182,12 @@
                                     let target = fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z];
                                     if (interactable.includes(target)) {
                                         if (requireAxe.includes(target)) {
-                                            if (!fakePl.equip.some(x=>axe.includes(parseInt(x.id)))) {
+                                            if (fakePl.holding === null || !axe.includes(parseInt(fakePl.holding.id))) {
                                                 return;
                                             }
                                         }
                                         if (requirePickaxe.includes(target)) {
-                                            if (!fakePl.equip.some(x=>pickaxe.includes(parseInt(x.id)))) {
+                                            if (fakePl.holding === null || !pickaxe.includes(parseInt(fakePl.holding.id))) {
                                                 return;
                                             }
                                         }
@@ -238,12 +238,12 @@
                                     let target = fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z];
                                     if (interactable.includes(target)) {
                                         if (requireAxe.includes(target)) {
-                                            if (!fakePl.equip.some(x=>axe.includes(parseInt(x.id)))) {
+                                            if (fakePl.holding === null || !axe.includes(parseInt(fakePl.holding.id))) {
                                                 return;
                                             }
                                         }
                                         if (requirePickaxe.includes(target)) {
-                                            if (!fakePl.equip.some(x=>pickaxe.includes(parseInt(x.id)))) {
+                                            if (fakePl.holding === null || !pickaxe.includes(parseInt(fakePl.holding.id))) {
                                                 return;
                                             }
                                         }
@@ -276,22 +276,28 @@
                         render();
                         break;
                     case 'e':
-                        if (invSel !== null && fakePl.inv.hasOwnProperty(invSel)) {
-                            if (!fakePl.equip.some(x=>x.id == invSel && x.ins == invSelIns)) {
-                                if (unstack.includes(parseInt(invSel))) {
-                                    let newId = nextCmdId++;
-                                    socket.emit('equip', session, invSel, invSelIns, newId);
-                                    unauthCmd[newId] = `eq${invSel}-${invSelIns}`;
+                        // check if equipment
+                        if (unstack.includes(parseInt(invSel))) {
+                            // check if inventory has the item
+                            if (invSel !== null && fakePl.inv.hasOwnProperty(invSel) && invSelIns < fakePl.inv[invSel].instances) {
+                                // check if it is held-equipment
+                                if (axe.includes(parseInt(invSel)) || pickaxe.includes(parseInt(invSel))) {
+                                    // check if it is currently equiped
+                                    if (!(fakePl.holding !== null && fakePl.holding.id == invSel && fakePl.holding.ins == invSelIns)) {
+                                        let newId = nextCmdId++;
+                                        socket.emit('hold', session, invSel, invSelIns, newId);
+                                        unauthCmd[newId] = `ho${invSel}-${invSelIns}`;
 
-                                    simulateAllUnauth();
+                                        simulateAllUnauth();
+                                    }
+                                    else {
+                                        let newId = nextCmdId++;
+                                        socket.emit('unhold', session, invSel, invSelIns, newId);
+                                        unauthCmd[newId] = `unho${invSel}-${invSelIns}`;
+
+                                        simulateAllUnauth();
+                                    }
                                 }
-                            }
-                            else {
-                                let newId = nextCmdId++;
-                                socket.emit('unequip', session, invSel, invSelIns, newId);
-                                unauthCmd[newId] = `uneq${invSel}-${invSelIns}`;
-
-                                simulateAllUnauth();
                             }
                         }
                         break;
@@ -423,15 +429,17 @@
                                 addToInventory(I[type]);
                             }
                         }
-                        else if (name.startsWith('eq')) {
+                        else if (name.startsWith('ho')) {
                             let id = name.substr(2).split('-')[0];
                             let ins = name.substr(2).split('-')[1];
-                            fakePl.equip.push({id: id, ins: ins});
+                            
+                            fakePl.holding = {id: id, ins: ins};
                         }
-                        else if (name.startsWith('uneq')) {
+                        else if (name.startsWith('unho')) {
                             let id = name.substr(4).split('-')[0];
                             let ins = name.substr(4).split('-')[1];
-                            fakePl.equip = fakePl.equip.filter(x=>!(x.id == id && x.ins == ins));
+                            
+                            fakePl.holding = null;
                         }
                     break;
                 }
