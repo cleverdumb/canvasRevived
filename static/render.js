@@ -18,7 +18,7 @@ let invBoxX = 15;
 let invSel = null;
 let invSelIns = null;
 
-let craftMenuOpen = true;
+let craftMenuOpen = false;
 let craftBoxW = 20;
 let craftBoxH = 20;
 let craftBoxMargX = 20;
@@ -29,7 +29,7 @@ let craftBgY = 40;
 let craftBgW = (craftBoxW + craftBoxMargX) * craftBoxX - craftBoxMargX;
 let craftBgH = 400;
 let craftBoxBorderWidth = 5;
-let craftCurrSel = 'STONEWALL';
+let craftCurrSel = null;
 let craftGapBetweenSec = 30;
 let craftSec2X = 40;
 let sec1H = 100;

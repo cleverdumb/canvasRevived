@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, R, unstack} = require('./blockIds.js');
+const {B, I, R, unstack, axe, pickaxe, requireAxe, requirePickaxe} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -637,10 +637,7 @@ io.on('connection', (socket)=>{
             return;
         }
 
-        interact(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, socket, session, seed);
-        setTimeout(()=>{
-            io.to(socket.id).emit('authCmd', cmdId);
-        }, lagSim)
+        interact(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, socket, session, seed, cmdId);
         return;
     })
 
@@ -750,7 +747,30 @@ io.on('connection', (socket)=>{
     })
 })
 
-function interact(type, chunk, pos, socket, session, seed) {
+function interact(type, chunk, pos, socket, session, seed, cmdId) {
+    if (requireAxe.includes(type)) {
+        if (!players[session].equip.some(x=>axe.includes(parseInt(x.id)))) {
+            setTimeout(()=>{
+                io.to(socket.id).emit('rejectCmd', cmdId);
+            }, lagSim)
+            return;
+        }
+        setTimeout(()=>{
+            io.to(socket.id).emit('authCmd', cmdId);
+        }, lagSim)
+    }
+    if (requirePickaxe.includes(type)) {
+        if (!players[session].equip.some(x=>pickaxe.includes(parseInt(x.id)))) {
+            setTimeout(()=>{
+                io.to(socket.id).emit('rejectCmd', cmdId);
+            }, lagSim)
+            return;
+        }
+        setTimeout(()=>{
+            io.to(socket.id).emit('authCmd', cmdId);
+        }, lagSim)
+    }
+    
     if (type == B.TREE) {
         world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE1], socket);

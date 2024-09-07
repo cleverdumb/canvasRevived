@@ -179,7 +179,18 @@
                                     simulateAllUnauth();
                                 }
                                 else {
-                                    if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
+                                    let target = fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z];
+                                    if (interactable.includes(target)) {
+                                        if (requireAxe.includes(target)) {
+                                            if (!fakePl.equip.some(x=>axe.includes(parseInt(x.id)))) {
+                                                return;
+                                            }
+                                        }
+                                        if (requirePickaxe.includes(target)) {
+                                            if (!fakePl.equip.some(x=>pickaxe.includes(parseInt(x.id)))) {
+                                                return;
+                                            }
+                                        }
                                         let newId = nextCmdId++;
                                         let seed = Math.round(Math.random() * 1e5);
                                         socket.emit('interact', session, key, newId, seed);
@@ -224,7 +235,18 @@
                                     simulateAllUnauth();
                                 }
                                 else {
-                                    if (interactable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
+                                    let target = fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z];
+                                    if (interactable.includes(target)) {
+                                        if (requireAxe.includes(target)) {
+                                            if (!fakePl.equip.some(x=>axe.includes(parseInt(x.id)))) {
+                                                return;
+                                            }
+                                        }
+                                        if (requirePickaxe.includes(target)) {
+                                            if (!fakePl.equip.some(x=>pickaxe.includes(parseInt(x.id)))) {
+                                                return;
+                                            }
+                                        }
                                         let newId = nextCmdId++;
                                         let seed = Math.round(Math.random() * 1e5);
                                         socket.emit('interact', session, key, newId, seed);

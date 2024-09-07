@@ -59,11 +59,29 @@ const I = {
     IRONORE: 3,
     WOODWALL: 4,
     STONEWALL: 5,
-    WOODPICK: 6
+    WOODPICK: 6,
+    WOODAXE: 7
 }
 
 const unstack = [
+    6, 7
+]
+
+const axe = [
+    7
+]
+
+const pickaxe = [
     6
+]
+
+const requireAxe = [
+    B.TREE, B.TREE1, B.TREE2, B.TREE3
+]
+
+const requirePickaxe = [
+    B.STONE, B.STONE1, B.STONE2, B.STONE3,
+    B.IRON, B.IRON1, B.IRON2, B.IRON3
 ]
 
 const R = {

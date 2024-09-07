@@ -20,6 +20,38 @@ const B = {
     IRONBASE: 18
 }
 
+const sprPos = {
+    0: [0, 0],
+    1: [0, 64],
+    2: [16, 0],
+    3: [32, 0],
+    4: [48, 0],
+    5: [64, 0],
+    6: [80, 0],
+    7: [16, 64],
+    8: [112, 0],
+    9: [176, 0],
+    10: [192, 0],
+    11: [208, 0],
+    12: [224, 0],
+    13: [240, 0],
+    14: [176, 0],
+    15: [224, 992],
+    16: [240, 992],
+    17: [256, 992],
+    18: [272, 992]
+}
+
+const iSprPos = {
+    0: [96, 0],
+    1: [304, 160],
+    2: [256, 0],
+    3: [160, 992],
+    4: [112, 0],
+    5: [288, 0],
+    6: [32, 64]
+}
+
 const I = {
     WOOD: 0,
     APPLE: 1,
@@ -27,21 +59,35 @@ const I = {
     IRONORE: 3,
     WOODWALL: 4,
     STONEWALL: 5,
-    WOODPICK: 6
+    WOODPICK: 6,
+    WOODAXE: 7
 }
+
+const unstack = [
+    6, 7
+]
+
+const axe = [
+    7
+]
+
+const pickaxe = [
+    6
+]
+
+const requireAxe = [
+    B.TREE, B.TREE1, B.TREE2, B.TREE3
+]
+
+const requirePickaxe = [
+    B.STONE, B.STONE1, B.STONE2, B.STONE3,
+    B.IRON, B.IRON1, B.IRON2, B.IRON3
+]
 
 const R = {
     STONEWALL: {STONE: 1},
     WOODWALL: {WOOD: 4}
 }
-
-const unstack = [
-    6
-]
-
 module.exports = {
-    B: B,
-    I: I,
-    R: R,
-    unstack: unstack
+    B, I, R, axe, pickaxe, unstack, requireAxe, requirePickaxe
 };
