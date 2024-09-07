@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, R} = require('./blockIds.js');
+const {B, I, R, unstack} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -150,9 +150,15 @@ app.post('/signup', jsonParser, (req, res)=>{
                         y: 4
                     },
                     z: 3,
-                    inv: {},
+                    inv: {
+                        6: {
+                            instances: 2,
+                            duras: [10, 9]
+                        }
+                    },
                     hp: 75,
-                    maxHp: 100
+                    maxHp: 100,
+                    equip: []
                 })], err => {
                     if (err) throw err;
                     res.send('0');
@@ -657,6 +663,11 @@ io.on('connection', (socket)=>{
     })
 
     socket.on('craft', (session, type, amount, cmdId) => {
+        if (!R.hasOwnProperty(type)) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+
         let possible = true;
         for (let part in R[type]) {
             if (players[session].inv[part] < R[type][part] * amount) {
@@ -683,6 +694,49 @@ io.on('connection', (socket)=>{
             io.to(socket.id).emit('rejectCmd', cmdId);
             return;
         }
+    })
+
+    socket.on('equip', (session, item, instance, cmdId) => {
+        if (!players[session].inv.hasOwnProperty(item)) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+        
+        if (instance >= players[session].inv[item].instances) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+
+        if (!unstack.includes(parseInt(item))) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+        }
+
+        players[session].equip.push({id: item, ins: instance});
+        io.to(socket.id).emit('authCmd', cmdId);
+    })
+
+    socket.on('unequip', (session, item, instance, cmdId) => {
+        if (!players[session].inv.hasOwnProperty(item)) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+        
+        if (instance >= players[session].inv[item].instances) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+
+        if (!players[session].equip.some(x=>x.id == item && x.ins == instance)) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+
+        if (!unstack.includes(parseInt(item))) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+        }
+
+        players[session].equip = players[session].equip.filter(x=>!(x.id == item && x.ins == instance));
+        io.to(socket.id).emit('authCmd', cmdId);
     })
 
     socket.on('disconnect', ()=>{
@@ -767,11 +821,25 @@ function interact(type, chunk, pos, socket, session, seed) {
     }
 }
 
-function addToInv(ses, item) {
-    if (players[ses].inv.hasOwnProperty(item)) {
-        players[ses].inv[item]++;
+function addToInv(ses, item, dura) {
+    if (!unstack.includes(item)) {
+        if (players[ses].inv.hasOwnProperty(item)) {
+            players[ses].inv[item]++;
+        }
+        else {
+            players[ses].inv[item] = 1;
+        }
     }
     else {
-        players[ses].inv[item] = 1;
+        if (players[ses].inv.hasOwnProperty(item)) {
+            players[ses].inv[item].instance++;
+            players[ses].inv[item].duras.push(dura);
+        }
+        else {
+            players[ses].inv[item] = {
+                instance: 1,
+                duras: [dura]
+            }
+        }
     }
 }

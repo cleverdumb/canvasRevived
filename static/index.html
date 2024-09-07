@@ -247,12 +247,32 @@
 
                             simulateAllUnauth();
                         }
+                        break;
                     }
                     case 'c':
-                    {
                         craftMenuOpen = !craftMenuOpen;
                         render();
-                    }
+                        break;
+                    case 'e':
+                        if (invSel !== null && fakePl.inv.hasOwnProperty(invSel)) {
+                            if (!fakePl.equip.some(x=>x.id == invSel && x.ins == invSelIns)) {
+                                if (unstack.includes(parseInt(invSel))) {
+                                    let newId = nextCmdId++;
+                                    socket.emit('equip', session, invSel, invSelIns, newId);
+                                    unauthCmd[newId] = `eq${invSel}-${invSelIns}`;
+
+                                    simulateAllUnauth();
+                                }
+                            }
+                            else {
+                                let newId = nextCmdId++;
+                                socket.emit('unequip', session, invSel, invSelIns, newId);
+                                unauthCmd[newId] = `uneq${invSel}-${invSelIns}`;
+
+                                simulateAllUnauth();
+                            }
+                        }
+                        break;
                 }
             }
 
@@ -381,7 +401,17 @@
                                 addToInventory(I[type]);
                             }
                         }
-                        break;
+                        else if (name.startsWith('eq')) {
+                            let id = name.substr(2).split('-')[0];
+                            let ins = name.substr(2).split('-')[1];
+                            fakePl.equip.push({id: id, ins: ins});
+                        }
+                        else if (name.startsWith('uneq')) {
+                            let id = name.substr(4).split('-')[0];
+                            let ins = name.substr(4).split('-')[1];
+                            fakePl.equip = fakePl.equip.filter(x=>!(x.id == id && x.ins == ins));
+                        }
+                    break;
                 }
             }
 
@@ -438,12 +468,26 @@
                 }
             }
             
-            function addToInventory(itemId) {
-                if (fakePl.inv.hasOwnProperty(itemId)) {
-                    fakePl.inv[itemId]++;
+            function addToInventory(itemId, dura) {
+                if (!unstack.includes(itemId)) {
+                    if (fakePl.inv.hasOwnProperty(itemId)) {
+                        fakePl.inv[itemId]++;
+                    }
+                    else {
+                        fakePl.inv[itemId] = 1;
+                    }
                 }
                 else {
-                    fakePl.inv[itemId] = 1;
+                    if (fakePl.inv.hasOwnProperty(itemId)) {
+                        fakePl.inv[itemId].instance++;
+                        fakePl.inv[itemId].duras.push(dura);
+                    }
+                    else {
+                        fakePl.inv[itemId] = {
+                            instance: 1,
+                            duras: [dura]
+                        }
+                    }
                 }
             }
 

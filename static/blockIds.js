@@ -48,7 +48,8 @@ const iSprPos = {
     2: [256, 0],
     3: [160, 992],
     4: [112, 0],
-    5: [288, 0]
+    5: [288, 0],
+    6: [32, 64]
 }
 
 const I = {
@@ -57,8 +58,13 @@ const I = {
     STONE: 2,
     IRONORE: 3,
     WOODWALL: 4,
-    STONEWALL: 5
+    STONEWALL: 5,
+    WOODPICK: 6
 }
+
+const unstack = [
+    6
+]
 
 const R = {
     STONEWALL: {STONE: 1},

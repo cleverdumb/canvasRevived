@@ -15,6 +15,8 @@ let invImgH = 40;
 let invStartX = 60;
 let invStartY = by*bh + 50;
 let invBoxX = 15;
+let invSel = null;
+let invSelIns = null;
 
 let craftMenuOpen = true;
 let craftBoxW = 20;
@@ -110,16 +112,79 @@ function render() {
 
     let currBoxX = 0;
     let currBoxY = 0;
-    for (x in fakePl.inv) {
-        ctx.strokeRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
-        ctx.drawImage(sprite, iSprPos[x][0], iSprPos[x][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
-        ctx.font = '20px monospace';
-        ctx.fillStyle = 'black';
-        ctx.fillText(fakePl.inv[x], currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 15);
-        currBoxX++;
-        if (currBoxX >= invBoxX) {
-            currBoxY++;
-            currBoxX = 0;
+    for (let x in fakePl.inv) {
+        if (typeof fakePl.inv[x] === 'number') {
+            if (invSel == x) {
+                ctx.fillStyle = '#8E8462';
+                ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
+            }
+            ctx.strokeRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
+            buttons.push({
+                x: currBoxX * invBoxW + invStartX,
+                y: currBoxY * invBoxH + invStartY,
+                w: invBoxW,
+                h: invBoxH,
+                cb: ()=>{
+                    if (invSel !== x) {
+                        invSel = x;
+                    }
+                    else {
+                        invSel = null;
+                    }
+                    render();
+                }
+            })
+            ctx.drawImage(sprite, iSprPos[x][0], iSprPos[x][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
+            ctx.font = '20px monospace';
+            ctx.fillStyle = 'black';
+            ctx.fillText(fakePl.inv[x], currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 15);
+            currBoxX++;
+            if (currBoxX >= invBoxX) {
+                currBoxY++;
+                currBoxX = 0;
+            }
+        }
+        else {
+            for (let i=0; i<fakePl.inv[x].instances; i++) {
+                if (invSel == x && invSelIns == i) {
+                    ctx.fillStyle = '#8E8462';
+                    ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
+                }
+                ctx.strokeRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
+                buttons.push({
+                    x: currBoxX * invBoxW + invStartX,
+                    y: currBoxY * invBoxH + invStartY,
+                    w: invBoxW,
+                    h: invBoxH,
+                    cb: ()=>{
+                        if (invSel !== x || invSelIns !== i) {
+                            invSel = x;
+                            invSelIns = i;
+                        }
+                        else {
+                            invSel = null;
+                            invSelIns = null;
+                        }
+                        render();
+                    }
+                })
+                ctx.drawImage(sprite, iSprPos[x][0], iSprPos[x][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
+                ctx.font = '20px monospace';
+                ctx.fillStyle = 'red';
+                ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW, 5);
+                ctx.fillStyle = 'green';
+                ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW * (fakePl.inv[x].duras[i]/10), 5);
+                if (fakePl.equip.some(e=>e.id == x && e.ins == i)) {
+                    ctx.fillStyle = 'black';
+                    ctx.font = '10px monospace'
+                    ctx.fillText('E', currBoxX * invBoxW + invStartX + 5, currBoxY * invBoxH + invStartY + invImgH + 5 + 10)
+                }
+                currBoxX++;
+                if (currBoxX >= invBoxX) {
+                    currBoxY++;
+                    currBoxX = 0;
+                }
+            }
         }
     }
 
@@ -128,7 +193,6 @@ function render() {
         let currY = craftBgY;
         ctx.fillStyle = '#685232';
         ctx.fillRect(currX-10, currY-10, craftBgW+20, craftBgH+20);
-        buttons = [];
         let i = 0;
         for (let r in R) {
             i++;

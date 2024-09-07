@@ -25,7 +25,9 @@ const I = {
     APPLE: 1,
     STONE: 2,
     IRONORE: 3,
-    WOODWALL: 4
+    WOODWALL: 4,
+    STONEWALL: 5,
+    WOODPICK: 6
 }
 
 const R = {
@@ -33,8 +35,13 @@ const R = {
     WOODWALL: {WOOD: 4}
 }
 
+const unstack = [
+    6
+]
+
 module.exports = {
     B: B,
     I: I,
-    R: R
+    R: R,
+    unstack: unstack
 };
