@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, R, unstack, axe, pickaxe, requireAxe, requirePickaxe} = require('./blockIds.js');
+const {B, I, R, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -140,7 +140,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                     hp: 75,
                     maxHp: 100,
                     holding: null,
-                    faceLeft: false
+                    faceLeft: false,
+                    lastAction: 0
                 })], err => {
                     if (err) throw err;
                     res.send('0');
@@ -749,12 +750,25 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
             }, lagSim)
             return;
         }
+        if ((Date.now() - players[session].lastAction) <= (toolCd[parseInt(players[session].holding.id)] - 10)) {
+            setTimeout(()=>{
+                io.to(socket.id).emit('rejectCmd', cmdId);
+            }, lagSim)
+            return;
+        } 
         setTimeout(()=>{
             io.to(socket.id).emit('authCmd', cmdId);
         }, lagSim)
+        lastAction = Date.now();
     }
     if (requirePickaxe.includes(type)) {
         if (players[session].holding === null || !pickaxe.includes(parseInt(players[session].holding.id))) {
+            setTimeout(()=>{
+                io.to(socket.id).emit('rejectCmd', cmdId);
+            }, lagSim)
+            return;
+        }
+        if ((Date.now() - players[session].lastAction) <= (toolCd[parseInt(players[session].holding.id)] - 10)) {
             setTimeout(()=>{
                 io.to(socket.id).emit('rejectCmd', cmdId);
             }, lagSim)

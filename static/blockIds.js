@@ -96,6 +96,13 @@ const requirePickaxe = [
     B.IRON, B.IRON1, B.IRON2, B.IRON3
 ]
 
+const toolCd = {
+    6: 500,
+    7: 500,
+    8: 250,
+    9: 250
+}
+
 const R = {
     STONEWALL: {STONE: 1},
     WOODWALL: {WOOD: 4}

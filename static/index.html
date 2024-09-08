@@ -25,7 +25,7 @@
             const passable = [B.GRASS, B.STUMP, B.STONEBASE, B.IRONBASE];
             
             let lastInput = 0;
-            let inputCd = 300;
+            // let inputCd = 300;
 
             let keyMap = {};
 
@@ -108,7 +108,45 @@
                 })
 
                 document.body.addEventListener('keydown', e=>{
-                    if ((Date.now() - lastInput) >= 100) {
+                    let cd = 300;
+                    let clickCd = 100;
+                    if ('wasd'.includes(e.key)) {
+                        if (fakePl.holding !== null && (axe.includes(parseInt(fakePl.holding.id)) || pickaxe.includes(parseInt(fakePl.holding.id)))) {
+                            let destChunk, destPos;
+                            if (e.key == 'a' || e.key == 'd') {
+                                let multiplier = e.key == 'a' ? -1 : 1;
+                                destChunk = {
+                                    x: (fakePl.chunk.x + Math.floor((fakePl.pos.x + multiplier)/chw)),
+                                    y: fakePl.chunk.y
+                                }
+                                destPos = {
+                                    x: (fakePl.pos.x + multiplier + chw)%chw,
+                                    y: fakePl.pos.y,
+                                    z: fakePl.z
+                                }
+                            }
+                            if (e.key == 'w' || e.key == 's') {
+                                let multiplier = e.key == 'w' ? -1 : 1;
+                                destChunk = {
+                                    x: fakePl.chunk.x,
+                                    y: (fakePl.chunk.y + Math.floor((fakePl.pos.y + multiplier)/chh))
+                                }
+                                destPos = {
+                                    x: fakePl.pos.x,
+                                    y: (fakePl.pos.y + multiplier + chh)%chh,
+                                    z: fakePl.z
+                                }
+                            }
+
+                            let target = overMap[destChunk.y]?.[destChunk.x]?.[destPos.y]?.[destPos.x]?.[destPos.z]
+
+                            if (target !== undefined && requireAxe.includes(target) || requirePickaxe.includes(target)) {
+                                cd = toolCd[parseInt(fakePl.holding.id)];
+                                clickCd = toolCd[parseInt(fakePl.holding.id)];
+                            }
+                        }
+                    }
+                    if ((Date.now() - lastInput) >= clickCd) {
                         lastInput = Date.now();
                         if (!keyMap[e.key]) {
                             if (Object.keys(keyMap).filter(x=>x!=e.key).length > 0) {
@@ -121,7 +159,7 @@
                                         keyPressed(x);
                                     }
                                 }
-                            }, inputCd);
+                            }, cd);
                         }
                     }
                     // keyPressed(e.key);
@@ -249,13 +287,15 @@
                                                 return;
                                             }
                                         }
-                                        let newId = nextCmdId++;
-                                        let seed = Math.round(Math.random() * 1e5);
-                                        socket.emit('interact', session, key, newId, seed);
-                                        unauthCmd[newId] = `in${key.toUpperCase()}`;
-                                        randomSeeds[newId] = seed;
+                                        if (fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins] >= 1) {
+                                            let newId = nextCmdId++;
+                                            let seed = Math.round(Math.random() * 1e5);
+                                            socket.emit('interact', session, key, newId, seed);
+                                            unauthCmd[newId] = `in${key.toUpperCase()}`;
+                                            randomSeeds[newId] = seed;
 
-                                        simulateAllUnauth();
+                                            simulateAllUnauth();
+                                        }
                                     }
                                 }
                             }
