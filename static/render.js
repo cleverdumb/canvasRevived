@@ -85,14 +85,13 @@ function render() {
             }
             
             if (x == 19 && y == 12) {
-                // ctx.fillStyle = 'cyan';
-                ctx.drawImage(sprite, 0, 208, 16, 16, x*bw, y*bh, bw, bh);
+                ctx.drawImage(sprite, fakePl.faceLeft ? 0 : 0, fakePl.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
             }
             for (q in plData) {
                 let p = plData[q];
                 // console.log(x);
                 if (plId != q && (plData[plId].chunk.y-1+chy == p.chunk.y) && (plData[plId].chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
-                    ctx.drawImage(sprite, 0, 208, 16, 16, x*bw, y*bh, bw, bh);
+                    ctx.drawImage(sprite, p.faceLeft ? 0 : 0, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
                 }
             }
             // console.log(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw])

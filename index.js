@@ -139,7 +139,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                     },
                     hp: 75,
                     maxHp: 100,
-                    holding: null
+                    holding: null,
+                    faceLeft: false
                 })], err => {
                     if (err) throw err;
                     res.send('0');
@@ -327,6 +328,7 @@ io.on('connection', (socket)=>{
             }
 
             players[session].z = destPos.z;
+            players[session].faceLeft = direction == 'a';
             // inc pos
             players[session].pos.x += multiplier;
             // roll over chunk
