@@ -85,13 +85,25 @@ function render() {
             }
             
             if (x == 19 && y == 12) {
-                ctx.drawImage(sprite, fakePl.faceLeft ? 0 : 0, fakePl.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                if (fakePl.holding === null) {
+                    ctx.drawImage(sprite, fakePl.faceLeft ? 0 : 0, fakePl.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                }
+                else {
+                    ctx.drawImage(sprite, fakePl.faceLeft ? 16 : 16, fakePl.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                    ctx.drawImage(sprite, fakePl.faceLeft ? toolSprPos[parseInt(fakePl.holding.id)][0][0] : toolSprPos[parseInt(fakePl.holding.id)][1][0], fakePl.faceLeft ? toolSprPos[parseInt(fakePl.holding.id)][0][1] : toolSprPos[parseInt(fakePl.holding.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                }
             }
             for (q in plData) {
                 let p = plData[q];
                 // console.log(x);
                 if (plId != q && (plData[plId].chunk.y-1+chy == p.chunk.y) && (plData[plId].chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
-                    ctx.drawImage(sprite, p.faceLeft ? 0 : 0, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                    if (p.holding === null) {
+                        ctx.drawImage(sprite, p.faceLeft ? 0 : 0, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                    }
+                    else {
+                        ctx.drawImage(sprite, p.faceLeft ? 16 : 16, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                        ctx.drawImage(sprite, p.faceLeft ? toolSprPos[parseInt(p.holding.id)][0][0] : toolSprPos[parseInt(p.holding.id)][1][0], p.faceLeft ? toolSprPos[parseInt(p.holding.id)][0][1] : toolSprPos[parseInt(p.holding.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                    }
                 }
             }
             // console.log(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw])

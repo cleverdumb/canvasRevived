@@ -129,8 +129,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                     z: 3,
                     inv: {
                         6: {
-                            instances: 2,
-                            duras: [10, 9]
+                            instances: 1,
+                            duras: [10]
                         },
                         8: {
                             instances: 1,
@@ -693,6 +693,8 @@ io.on('connection', (socket)=>{
         
         players[session].holding = {id: item, ins: instance};
         io.to(socket.id).emit('authCmd', cmdId);
+
+        emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], socket);
     })
 
     socket.on('unhold', (session, item, instance, cmdId) => {
@@ -717,6 +719,8 @@ io.on('connection', (socket)=>{
 
         players[session].holding = null;
         io.to(socket.id).emit('authCmd', cmdId);
+
+        emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], socket);
     })
 
     socket.on('disconnect', ()=>{
