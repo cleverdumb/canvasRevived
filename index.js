@@ -51,6 +51,8 @@ let chunkW = 50;
 let chunkH = 25;
 let layers = 5;  // 0 is ground, 1/2/3 go up, 3 is top
 
+// * world gen
+
 for (let y=0; y<chunkY; y++) {
     world.push([]);
     for (let x=0; x<chunkX; x++) {
@@ -60,20 +62,29 @@ for (let y=0; y<chunkY; y++) {
             for (let b=0; b<chunkW; b++) {
                 world[y][x][a].push([]);
                 for (let z=0; z<layers; z++) {
-                    world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1) ? ((a+b)%2 ? B.STONE : B.IRON) : null);
+                    // world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1) ? ((a+b)%2 ? B.STONE : B.IRON) : null);
+                    // world[y][x][a][b].push(z==0 ? (Math.random() > 0.5 ? B.GRASS : B.STUMP) : null);
+                    // world[y][x][a][b].push(z==0 ? B.GRASS : null);
+                    world[y][x][a][b].push(z==0 ? (a == chunkH-1 ? B.STONEBASE : B.GRASS) : null);
                 }
             }
         }
     }
 }
 
-// ! testing use
-
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
     plRooms.push([]);
     for (let x=0; x<chunkX; x++) {
         plRooms[y].push([]);
+    }
+}
+
+let npcs = [];
+for (let y=0; y<chunkY; y++) {
+    npcs.push([]);
+    for (let x=0; x<chunkX; x++) {
+        npcs[y].push([]);
     }
 }
 
@@ -193,13 +204,18 @@ app.post('/login', jsonParser, (req, res)=>{
                 ]
 
                 // send initial chunks player data
+                // ! set if changed
                 let initChunk = [0, 0]; // x, y
                 let initPlayerData = [];
+                let initNpcData = [];
                 [-1, 0, 1].forEach(a=>{
                     [-1, 0, 1].forEach(b=>{
                         if (initChunk[0]+a >= 0 && initChunk[0]+a < chunkX && initChunk[1]+b >= 0 && initChunk[1]+b < chunkY) {
                             plRooms[initChunk[1]+b][initChunk[0]+a].forEach(x=>{
                                 initPlayerData.push(players[x]);
+                            })
+                            npcs[initChunk[1]+b][initChunk[0]+a].forEach(x=>{
+                                initNpcData.push(x.data);
                             })
                         }
                     })
@@ -207,7 +223,7 @@ app.post('/login', jsonParser, (req, res)=>{
 
                 players[ses] = data;
                 
-                res.send(`${ses.toString()}-${JSON.stringify(data)}-${JSON.stringify(initMapData)}-${JSON.stringify(initPlayerData)}`);
+                res.send(`${ses.toString()}-${JSON.stringify(data)}-${JSON.stringify(initMapData)}-${JSON.stringify(initPlayerData)}-${JSON.stringify(initNpcData)}`);
 
                 if (!plRooms.some(x=>x.id==players[ses].id)) {
                     plRooms[initChunk[1]][initChunk[0]].push(ses); // start coord determined in signup function, hard coded
@@ -361,6 +377,7 @@ io.on('connection', (socket)=>{
                 // socket join rooms + get new map data to send to client
                 let newMapData = {};
                 let newPlayerData = [];
+                let newNpcData = [];
                 if ((players[session].chunk.x + multiplier) < chunkX && (players[session].chunk.x + multiplier) >= 0) {
                     if (players[session].chunk.y > 0) {
                         sockets[session].join(`${players[session].chunk.x + multiplier},${players[session].chunk.y-1}`);
@@ -392,6 +409,9 @@ io.on('connection', (socket)=>{
                             plRooms[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
                                 newPlayerData.push(players[x]);
                             })
+                            npcs[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
+                                newNpcData.push(x.data);
+                            })
                         }
                     })
                 })
@@ -400,6 +420,7 @@ io.on('connection', (socket)=>{
                 setTimeout(()=>{
                     io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
                     io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
+                    io.to(sockets[session].id).emit('newNpcData', JSON.stringify(newNpcData));
                 }, lagSim)
             }
             
@@ -416,6 +437,7 @@ io.on('connection', (socket)=>{
                 
                 io.to(socket.id).emit('authCmd', cmdId);
             }, lagSim);
+            afterMovement(session);
         }
         else if (direction == 's' || direction == 'w') {
             // world boundary check
@@ -500,6 +522,7 @@ io.on('connection', (socket)=>{
                 // socket join rooms + get new map data to send to client
                 let newMapData = {};
                 let newPlayerData = [];
+                let newNpcData = [];
                 if ((players[session].chunk.y + multiplier) < chunkY && (players[session].chunk.y + multiplier) >= 0) {
                     if (players[session].chunk.x > 0) {
                         sockets[session].join(`${players[session].chunk.x-1},${players[session].chunk.y + multiplier}`);
@@ -531,6 +554,9 @@ io.on('connection', (socket)=>{
                             plRooms[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
                                 newPlayerData.push(players[x]);
                             })
+                            npcs[players[session].chunk.y+b][players[session].chunk.x+a].forEach(x=>{
+                                newNpcData.push(x.data);
+                            })
                         }
                     })
                 })
@@ -539,6 +565,7 @@ io.on('connection', (socket)=>{
                 setTimeout(()=>{
                     io.to(sockets[session].id).emit('newMapData', JSON.stringify(newMapData));
                     io.to(sockets[session].id).emit('newPlayerData', JSON.stringify(newPlayerData));
+                    io.to(sockets[session].id).emit('newNpcData', JSON.stringify(newNpcData));
                 }, lagSim)
             }
             
@@ -555,6 +582,8 @@ io.on('connection', (socket)=>{
                 
                 io.to(socket.id).emit('authCmd', cmdId);
             }, lagSim);
+
+            afterMovement(session);
         }
     })
 
@@ -735,6 +764,45 @@ io.on('connection', (socket)=>{
     })
 })
 
+function afterMovement(session) {
+    let currPos = players[session].pos;
+    let currChunk = players[session].chunk;
+    for (let x=1; x<6; x++) {
+        let targetPos = {
+            x: (currPos.x + x) % chunkW,
+            y: currPos.y
+        }
+        let targetChunk = {
+            x: currChunk.x + Math.floor((currPos.x + x) / chunkW),
+            y: currChunk.y
+        }
+        if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+            npcs[targetChunk.y][targetChunk.x].forEach(n=>{
+                if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
+                    n.aggro(session, 'a', x);
+                }
+            })
+        }
+    }
+    for (let x=1; x<6; x++) {
+        let targetPos = {
+            x: (currPos.x - x + chunkW) % chunkW,
+            y: currPos.y
+        }
+        let targetChunk = {
+            x: currChunk.x + Math.floor((currPos.x - x) / chunkW),
+            y: currChunk.y
+        }
+        if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+            npcs[targetChunk.y][targetChunk.x].forEach(n=>{
+                if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
+                    n.aggro(session, 'd', x);
+                }
+            })
+        }
+    }
+}
+
 function interact(type, chunk, pos, socket, session, seed, cmdId) {
     if (players[session].inv[players[session].holding.id].duras[players[session].holding.ins] < 1) {
         setTimeout(()=>{
@@ -875,3 +943,108 @@ function addToInv(ses, item, dura) {
         }
     }
 }
+
+let nextNpcId = 0;
+
+class CloseRangeNpc {
+    constructor (arg) {
+        this.data = arg;
+        // this.chunk = arg.chunk;
+        // this.pos = arg.pos;
+        npcs[arg.chunk.y][arg.chunk.x].push(this);
+        this.data.faceLeft = true;
+        this.data.id = nextNpcId++;
+        this.data.target = null;
+        this.data.path = [];
+        setInterval(()=>{
+            if (this.data.path.length > 0) {
+                let next = this.data.path.shift();
+                console.log(next);
+                console.log(this.data.path);
+                this.move(next)
+            }
+        }, 1000);
+    }
+    teleport(cx, cy, x, y) {
+        let oriChunk = {x: this.data.chunk.x, y: this.data.chunk.y}
+        this.data.chunk = {x: cx, y: cy};
+        this.data.pos = {x: x, y: y};
+
+        if (oriChunk.x != cx || oriChunk.y != cy) {
+            emitToAdj(oriChunk, 'npcData', [JSON.stringify(this.data)]);
+        }
+        emitToAdj(this.data.chunk, 'npcData', [JSON.stringify(this.data)]);
+    }
+    move(dir) {
+        let destChunk, destPos;
+        let oriChunk = {
+            x: this.data.chunk.x,
+            y: this.data.chunk.y
+        }
+        if (dir == 'd' || dir == 'a') {
+            let multiplier = dir == 'd' ? 1 : -1;
+                
+            destChunk = {
+                x: this.data.chunk.x + Math.floor((this.data.pos.x + multiplier)/chunkW),
+                y: this.data.chunk.y
+            }
+            destPos = {
+                x: (this.data.pos.x + multiplier + chunkW)%chunkW,
+                y: this.data.pos.y
+            }
+
+            if (destChunk.x < 0 || destChunk.x > chunkX - 1) {
+                return;
+            }
+        }
+        else if (dir == 'w' || dir == 's') {
+            let multiplier = dir == 's' ? 1 : -1;
+            
+            destChunk = {
+                x: this.data.chunk.x,
+                y: this.data.chunk.y + Math.floor((this.data.pos.y + multiplier)/chunkH)
+            }
+            destPos = {
+                x: this.data.pos.x,
+                y: (this.data.pos.y + multiplier + chunkH)%chunkH
+            }
+
+            if (destChunk.y < 0 || destChunk.y > chunkY - 1) {
+                return;
+            }
+        }
+
+        this.data.chunk = destChunk;
+        console.log(destChunk)
+        this.data.pos = destPos;
+        console.log(destPos);
+
+        if (destChunk.x != oriChunk.x || destPos.y != oriChunk.y) {
+            emitToAdj(oriChunk, 'npcData', [JSON.stringify(this.data)]);
+        }
+
+        emitToAdj(this.data.chunk, 'npcData', [JSON.stringify(this.data)]);
+    } 
+    aggro(session, dir, times) {
+        console.log('AGGRO');
+        this.data.target = session;
+        this.data.path = Array(times).fill(dir);
+        
+        console.log(this.data.path);
+    }
+}
+
+// let testingNpc = new CloseRangeNpc({
+//     chunk: {
+//         x: 0,
+//         y: 0
+//     },
+//     pos: {
+//         x: 6,
+//         y: 6
+//     }
+// })
+
+// setInterval(()=>{
+//     testingNpc.move('d')
+// }, 1000);

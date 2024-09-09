@@ -11,6 +11,7 @@
         <p id='feedback'></p>
         <canvas id='cvs'></canvas>
         <script src='./blockIds.js'></script>
+        <script src='./simulateCmd.js'></script>
         <script>
             let ioT = null;
             let socket = null;
@@ -28,6 +29,18 @@
             // let inputCd = 300;
 
             let keyMap = {};
+
+            function deepCopy(obj) {
+                if (Array.isArray(obj)) {
+                    var l = obj.length;
+                    var r = new Array(l);
+                    for (var i = 0; i < l; i++) {
+                        r[i] = deepCopy(obj[i]);
+                    }
+                    return r;
+                }
+                return obj;
+            }
 
             document.body.onload = ()=>{
                 loadSpriteMap(afterSpriteLoaded);
@@ -68,9 +81,24 @@
                     render();
                 })
 
+                socket.on('newNpcData', data=>{
+                    let d = JSON.parse(data);
+                    npcs = {};
+                    d.forEach(x=>{
+                        npcs[x.id] = x;
+                    })
+                    render();
+                })
+
                 socket.on('newPlayer', data=>{
                     let d = JSON.parse(data);
                     plData[d.id] = d;
+                    render();
+                })
+
+                socket.on('npcData', data=>{
+                    let d = JSON.parse(data);
+                    npcs[d.id] = d;
                     render();
                 })
 
@@ -81,10 +109,11 @@
                 function authedCmd(id) {
                     if (unauthCmd.hasOwnProperty(id)) {
                         fakePl = JSON.parse(JSON.stringify(plData[plId]));
-                        fakeOverMap = JSON.parse(JSON.stringify(overMap));
+                        fakeOverMap = deepCopy(overMap);
                         simulateCmd(unauthCmd[id], id);
                         plData[plId] = fakePl;
                         overMap = fakeOverMap;
+                        // copy over to bottom
                         delete unauthCmd[id];
                         simulateAllUnauth();
                     }
@@ -176,7 +205,6 @@
 
                     buttons.forEach(b=>{
                         if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
-                            // console.log(r);
                             (b.cb)();
                         }
                     })
@@ -346,149 +374,6 @@
                 }
             }
 
-            function simulateCmd(name, cmdId) {
-                switch (name) {
-                    case 'mvD':
-                        fakePl.pos.x++;
-                        if (fakePl.pos.x >= chw) {
-                            fakePl.pos.x = 0;
-                            fakePl.chunk.x++;
-                        }
-                        destZ = fakePl.z;
-                        destColumn = overMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
-                        // destColumn.reverse();
-                        for (let i=0; i<destColumn.length; i++) {
-                            if (destColumn[i] !== null) {
-                                destZ -= i;
-                                break;
-                            }
-                        }
-                        fakePl.z = destZ;
-                        fakePl.faceLeft = false;
-                        render();
-                        break;
-                    case 'mvA':
-                        fakePl.pos.x--;
-                        if (fakePl.pos.x < 0) {
-                            fakePl.pos.x = chw-1;
-                            fakePl.chunk.x--;
-                        }
-                        destZ = fakePl.z;
-                        destColumn = overMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
-                        
-                        for (let i=0; i<destColumn.length; i++) {
-                            if (destColumn[i] !== null) {
-                                destZ -= i;
-                                break;
-                            }
-                        }
-                        fakePl.z = destZ;
-                        fakePl.faceLeft = true;
-                        render();
-                        break;
-                    case 'mvS':
-                        fakePl.pos.y++;
-                        if (fakePl.pos.y >= chh) {
-                            fakePl.pos.y = 0;
-                            fakePl.chunk.y++;
-                        }
-                        destZ = fakePl.z;
-                        destColumn = overMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
-                        for (let i=0; i<destColumn.length; i++) {
-                            if (destColumn[i] !== null) {
-                                destZ -= i;
-                                break;
-                            }
-                        }
-                        fakePl.z = destZ;
-                        render();
-                        break;
-                    case 'mvW':
-                        fakePl.pos.y--;
-                        if (fakePl.pos.y < 0) {
-                            fakePl.pos.y = chh-1;
-                            fakePl.chunk.y--;
-                        }
-                        destZ = fakePl.z;
-                        destColumn = overMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
-                        for (let i=0; i<destColumn.length; i++) {
-                            if (destColumn[i] !== null) {
-                                destZ -= i;
-                                break;
-                            }
-                        }
-                        fakePl.z = destZ;
-                        render();
-                        break;
-                    case 'inD':
-                    case 'inA': {
-                        let xMult = name[2] == 'D' ? 1 : -1;
-                        let destChunk = {
-                            x: (fakePl.chunk.x + Math.floor((fakePl.pos.x + xMult)/chw)),
-                            y: fakePl.chunk.y
-                        }
-                        let destPos = {
-                            x: (fakePl.pos.x + xMult + chw)%chw,
-                            y: fakePl.pos.y,
-                            z: fakePl.z
-                        }
-                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, randomSeeds[cmdId]);
-                        break;
-                    }
-                    case 'inS':
-                    case 'inW': {
-                        let yMult = name[2] == 'S' ? 1 : -1;
-                        let destChunk = {
-                            x: fakePl.chunk.x,
-                            y: (fakePl.chunk.y + Math.floor((fakePl.pos.y + yMult)/chh))
-                        }
-                        let destPos = {
-                            x: fakePl.pos.x,
-                            y: (fakePl.pos.y + yMult + chh)%chh,
-                            z: fakePl.z
-                        }
-                        interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, randomSeeds[cmdId]);
-                        break;
-                    }
-                    default:
-                        if (name.startsWith('pl')) {
-                            let blockId = parseInt(name.substr(2));
-                            fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] = blockId;
-                            fakePl.z++;
-                            while (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] !== null && fakePl.z < 5) {
-                                fakePl.z++;
-                            }
-                        }
-                        else if (name.startsWith('cr')) {
-                            let arg = name.substr(2);
-                            let type = arg.split('-')[0];
-                            let amount = parseInt(arg.split('-')[1]);
-                            for (let part in R[type]) {
-                                fakePl.inv[I[part]] -= R[type][part] * amount;
-                                if (fakePl.inv[I[part]] <= 0) {
-                                    delete fakePl.inv[I[part]];
-                                }
-                            }
-                            for (let x=0; x<amount; x++) {
-                                addToInventory(I[type]);
-                            }
-                        }
-                        else if (name.startsWith('ho')) {
-                            let id = name.substr(2).split('-')[0];
-                            let ins = name.substr(2).split('-')[1];
-                            
-                            fakePl.holding = {id: id, ins: ins};
-                        }
-                        else if (name.startsWith('unho')) {
-                            let id = name.substr(4).split('-')[0];
-                            let ins = name.substr(4).split('-')[1];
-                            
-                            fakePl.holding = null;
-                        }
-                    break;
-                }
-            }
-
             function craft(type, amount) {
                 let cmdId = nextCmdId++;
                 socket.emit('craft', session, type, amount, cmdId);
@@ -571,7 +456,7 @@
 
             function simulateAllUnauth() {
                 fakePl = JSON.parse(JSON.stringify(plData[plId]));
-                fakeOverMap = JSON.parse(JSON.stringify(overMap));
+                fakeOverMap = deepCopy(overMap);
                 let ids = Object.keys(unauthCmd).sort((a, b)=>a-b);
                 ids.forEach(x=>{
                     simulateCmd(unauthCmd[x], x);

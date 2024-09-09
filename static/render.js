@@ -54,6 +54,7 @@ function render() {
             roofOnTop = true;
         }
     })
+    console.log(npcs);
     for (let y=0; y<by; y++) {
         for (let x=0; x<bx; x++) {
             let cx = x + (px - 19); // absolute pos, x, relative to 3x3
@@ -96,7 +97,7 @@ function render() {
             for (q in plData) {
                 let p = plData[q];
                 // console.log(x);
-                if (plId != q && (plData[plId].chunk.y-1+chy == p.chunk.y) && (plData[plId].chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
+                if (plId != q && (fakePl.chunk.y-1+chy == p.chunk.y) && (fakePl.chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
                     if (p.holding === null) {
                         ctx.drawImage(sprite, p.faceLeft ? 0 : 0, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
                     }
@@ -104,6 +105,12 @@ function render() {
                         ctx.drawImage(sprite, p.faceLeft ? 16 : 16, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
                         ctx.drawImage(sprite, p.faceLeft ? toolSprPos[parseInt(p.holding.id)][0][0] : toolSprPos[parseInt(p.holding.id)][1][0], p.faceLeft ? toolSprPos[parseInt(p.holding.id)][0][1] : toolSprPos[parseInt(p.holding.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
                     }
+                }
+            }
+            for (let n in npcs) {
+                let p = npcs[n];
+                if ((fakePl.chunk.y-1+chy == p.chunk.y) && (fakePl.chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
+                    ctx.drawImage(sprite, p.faceLeft ? 80 : 80, p.faceLeft ? 32 : 16, 16, 16, x*bw, y*bh, bw, bh);
                 }
             }
             // console.log(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw])

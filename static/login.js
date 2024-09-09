@@ -23,16 +23,16 @@ let overMap = [];
 for (let y=0; y<chny; y++) {
     overMap.push([]);
     for (let x=0; x<chnx; x++) {
-        overMap[y].push([]);
-        for (let a=0; a<chh; a++) {
-            overMap[y][x].push([]);
-            for (let b=0; b<chw; b++) {
-                overMap[y][x][a].push([]);
-                for (let z=0; z<layers; z++) {
-                    overMap[y][x][a][b].push(null);
-                }
-            }
-        }
+        overMap[y].push(null);
+        // for (let a=0; a<chh; a++) {
+        //     overMap[y][x].push([]);
+        //     for (let b=0; b<chw; b++) {
+        //         overMap[y][x][a].push([]);
+        //         for (let z=0; z<layers; z++) {
+        //             overMap[y][x][a][b].push(null);
+        //         }
+        //     }
+        // }
     }
 }
 
@@ -40,22 +40,23 @@ let fakeOverMap = [];
 for (let y=0; y<chny; y++) {
     fakeOverMap.push([]);
     for (let x=0; x<chnx; x++) {
-        fakeOverMap[y].push([]);
-        for (let a=0; a<chh; a++) {
-            fakeOverMap[y][x].push([]);
-            for (let b=0; b<chw; b++) {
-                fakeOverMap[y][x][a].push([]);
-                for (let z=0; z<layers; z++) {
-                    fakeOverMap[y][x][a][b].push(null);
-                }
-            }
-        }
+        fakeOverMap[y].push(null);
+        // for (let a=0; a<chh; a++) {
+        //     fakeOverMap[y][x].push([]);
+        //     for (let b=0; b<chw; b++) {
+        //         fakeOverMap[y][x][a].push([]);
+        //         for (let z=0; z<layers; z++) {
+        //             fakeOverMap[y][x][a][b].push(null);
+        //         }
+        //     }
+        // }
     }
 }
 
 let fakePl = {};
 let plData = {}; // players data locally (actual, authorised)
 let plId = null;
+let npcs = {};
 
 function signup(user, pass, cb) {
     let request = new XMLHttpRequest();
@@ -121,6 +122,10 @@ function login(user, pass, cb) {
                     if (!x) return;
                     overMap[pl.chunk.y - 1 + Math.floor(i/3)][pl.chunk.x - 1 + i%3] = x;
                     fakeOverMap[pl.chunk.y - 1 + Math.floor(i/3)][pl.chunk.x - 1 + i%3] = x;
+                })
+                npcsres = JSON.parse(resp.split('-')[4]);
+                npcsres.forEach(x=>{
+                    npcs[x.id] = x;
                 })
                 console.log(`%cSuccess. Session: ${session}`, 'color: green');
 
