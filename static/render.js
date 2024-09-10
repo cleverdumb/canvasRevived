@@ -54,7 +54,6 @@ function render() {
             roofOnTop = true;
         }
     })
-    console.log(npcs);
     for (let y=0; y<by; y++) {
         for (let x=0; x<bx; x++) {
             let cx = x + (px - 19); // absolute pos, x, relative to 3x3

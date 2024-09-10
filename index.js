@@ -65,7 +65,7 @@ for (let y=0; y<chunkY; y++) {
                     // world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1) ? ((a+b)%2 ? B.STONE : B.IRON) : null);
                     // world[y][x][a][b].push(z==0 ? (Math.random() > 0.5 ? B.GRASS : B.STUMP) : null);
                     // world[y][x][a][b].push(z==0 ? B.GRASS : null);
-                    world[y][x][a][b].push(z==0 ? (a == chunkH-1 ? B.STONEBASE : B.GRASS) : null);
+                    world[y][x][a][b].push(z==0 ? (a == chunkH-1 || b == chunkW-1 ? B.STONEBASE : B.GRASS) : null);
                 }
             }
         }
@@ -134,7 +134,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                         y: 0
                     },
                     pos:{
-                        x: 4,
+                        x: 45,
                         y: 4
                     },
                     z: 3,
@@ -801,6 +801,23 @@ function afterMovement(session) {
             })
         }
     }
+    for (let x=1; x<6; x++) {
+        let targetPos = {
+            x: (currPos.x - x + chunkW) % chunkW,
+            y: currPos.y
+        }
+        let targetChunk = {
+            x: currChunk.x + Math.floor((currPos.x - x) / chunkW),
+            y: currChunk.y
+        }
+        if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+            npcs[targetChunk.y][targetChunk.x].forEach(n=>{
+                if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
+                    n.aggro(session, 'd', x);
+                }
+            })
+        }
+    }
 }
 
 function interact(type, chunk, pos, socket, session, seed, cmdId) {
@@ -949,8 +966,6 @@ let nextNpcId = 0;
 class CloseRangeNpc {
     constructor (arg) {
         this.data = arg;
-        // this.chunk = arg.chunk;
-        // this.pos = arg.pos;
         npcs[arg.chunk.y][arg.chunk.x].push(this);
         this.data.faceLeft = true;
         this.data.id = nextNpcId++;
@@ -959,8 +974,6 @@ class CloseRangeNpc {
         setInterval(()=>{
             if (this.data.path.length > 0) {
                 let next = this.data.path.shift();
-                console.log(next);
-                console.log(this.data.path);
                 this.move(next)
             }
         }, 1000);
@@ -1015,36 +1028,29 @@ class CloseRangeNpc {
         }
 
         this.data.chunk = destChunk;
-        console.log(destChunk)
         this.data.pos = destPos;
-        console.log(destPos);
 
         if (destChunk.x != oriChunk.x || destPos.y != oriChunk.y) {
+            npcs[oriChunk.y][oriChunk.x] = npcs[oriChunk.y][oriChunk.x].filter(n=>n.id!=this.id);
+            npcs[this.data.chunk.y][this.data.chunk.x].push(this);
             emitToAdj(oriChunk, 'npcData', [JSON.stringify(this.data)]);
         }
 
         emitToAdj(this.data.chunk, 'npcData', [JSON.stringify(this.data)]);
     } 
     aggro(session, dir, times) {
-        console.log('AGGRO');
         this.data.target = session;
         this.data.path = Array(times).fill(dir);
-        
-        console.log(this.data.path);
     }
 }
 
-// let testingNpc = new CloseRangeNpc({
-//     chunk: {
-//         x: 0,
-//         y: 0
-//     },
-//     pos: {
-//         x: 6,
-//         y: 6
-//     }
-// })
-
-// setInterval(()=>{
-//     testingNpc.move('d')
-// }, 1000);
+let testingNpc = new CloseRangeNpc({
+    chunk: {
+        x: 0,
+        y: 0
+    },
+    pos: {
+        x: 44,
+        y: 6
+    }
+})
