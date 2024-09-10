@@ -818,6 +818,40 @@ function afterMovement(session) {
             })
         }
     }
+    for (let x=1; x<6; x++) {
+        let targetPos = {
+            x: currPos.x,
+            y: (currPos.y - x + chunkH) % chunkH
+        }
+        let targetChunk = {
+            x: currChunk.x,
+            y: currChunk.y + Math.floor((currPos.y - x) / chunkH)
+        }
+        if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+            npcs[targetChunk.y][targetChunk.x].forEach(n=>{
+                if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
+                    n.aggro(session, 's', x);
+                }
+            })
+        }
+    }
+    for (let x=1; x<6; x++) {
+        let targetPos = {
+            x: currPos.x,
+            y: (currPos.y + x) % chunkH
+        }
+        let targetChunk = {
+            x: currChunk.x,
+            y: currChunk.y + Math.floor((currPos.y + x) / chunkH)
+        }
+        if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+            npcs[targetChunk.y][targetChunk.x].forEach(n=>{
+                if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
+                    n.aggro(session, 'w', x);
+                }
+            })
+        }
+    }
 }
 
 function interact(type, chunk, pos, socket, session, seed, cmdId) {
