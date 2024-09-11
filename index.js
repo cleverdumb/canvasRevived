@@ -88,6 +88,8 @@ for (let y=0; y<chunkY; y++) {
     }
 }
 
+let npcObj = {};
+
 function *commandIdGenO() {
     let x = 0;
     while (true) {
@@ -152,7 +154,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                     maxHp: 100,
                     holding: null,
                     faceLeft: false,
-                    lastAction: 0
+                    lastAction: 0,
+                    aggroed: []
                 })], err => {
                     if (err) throw err;
                     res.send('0');
@@ -197,6 +200,7 @@ app.post('/login', jsonParser, (req, res)=>{
                 if (err) throw err;
                 let data = JSON.parse(row.data);
 
+
                 let initMapData = [
                     data.chunk.x == 0 || data.chunk.y == 0 ? null : world[data.chunk.y-1][data.chunk.x-1],        data.chunk.y == 0 ? null : world[data.chunk.y-1][data.chunk.x],        data.chunk.x == chunkX-1 || data.chunk.y == 0 ? null : world[data.chunk.y-1][data.chunk.x+1],
                     data.chunk.x == 0 ? null : world[data.chunk.y][data.chunk.x-1],                               world[data.chunk.y][data.chunk.x],                                     data.chunk.x == chunkX-1 ? null : world[data.chunk.y][data.chunk.x+1],
@@ -212,7 +216,7 @@ app.post('/login', jsonParser, (req, res)=>{
                     [-1, 0, 1].forEach(b=>{
                         if (initChunk[0]+a >= 0 && initChunk[0]+a < chunkX && initChunk[1]+b >= 0 && initChunk[1]+b < chunkY) {
                             plRooms[initChunk[1]+b][initChunk[0]+a].forEach(x=>{
-                                initPlayerData.push(players[x]);
+                                initPlayerData.push(players[x])
                             })
                             npcs[initChunk[1]+b][initChunk[0]+a].forEach(x=>{
                                 initNpcData.push(x.data);
@@ -437,7 +441,7 @@ io.on('connection', (socket)=>{
                 
                 io.to(socket.id).emit('authCmd', cmdId);
             }, lagSim);
-            afterMovement(session);
+            afterMovement(session, direction);
         }
         else if (direction == 's' || direction == 'w') {
             // world boundary check
@@ -583,7 +587,7 @@ io.on('connection', (socket)=>{
                 io.to(socket.id).emit('authCmd', cmdId);
             }, lagSim);
 
-            afterMovement(session);
+            afterMovement(session, direction);
         }
     })
 
@@ -764,9 +768,12 @@ io.on('connection', (socket)=>{
     })
 })
 
-function afterMovement(session) {
+function afterMovement(session, dir) {
     let currPos = players[session].pos;
     let currChunk = players[session].chunk;
+    players[session].aggroed.forEach(n=>{
+        npcObj[n].data.path.push(dir);
+    })
     for (let x=1; x<6; x++) {
         let targetPos = {
             x: (currPos.x + x) % chunkW,
@@ -780,6 +787,9 @@ function afterMovement(session) {
             npcs[targetChunk.y][targetChunk.x].forEach(n=>{
                 if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
                     n.aggro(session, 'a', x);
+                    if (!players[session].aggroed.includes(n.data.id)) {
+                        players[session].aggroed.push(n.data.id);
+                    }
                 }
             })
         }
@@ -797,23 +807,9 @@ function afterMovement(session) {
             npcs[targetChunk.y][targetChunk.x].forEach(n=>{
                 if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
                     n.aggro(session, 'd', x);
-                }
-            })
-        }
-    }
-    for (let x=1; x<6; x++) {
-        let targetPos = {
-            x: (currPos.x - x + chunkW) % chunkW,
-            y: currPos.y
-        }
-        let targetChunk = {
-            x: currChunk.x + Math.floor((currPos.x - x) / chunkW),
-            y: currChunk.y
-        }
-        if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
-            npcs[targetChunk.y][targetChunk.x].forEach(n=>{
-                if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
-                    n.aggro(session, 'd', x);
+                    if (!players[session].aggroed.includes(n.data.id)) {
+                        players[session].aggroed.push(n.data.id);
+                    }
                 }
             })
         }
@@ -831,6 +827,9 @@ function afterMovement(session) {
             npcs[targetChunk.y][targetChunk.x].forEach(n=>{
                 if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
                     n.aggro(session, 's', x);
+                    if (!players[session].aggroed.includes(n.data.id)) {
+                        players[session].aggroed.push(n.data.id);
+                    }
                 }
             })
         }
@@ -848,6 +847,9 @@ function afterMovement(session) {
             npcs[targetChunk.y][targetChunk.x].forEach(n=>{
                 if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
                     n.aggro(session, 'w', x);
+                    if (!players[session].aggroed.includes(n.data.id)) {
+                        players[session].aggroed.push(n.data.id);
+                    }
                 }
             })
         }
@@ -1010,7 +1012,8 @@ class CloseRangeNpc {
                 let next = this.data.path.shift();
                 this.move(next)
             }
-        }, 1000);
+        }, 2000);
+        npcObj[this.data.id] = this;
     }
     teleport(cx, cy, x, y) {
         let oriChunk = {x: this.data.chunk.x, y: this.data.chunk.y}
@@ -1074,6 +1077,7 @@ class CloseRangeNpc {
     } 
     aggro(session, dir, times) {
         this.data.target = session;
+        this.data.path = [];
         this.data.path = Array(times).fill(dir);
     }
 }
