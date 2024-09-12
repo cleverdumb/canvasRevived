@@ -72,6 +72,11 @@ for (let y=0; y<chunkY; y++) {
     }
 }
 
+world[0][0][1][8][1] = B.STONE;
+world[0][0][2][7][1] = B.STONE;
+world[0][0][2][9][1] = B.STONE;
+world[0][0][3][8][1] = B.STONE;
+
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
     plRooms.push([]);
@@ -136,7 +141,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                         y: 0
                     },
                     pos:{
-                        x: 45,
+                        x: 4,
                         y: 4
                     },
                     z: 3,
@@ -784,6 +789,9 @@ function afterMovement(session, dir) {
             y: currChunk.y
         }
         if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+            if (!passable.includes(world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1]) && world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1] !== null) {
+                break;
+            }
             npcs[targetChunk.y][targetChunk.x].forEach(n=>{
                 if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
                     n.aggro(session, 'a', x);
@@ -804,6 +812,10 @@ function afterMovement(session, dir) {
             y: currChunk.y
         }
         if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+            if (!passable.includes(world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1]) && world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1] !== null) {
+                break;
+            }
+            //todo: add testing
             npcs[targetChunk.y][targetChunk.x].forEach(n=>{
                 if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
                     n.aggro(session, 'd', x);
@@ -824,6 +836,9 @@ function afterMovement(session, dir) {
             y: currChunk.y + Math.floor((currPos.y - x) / chunkH)
         }
         if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+            if (!passable.includes(world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1]) && world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1] !== null) {
+                break;
+            }
             npcs[targetChunk.y][targetChunk.x].forEach(n=>{
                 if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
                     n.aggro(session, 's', x);
@@ -844,6 +859,9 @@ function afterMovement(session, dir) {
             y: currChunk.y + Math.floor((currPos.y + x) / chunkH)
         }
         if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+            if (!passable.includes(world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1]) && world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1] !== null) {
+                break;
+            }
             npcs[targetChunk.y][targetChunk.x].forEach(n=>{
                 if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
                     n.aggro(session, 'w', x);
@@ -1012,7 +1030,7 @@ class CloseRangeNpc {
                 let next = this.data.path.shift();
                 this.move(next)
             }
-        }, 2000);
+        }, 500);
         npcObj[this.data.id] = this;
     }
     teleport(cx, cy, x, y) {
@@ -1082,13 +1100,24 @@ class CloseRangeNpc {
     }
 }
 
-let testingNpc = new CloseRangeNpc({
+new CloseRangeNpc({
     chunk: {
         x: 0,
         y: 0
     },
     pos: {
-        x: 44,
-        y: 6
+        x: 8,
+        y: 2
+    }
+})
+
+new CloseRangeNpc({
+    chunk: {
+        x: 0,
+        y: 0
+    },
+    pos: {
+        x: 5,
+        y: 2
     }
 })
