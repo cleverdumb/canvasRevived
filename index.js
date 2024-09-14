@@ -334,22 +334,24 @@ io.on('connection', (socket)=>{
                 z: players[session].z
             }
 
-            let npcInDest = false;
-            let targetNpc = null;
-            npcs[destChunk.y][destChunk.x].forEach(n=>{
-                if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && destPos.z == 1) {
-                    npcInDest = true;
-                    targetNpc = n;
-                }
-            })
+            if (players[session].holding !== null && sword.includes(parseInt(players[session].holding.id))) { 
+                let npcInDest = false;
+                let targetNpc = null;
+                npcs[destChunk.y][destChunk.x].forEach(n=>{
+                    if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && destPos.z == 1) {
+                        npcInDest = true;
+                        targetNpc = n;
+                    }
+                })
 
-            if (npcInDest) {
-                targetNpc.move(direction);
-                if (cmdId === null) return;
-                setTimeout(()=>{
-                    io.to(socket.id).emit('rejectCmd', cmdId);
-                }, lagSim);
-                return;
+                if (npcInDest) {
+                    targetNpc.move(direction);
+                    if (cmdId === null) return;
+                    setTimeout(()=>{
+                        io.to(socket.id).emit('rejectCmd', cmdId);
+                    }, lagSim);
+                    return;
+                }
             }
 
             // check if there is player in dest
@@ -498,22 +500,24 @@ io.on('connection', (socket)=>{
                 z: players[session].z
             }
 
-            let npcInDest = false;
-            let targetNpc = null;
-            npcs[destChunk.y][destChunk.x].forEach(n=>{
-                if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && destPos.z == 1) {
-                    npcInDest = true;
-                    targetNpc = n;
-                }
-            })
+            if (players[session].holding !== null && sword.includes(parseInt(players[session].holding.id))) { 
+                let npcInDest = false;
+                let targetNpc = null;
+                npcs[destChunk.y][destChunk.x].forEach(n=>{
+                    if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && destPos.z == 1) {
+                        npcInDest = true;
+                        targetNpc = n;
+                    }
+                })
 
-            if (npcInDest) {
-                targetNpc.move(direction);
-                if (cmdId === null) return;
-                setTimeout(()=>{
-                    io.to(socket.id).emit('rejectCmd', cmdId);
-                }, lagSim);
-                return;
+                if (npcInDest) {
+                    targetNpc.move(direction);
+                    if (cmdId === null) return;
+                    setTimeout(()=>{
+                        io.to(socket.id).emit('rejectCmd', cmdId);
+                    }, lagSim);
+                    return;
+                }
             }
 
             // check if there is player in dest
