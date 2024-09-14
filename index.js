@@ -1061,6 +1061,7 @@ function addToInv(ses, item, dura) {
 let nextNpcId = 0;
 
 class CloseRangeNpc {
+    static maxPathLength = 5;
     constructor (arg) {
         this.data = arg;
         npcs[arg.chunk.y][arg.chunk.x].push(this);
@@ -1068,12 +1069,17 @@ class CloseRangeNpc {
         this.data.id = nextNpcId++;
         this.data.target = null;
         this.data.path = [];
-        // setInterval(()=>{
-        //     if (this.data.path.length > 0) {
-        //         let next = this.data.path.shift();
-        //         this.move(next)
-        //     }
-        // }, 500);
+        setInterval(()=>{
+            if (this.data.path.length > CloseRangeNpc.maxPathLength) {
+                this.data.path = [];
+                players[this.data.target].aggroed = players[this.data.target].aggroed.filter(x=>npcObj[x].data.id != this.data.id)
+                this.target = null;
+            }
+            if (this.data.path.length > 0) {
+                let next = this.data.path.shift();
+                this.move(next)
+            }
+        }, 500);
         npcObj[this.data.id] = this;
     }
     teleport(cx, cy, x, y) {
@@ -1107,6 +1113,10 @@ class CloseRangeNpc {
             if (destChunk.x < 0 || destChunk.x > chunkX - 1) {
                 return;
             }
+
+            if (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x][1]) && world[destChunk.y][destChunk.x][destPos.y][destPos.x][1] !== null) {
+                return;
+            }
         }
         else if (dir == 'w' || dir == 's') {
             let multiplier = dir == 's' ? 1 : -1;
@@ -1123,7 +1133,28 @@ class CloseRangeNpc {
             if (destChunk.y < 0 || destChunk.y > chunkY - 1) {
                 return;
             }
+
+            if (!passable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x][1]) && world[destChunk.y][destChunk.x][destPos.y][destPos.x][1] !== null) {
+                return;
+            }
         }
+
+        let plInDest = false;
+        plRooms[destChunk.y][destChunk.x].forEach(p=>{
+            let d = players[p];
+            if (d.pos.x == destPos.x && d.pos.y == destPos.y && d.z == 1) {
+                plInDest = true;
+                players[p].hp -= 10;
+                players[p].hp = Math.max(players[p].hp, 0);
+
+                this.data.path.push(dir);
+
+                emitToAdj(destChunk, 'newPlayer', [JSON.stringify(players[p])]);
+                io.to(sockets[p].id).emit('fakePlProp', 'hp', players[p].hp);
+            }
+        })
+
+        if (plInDest) return;
 
         this.data.chunk = destChunk;
         this.data.pos = destPos;

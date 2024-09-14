@@ -91,20 +91,30 @@
                 })
 
                 socket.on('newPlayer', data=>{
+                    console.log(data);
                     let d = JSON.parse(data);
                     plData[d.id] = d;
                     render();
                 })
 
+                socket.on('fakePlProp', (prop, data)=>{
+                    plData[plId][prop] = data;
+
+                    simulateAllUnauth();
+                })
+
                 socket.on('npcData', data=>{
                     let d = JSON.parse(data);
-                    console.log(d);
                     npcs[d.id] = d;
                     render();
                 })
 
                 socket.on('authCmd', id=>{
                     authedCmd(id);
+                })
+
+                socket.on('disconnect', ()=>{
+                    location.reload();
                 })
 
                 function authedCmd(id) {
