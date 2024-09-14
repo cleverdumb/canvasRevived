@@ -110,6 +110,8 @@ function render() {
                 let p = npcs[n];
                 if ((fakePl.chunk.y-1+chy == p.chunk.y) && (fakePl.chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
                     ctx.drawImage(sprite, p.faceLeft ? 80 : 80, p.faceLeft ? 32 : 16, 16, 16, x*bw, y*bh, bw, bh);
+                    ctx.fillStyle = 'red';
+                    ctx.fillRect(x*bw + 2, y*bh + bh - 3, (bw-4) * p.hp/p.maxHp, 3);
                 }
             }
             // console.log(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw])

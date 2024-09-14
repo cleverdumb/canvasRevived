@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, R, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword} = require('./blockIds.js');
+const {B, I, R, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -346,6 +346,7 @@ io.on('connection', (socket)=>{
 
                 if (npcInDest) {
                     targetNpc.move(direction);
+                    targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
                     if (cmdId === null) return;
                     setTimeout(()=>{
                         io.to(socket.id).emit('rejectCmd', cmdId);
@@ -512,6 +513,7 @@ io.on('connection', (socket)=>{
 
                 if (npcInDest) {
                     targetNpc.move(direction);
+                    targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
                     if (cmdId === null) return;
                     setTimeout(()=>{
                         io.to(socket.id).emit('rejectCmd', cmdId);
@@ -1069,7 +1071,9 @@ class CloseRangeNpc {
         this.data.id = nextNpcId++;
         this.data.target = null;
         this.data.path = [];
-        setInterval(()=>{
+        this.data.hp = 100;
+        this.data.maxHp = 100;
+        this.heartBeat = setInterval(()=>{
             if (this.data.path.length > CloseRangeNpc.maxPathLength) {
                 this.data.path = [];
                 players[this.data.target].aggroed = players[this.data.target].aggroed.filter(x=>npcObj[x].data.id != this.data.id)
@@ -1079,7 +1083,10 @@ class CloseRangeNpc {
                 let next = this.data.path.shift();
                 this.move(next)
             }
-        }, 500);
+            // else {
+            //     this.move('wasd'[Math.round(Math.random()*3)]);
+            // }
+        }, 1000);
         npcObj[this.data.id] = this;
     }
     teleport(cx, cy, x, y) {
@@ -1154,6 +1161,22 @@ class CloseRangeNpc {
             }
         })
 
+        let npcInDest = false;
+        npcs[destChunk.y][destChunk.x].forEach(n=>{
+            if (n.data.pos.x == destPos.x && n.data.pos.y == destPos.y) {
+                npcInDest = true;
+            }
+        })
+
+        if (npcInDest) {
+            this.data.path = [];
+            if (this.target !== null) {
+                players[this.data.target].aggroed = players[this.data.target].aggroed.filter(x=>npcObj[x].data.id != this.data.id)
+                this.target = null;
+            }
+
+            return;
+        }
         if (plInDest) return;
 
         this.data.chunk = destChunk;
@@ -1167,6 +1190,25 @@ class CloseRangeNpc {
 
         emitToAdj(this.data.chunk, 'npcData', [JSON.stringify(this.data)]);
     } 
+    damage(session, dmg) {
+        this.data.hp -= dmg;
+        this.data.hp = Math.max(this.data.hp, 0);
+
+        if (this.data.hp <= 0) {
+            this.die(session);
+            clearInterval(this.heartBeat);
+            return;
+        }
+
+        emitToAdj(this.data.chunk, 'npcData', [JSON.stringify(this.data)]);
+    }
+    die(session) {
+        addToInv(session, I.APPLE, null);
+        io.to(sockets[session].id).emit('fakePlAddToInv', I.APPLE);
+
+        npcs[this.data.chunk.y][this.data.chunk.x] = npcs[this.data.chunk.y][this.data.chunk.x].filter(n=>n.data.id != this.data.id);
+        emitToAdj(this.data.chunk, 'npcDie', [this.data.id]);
+    }
     aggro(session, dir, times) {
         this.data.target = session;
         this.data.path = [];

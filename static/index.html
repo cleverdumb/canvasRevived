@@ -83,6 +83,7 @@
 
                 socket.on('newNpcData', data=>{
                     let d = JSON.parse(data);
+                    console.log(d);
                     npcs = {};
                     d.forEach(x=>{
                         npcs[x.id] = x;
@@ -91,7 +92,6 @@
                 })
 
                 socket.on('newPlayer', data=>{
-                    console.log(data);
                     let d = JSON.parse(data);
                     plData[d.id] = d;
                     render();
@@ -103,8 +103,43 @@
                     simulateAllUnauth();
                 })
 
+                socket.on('npcDie', id=>{
+                    if (npcs.hasOwnProperty(id)) {
+                        delete npcs[id];
+                    }
+
+                    render();
+                })
+
+                socket.on('fakePlAddToInv', itemId => {
+                    console.log(itemId);
+                    if (!unstack.includes(itemId)) {
+                        if (plData[plId].inv.hasOwnProperty(itemId)) {
+                            plData[plId].inv[itemId]++;
+                        }
+                        else {
+                            plData[plId].inv[itemId] = 1;
+                        }
+                    }
+                    else {
+                        if (plData[plId].inv.hasOwnProperty(itemId)) {
+                            plData[plId].inv[itemId].instance++;
+                            plData[plId].inv[itemId].duras.push(dura);
+                        }
+                        else {
+                            plData[plId].inv[itemId] = {
+                                instance: 1,
+                                duras: [dura]
+                            }
+                        }
+                    }
+
+                    simulateAllUnauth();
+                })
+
                 socket.on('npcData', data=>{
                     let d = JSON.parse(data);
+                    console.log(d);
                     npcs[d.id] = d;
                     render();
                 })

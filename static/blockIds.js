@@ -110,6 +110,10 @@ const toolCd = {
     9: 250
 }
 
+const dmg = {
+    10: 10
+}
+
 const R = {
     STONEWALL: {STONE: 1},
     WOODWALL: {WOOD: 4}

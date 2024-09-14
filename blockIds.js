@@ -110,10 +110,14 @@ const toolCd = {
     9: 250
 }
 
+const dmg = {
+    10: 10
+}
+
 const R = {
     STONEWALL: {STONE: 1},
     WOODWALL: {WOOD: 4}
 }
 module.exports = {
-    B, I, R, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword
+    B, I, R, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword, dmg
 };
