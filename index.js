@@ -334,6 +334,24 @@ io.on('connection', (socket)=>{
                 z: players[session].z
             }
 
+            let npcInDest = false;
+            let targetNpc = null;
+            npcs[destChunk.y][destChunk.x].forEach(n=>{
+                if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && destPos.z == 1) {
+                    npcInDest = true;
+                    targetNpc = n;
+                }
+            })
+
+            if (npcInDest) {
+                targetNpc.move(direction);
+                if (cmdId === null) return;
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
+            }
+
             // check if there is player in dest
             if (plRooms[destChunk.y][destChunk.x].some(p=>players[p].pos.x==destPos.x && players[p].pos.y==destPos.y && players[p].z == destPos.z)) {
                 setTimeout(()=>{
@@ -478,6 +496,24 @@ io.on('connection', (socket)=>{
                 x: players[session].pos.x,
                 y: (players[session].pos.y + multiplier + chunkH)%chunkH,
                 z: players[session].z
+            }
+
+            let npcInDest = false;
+            let targetNpc = null;
+            npcs[destChunk.y][destChunk.x].forEach(n=>{
+                if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && destPos.z == 1) {
+                    npcInDest = true;
+                    targetNpc = n;
+                }
+            })
+
+            if (npcInDest) {
+                targetNpc.move(direction);
+                if (cmdId === null) return;
+                setTimeout(()=>{
+                    io.to(socket.id).emit('rejectCmd', cmdId);
+                }, lagSim);
+                return;
             }
 
             // check if there is player in dest
@@ -819,7 +855,6 @@ function afterMovement(session, dir) {
             if (!passable.includes(world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1]) && world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1] !== null) {
                 break;
             }
-            //todo: add testing
             npcs[targetChunk.y][targetChunk.x].forEach(n=>{
                 if (n.data.pos.x == targetPos.x && n.data.pos.y == targetPos.y) {
                     n.aggro(session, 'd', x);
@@ -1089,7 +1124,7 @@ class CloseRangeNpc {
         this.data.chunk = destChunk;
         this.data.pos = destPos;
 
-        if (destChunk.x != oriChunk.x || destPos.y != oriChunk.y) {
+        if (destChunk.x != oriChunk.x || destChunk.y != oriChunk.y) {
             npcs[oriChunk.y][oriChunk.x] = npcs[oriChunk.y][oriChunk.x].filter(n=>n.id!=this.id);
             npcs[this.data.chunk.y][this.data.chunk.x].push(this);
             emitToAdj(oriChunk, 'npcData', [JSON.stringify(this.data)]);
