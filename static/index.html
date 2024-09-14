@@ -237,32 +237,59 @@
                                 }
                             }
                             if (!playerInDest) {
-                                if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]) || fakePl.z >= 5) {
-                                    let newId = nextCmdId++;
-                                    socket.emit('movement', session, key, newId);
-                                    unauthCmd[newId] = 'mv' + key.toUpperCase();
+                                if (fakePl.holding === null || !sword.includes(parseInt(fakePl.holding.id))) {
+                                    if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]) || fakePl.z >= 5) {
+                                        let newId = nextCmdId++;
+                                        socket.emit('movement', session, key, newId);
+                                        unauthCmd[newId] = 'mv' + key.toUpperCase();
 
-                                    simulateAllUnauth();
+                                        simulateAllUnauth();
+                                    }
+                                    else {
+                                        let target = fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z];
+                                        if (interactable.includes(target)) {
+                                            if (requireAxe.includes(target)) {
+                                                if (fakePl.holding === null || !axe.includes(parseInt(fakePl.holding.id))) {
+                                                    return;
+                                                }
+                                            }
+                                            if (requirePickaxe.includes(target)) {
+                                                if (fakePl.holding === null || !pickaxe.includes(parseInt(fakePl.holding.id))) {
+                                                    return;
+                                                }
+                                            }
+                                            if (fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins] >= 1) {
+                                                let newId = nextCmdId++;
+                                                let seed = Math.round(Math.random() * 1e5);
+                                                socket.emit('interact', session, key, newId, seed);
+                                                unauthCmd[newId] = `in${key.toUpperCase()}`;
+                                                randomSeeds[newId] = seed;
+
+                                                simulateAllUnauth();
+                                            }
+                                        }
+                                    }
                                 }
                                 else {
-                                    let target = fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z];
-                                    if (interactable.includes(target)) {
-                                        if (requireAxe.includes(target)) {
-                                            if (fakePl.holding === null || !axe.includes(parseInt(fakePl.holding.id))) {
-                                                return;
-                                            }
+                                    let npcInDest = false;
+                                    let targetNpc = null;
+                                    for (x in npcs) {
+                                        let n = npcs[x];
+                                        if (n.chunk.x == destChunk.x && n.chunk.y == destChunk.y && n.pos.x == destPos.x && n.pos.y == destPos.y && destPos.z == 1) {
+                                            npcInDest = true;
+                                            targetNpc = x;
+                                            break;
                                         }
-                                        if (requirePickaxe.includes(target)) {
-                                            if (fakePl.holding === null || !pickaxe.includes(parseInt(fakePl.holding.id))) {
-                                                return;
-                                            }
-                                        }
-                                        if (fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins] >= 1) {
+                                    }
+
+                                    if (npcInDest) {
+                                        console.log(`npc ${targetNpc}`);
+                                    }
+                                    else {
+                                        if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]) || fakePl.z >= 5) {
                                             let newId = nextCmdId++;
-                                            let seed = Math.round(Math.random() * 1e5);
-                                            socket.emit('interact', session, key, newId, seed);
-                                            unauthCmd[newId] = `in${key.toUpperCase()}`;
-                                            randomSeeds[newId] = seed;
+                                            socket.emit('movement', session, key, newId);
+                                            unauthCmd[newId] = 'mv' + key.toUpperCase();
 
                                             simulateAllUnauth();
                                         }
@@ -295,32 +322,59 @@
                                 }
                             }
                             if (!playerInDest) {
-                                if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]) || fakePl.z >= 5) {
-                                    let newId = nextCmdId++;
-                                    socket.emit('movement', session, key, newId);
-                                    unauthCmd[newId] = 'mv' + key.toUpperCase();
+                                if (fakePl.holding === null || !sword.includes(parseInt(fakePl.holding.id))) {
+                                    if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]) || fakePl.z >= 5) {
+                                        let newId = nextCmdId++;
+                                        socket.emit('movement', session, key, newId);
+                                        unauthCmd[newId] = 'mv' + key.toUpperCase();
 
-                                    simulateAllUnauth();
+                                        simulateAllUnauth();
+                                    }
+                                    else {
+                                        let target = fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z];
+                                        if (interactable.includes(target)) {
+                                            if (requireAxe.includes(target)) {
+                                                if (fakePl.holding === null || !axe.includes(parseInt(fakePl.holding.id))) {
+                                                    return;
+                                                }
+                                            }
+                                            if (requirePickaxe.includes(target)) {
+                                                if (fakePl.holding === null || !pickaxe.includes(parseInt(fakePl.holding.id))) {
+                                                    return;
+                                                }
+                                            }
+                                            if (fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins] >= 1) {
+                                                let newId = nextCmdId++;
+                                                let seed = Math.round(Math.random() * 1e5);
+                                                socket.emit('interact', session, key, newId, seed);
+                                                unauthCmd[newId] = `in${key.toUpperCase()}`;
+                                                randomSeeds[newId] = seed;
+
+                                                simulateAllUnauth();
+                                            }
+                                        }
+                                    }
                                 }
                                 else {
-                                    let target = fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z];
-                                    if (interactable.includes(target)) {
-                                        if (requireAxe.includes(target)) {
-                                            if (fakePl.holding === null || !axe.includes(parseInt(fakePl.holding.id))) {
-                                                return;
-                                            }
+                                    let npcInDest = false;
+                                    let targetNpc = null;
+                                    for (x in npcs) {
+                                        let n = npcs[x];
+                                        if (n.chunk.x == destChunk.x && n.chunk.y == destChunk.y && n.pos.x == destPos.x && n.pos.y == destPos.y && destPos.z == 1) {
+                                            npcInDest = true;
+                                            targetNpc = x;
+                                            break;
                                         }
-                                        if (requirePickaxe.includes(target)) {
-                                            if (fakePl.holding === null || !pickaxe.includes(parseInt(fakePl.holding.id))) {
-                                                return;
-                                            }
-                                        }
-                                        if (fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins] >= 1) {
+                                    }
+
+                                    if (npcInDest) {
+                                        console.log(`npc ${targetNpc}`);
+                                    }
+                                    else {
+                                        if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]) || fakePl.z >= 5) {
                                             let newId = nextCmdId++;
-                                            let seed = Math.round(Math.random() * 1e5);
-                                            socket.emit('interact', session, key, newId, seed);
-                                            unauthCmd[newId] = `in${key.toUpperCase()}`;
-                                            randomSeeds[newId] = seed;
+                                            socket.emit('movement', session, key, newId);
+                                            unauthCmd[newId] = 'mv' + key.toUpperCase();
 
                                             simulateAllUnauth();
                                         }
@@ -351,7 +405,7 @@
                             // check if inventory has the item
                             if (invSel !== null && fakePl.inv.hasOwnProperty(invSel) && invSelIns < fakePl.inv[invSel].instances) {
                                 // check if it is held-equipment
-                                if (axe.includes(parseInt(invSel)) || pickaxe.includes(parseInt(invSel))) {
+                                if (axe.includes(parseInt(invSel)) || pickaxe.includes(parseInt(invSel)) || sword.includes(parseInt(invSel))) {
                                     // check if it is currently equiped
                                     if (!(fakePl.holding !== null && fakePl.holding.id == invSel && fakePl.holding.ins == invSelIns)) {
                                         let newId = nextCmdId++;

@@ -52,7 +52,8 @@ const iSprPos = {
     6: [32, 64],
     7: [64, 64],
     8: [48, 64],
-    9: [80, 64]
+    9: [80, 64],
+    10: [160, 64]
 }
 
 const I = {
@@ -65,11 +66,20 @@ const I = {
     WOODPICK: 6,
     WOODAXE: 7,
     STONEPICK: 8,
-    STONEAXE: 9
+    STONEAXE: 9,
+    WOODSWORD: 10
+}
+
+const toolSprPos = {
+    6: [[256, 192], [16, 192]],
+    7: [[272, 192], [0, 192]],
+    8: [[224, 192], [48, 192]],
+    9: [[240, 192], [32, 192]],
+    10: [[208, 192], [64, 192]]
 }
 
 const unstack = [
-    6, 7, 8, 9
+    6, 7, 8, 9, 10
 ]
 
 const axe = [
@@ -78,6 +88,10 @@ const axe = [
 
 const pickaxe = [
     6, 8
+]
+
+const sword = [
+    10
 ]
 
 const requireAxe = [
@@ -101,5 +115,5 @@ const R = {
     WOODWALL: {WOOD: 4}
 }
 module.exports = {
-    B, I, R, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd
+    B, I, R, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword
 };

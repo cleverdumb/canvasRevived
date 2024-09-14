@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, R, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd} = require('./blockIds.js');
+const {B, I, R, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -72,10 +72,10 @@ for (let y=0; y<chunkY; y++) {
     }
 }
 
-world[0][0][1][8][1] = B.STONE;
-world[0][0][2][7][1] = B.STONE;
-world[0][0][2][9][1] = B.STONE;
-world[0][0][3][8][1] = B.STONE;
+// world[0][0][1][8][1] = B.STONE;
+// world[0][0][2][7][1] = B.STONE;
+// world[0][0][2][9][1] = B.STONE;
+// world[0][0][3][8][1] = B.STONE;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -153,11 +153,15 @@ app.post('/signup', jsonParser, (req, res)=>{
                         8: {
                             instances: 1,
                             duras: [10]
+                        },
+                        10: {
+                            instances: 1,
+                            duras: [10]
                         }
                     },
                     hp: 75,
                     maxHp: 100,
-                    holding: null,
+                    holding: {id: 10, ins: 0},
                     faceLeft: false,
                     lastAction: 0,
                     aggroed: []
@@ -1025,12 +1029,12 @@ class CloseRangeNpc {
         this.data.id = nextNpcId++;
         this.data.target = null;
         this.data.path = [];
-        setInterval(()=>{
-            if (this.data.path.length > 0) {
-                let next = this.data.path.shift();
-                this.move(next)
-            }
-        }, 500);
+        // setInterval(()=>{
+        //     if (this.data.path.length > 0) {
+        //         let next = this.data.path.shift();
+        //         this.move(next)
+        //     }
+        // }, 500);
         npcObj[this.data.id] = this;
     }
     teleport(cx, cy, x, y) {
