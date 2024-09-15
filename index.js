@@ -511,7 +511,8 @@ io.on('connection', (socket)=>{
                     }
                 })
 
-                if (npcInDest) {
+                if (npcInDest && (Date.now() - players[session].lastAction) > toolCd[parseInt(players[session].holding.id)]) {
+                    players[session].lastAction = Date.now();
                     targetNpc.move(direction);
                     targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
                     if (cmdId === null) return;
@@ -1088,6 +1089,8 @@ class CloseRangeNpc {
             // }
         }, 1000);
         npcObj[this.data.id] = this;
+
+        emitToAdj(this.data.chunk, 'npcData', [JSON.stringify(this.data)]);
     }
     teleport(cx, cy, x, y) {
         let oriChunk = {x: this.data.chunk.x, y: this.data.chunk.y}
@@ -1208,6 +1211,17 @@ class CloseRangeNpc {
 
         npcs[this.data.chunk.y][this.data.chunk.x] = npcs[this.data.chunk.y][this.data.chunk.x].filter(n=>n.data.id != this.data.id);
         emitToAdj(this.data.chunk, 'npcDie', [this.data.id]);
+
+        new CloseRangeNpc({
+            chunk: {
+                x: 0,
+                y: 0
+            },
+            pos: {
+                x: 8,
+                y: 4
+            }
+        })
     }
     aggro(session, dir, times) {
         this.data.target = session;

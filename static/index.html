@@ -186,7 +186,7 @@
                     let cd = 300;
                     let clickCd = 100;
                     if ('wasd'.includes(e.key)) {
-                        if (fakePl.holding !== null && (axe.includes(parseInt(fakePl.holding.id)) || pickaxe.includes(parseInt(fakePl.holding.id)))) {
+                        if (fakePl.holding !== null) {
                             let destChunk, destPos;
                             if (e.key == 'a' || e.key == 'd') {
                                 let multiplier = e.key == 'a' ? -1 : 1;
@@ -215,9 +215,26 @@
 
                             let target = overMap[destChunk.y]?.[destChunk.x]?.[destPos.y]?.[destPos.x]?.[destPos.z]
 
-                            if (target !== undefined && requireAxe.includes(target) || requirePickaxe.includes(target)) {
-                                cd = toolCd[parseInt(fakePl.holding.id)];
-                                clickCd = toolCd[parseInt(fakePl.holding.id)];
+                            if (axe.includes(parseInt(fakePl.holding.id)) || pickaxe.includes(parseInt(fakePl.holding.id))) {
+                                if (target !== undefined && requireAxe.includes(target) || requirePickaxe.includes(target)) {
+                                    cd = toolCd[parseInt(fakePl.holding.id)];
+                                    clickCd = toolCd[parseInt(fakePl.holding.id)];
+                                }
+                            }
+                            else if (sword.includes(parseInt(fakePl.holding.id))) {
+                                let npcInDest = false;
+                                for (let id in npcs) {
+                                    let n = npcs[id]
+                                    if (n.chunk.y == destChunk.y && n.chunk.x == destChunk.x && n.pos.y == destPos.y && n.pos.x == destPos.x && destPos.z == 1) {
+                                        npcInDest = true;
+                                        break;
+                                    }
+                                }
+
+                                if (npcInDest) {
+                                    cd = toolCd[parseInt(fakePl.holding.id)];
+                                    clickCd = toolCd[parseInt(fakePl.holding.id)];
+                                }
                             }
                         }
                     }
