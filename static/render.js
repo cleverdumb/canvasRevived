@@ -15,7 +15,7 @@ let invImgH = 40;
 let invStartX = 60;
 let invStartY = by*bh + 50;
 let invBoxX = 15;
-let invSel = null;
+let invSel = I.APPLE;
 let invSelIns = null;
 
 let craftMenuOpen = false;
@@ -320,6 +320,25 @@ function render() {
                 currY += 15 + 5;
             }
         }
+    }
+
+    if (usable.includes(parseInt(invSel))) {
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle = '#685232';
+        ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('USE').width + 20, 26);
+        ctx.strokeRect(invStartX + 20, invStartY - 103, ctx.measureText('USE').width + 20, 26);
+        ctx.font = '20px monospace';
+        ctx.fillStyle = 'white';
+        ctx.fillText('USE', invStartX + 20 + 10, invStartY - 100 + 18);
+        buttons.push({
+            x: invStartX + 20,
+            y: invStartY - 103,
+            w: ctx.measureText('USE').width + 20,
+            h: 26,
+            cb: ()=>{
+                use(parseInt(invSel));
+            }
+        })
     }
 }
 

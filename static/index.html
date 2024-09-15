@@ -95,6 +95,8 @@
                 })
 
                 socket.on('fakePlProp', (prop, data)=>{
+                    console.log('prop');
+                    console.log(prop, data);
                     plData[plId][prop] = data;
 
                     simulateAllUnauth();
@@ -133,6 +135,19 @@
 
                     simulateAllUnauth();
                 })
+
+                // socket.on('fakePlRemoveFromInv', (item, ins) => {
+                //     if (ins === null) {
+                //         if (players[plId].inv.hasOwnProperty(item)) {
+                //             if (players[plId].inv[item] > 1) {
+                //                 players[plId].inv[item]--;
+                //             }
+                //             else {
+                //                 delete players[plId].inv[item];
+                //             }
+                //         }
+                //     }
+                // })
 
                 socket.on('npcData', data=>{
                     let d = JSON.parse(data);
@@ -495,6 +510,14 @@
                 }
             }
 
+            function use(item) {
+                if (usable.includes(item) && fakePl.inv.hasOwnProperty(item) && fakePl.inv[item] > 0) {
+                    let cmdId = nextCmdId++;
+                    socket.emit('use', session, item, cmdId);
+                    unauthCmd[cmdId] = `use${item}`;
+                }
+            }
+
             function craft(type, amount) {
                 let cmdId = nextCmdId++;
                 socket.emit('craft', session, type, amount, cmdId);
@@ -552,6 +575,15 @@
                 }
             }
             
+            function useEffect(id) {
+                switch (id) {
+                    case I.APPLE:
+                        fakePl.hp += 10;
+                        fakePl.hp = Math.min(fakePl.maxHp, fakePl.hp);
+                        break;
+                }
+            }
+
             function addToInventory(itemId, dura) {
                 if (!unstack.includes(itemId)) {
                     if (fakePl.inv.hasOwnProperty(itemId)) {
@@ -570,6 +602,19 @@
                         fakePl.inv[itemId] = {
                             instance: 1,
                             duras: [dura]
+                        }
+                    }
+                }
+            }
+
+            function removeFromInv(item, ins) {
+                if (ins === null) {
+                    if (fakePl.inv.hasOwnProperty(item)) {
+                        if (fakePl.inv[item] > 1) {
+                            fakePl.inv[item]--;
+                        }
+                        else {
+                            delete fakePl.inv[item];
                         }
                     }
                 }

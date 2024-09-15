@@ -177,6 +177,12 @@ function simulateCmd(name, cmdId) {
                 
                 fakePl.holding = null;
             }
+            else if (name.startsWith('use')) {
+                let id = name.substr(3);
+
+                useEffect(parseInt(id));
+                removeFromInv(parseInt(id), null);
+            }
         break;
     }
 }

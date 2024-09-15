@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes} = require('./blockIds.js');
+const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -146,12 +146,13 @@ app.post('/signup', jsonParser, (req, res)=>{
                         },
                         8: {
                             instances: 1,
-                            duras: [1000]
+                            duras: [10]
                         },
                         10: {
                             instances: 1,
                             duras: [10]
-                        }
+                        },
+                        1: 100
                     },
                     hp: 75,
                     maxHp: 100,
@@ -807,6 +808,27 @@ io.on('connection', (socket)=>{
         emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], socket);
     })
 
+    socket.on('use', (session, id, cmdId)=>{
+        if (!usable.includes(id)) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+
+        if (!players[session].inv.hasOwnProperty(id)) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+
+        if (players[session].inv[id] <= 0) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+
+        useEffect(session, id);
+        io.to(socket.id).emit('authCmd', cmdId);
+        return;
+    })
+
     socket.on('disconnect', ()=>{
         let ses = reverseSockets[socket.id];
         let data = players[ses];
@@ -1033,6 +1055,15 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
             emitToAdj(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.IRON]);
             world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRON;
         }, stoneRegrowTime)
+    }
+}
+
+function useEffect(session, item) {
+    switch (item) {
+        case I.APPLE:
+            players[session].hp = Math.min(players[session].maxHp, players[session].hp + 10);
+            emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], sockets[session]);
+            break;
     }
 }
 
