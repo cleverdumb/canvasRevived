@@ -1192,6 +1192,101 @@ class CloseRangeNpc {
         }
 
         emitToAdj(this.data.chunk, 'npcData', [JSON.stringify(this.data)]);
+
+        let currPos = this.data.pos;
+        let currChunk = this.data.chunk;
+        for (let x=1; x<6; x++) {
+            let targetPos = {
+                x: (currPos.x + x) % chunkW,
+                y: currPos.y
+            }
+            let targetChunk = {
+                x: currChunk.x + Math.floor((currPos.x + x) / chunkW),
+                y: currChunk.y
+            }
+            if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+                if (!passable.includes(world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1]) && world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1] !== null) {
+                    break;
+                }
+                plRooms[targetChunk.y][targetChunk.x].forEach(p=>{
+                    if (players[p].pos.x == targetPos.x && players[p].pos.y == targetPos.y) {
+                        this.aggro(p, 'd', x);
+                        if (!players[p].aggroed.includes(this.data.id)) {
+                            players[p].aggroed.push(this.data.id);
+                        }
+                    }
+                })
+            }
+        }
+        for (let x=1; x<6; x++) {
+            let targetPos = {
+                x: (currPos.x - x + chunkW) % chunkW,
+                y: currPos.y
+            }
+            let targetChunk = {
+                x: currChunk.x + Math.floor((currPos.x - x) / chunkW),
+                y: currChunk.y
+            }
+            if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+                if (!passable.includes(world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1]) && world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1] !== null) {
+                    break;
+                }
+                plRooms[targetChunk.y][targetChunk.x].forEach(p=>{
+                    if (players[p].pos.x == targetPos.x && players[p].pos.y == targetPos.y) {
+                        this.aggro(p, 'a', x);
+                        if (!players[p].aggroed.includes(this.data.id)) {
+                            players[p].aggroed.push(this.data.id);
+                        }
+                    }
+                })
+            }
+        }
+        for (let x=1; x<6; x++) {
+            let targetPos = {
+                x: currPos.x,
+                y: (currPos.y - x + chunkH) % chunkH
+            }
+            let targetChunk = {
+                x: currChunk.x,
+                y: currChunk.y + Math.floor((currPos.y - x) / chunkH)
+            }
+            if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+                if (!passable.includes(world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1]) && world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1] !== null) {
+                    break;
+                }
+                plRooms[targetChunk.y][targetChunk.x].forEach(p=>{
+                    if (players[p].pos.x == targetPos.x && players[p].pos.y == targetPos.y) {
+                        this.aggro(p, 'w', x);
+                        if (!players[p].aggroed.includes(this.data.id)) {
+                            players[p].aggroed.push(this.data.id);
+                        }
+                    }
+                })
+            }
+        }
+        for (let x=1; x<6; x++) {
+            let targetPos = {
+                x: currPos.x,
+                y: (currPos.y + x) % chunkH
+            }
+            let targetChunk = {
+                x: currChunk.x,
+                y: currChunk.y + Math.floor((currPos.y + x) / chunkH)
+            }
+            if (targetChunk.x >= 0 && targetChunk.x < chunkX && targetChunk.y >= 0 && targetChunk.y < chunkY) {
+                if (!passable.includes(world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1]) && world[targetChunk.y][targetChunk.x][targetPos.y][targetPos.x][1] !== null) {
+                    break;
+                }
+                plRooms[targetChunk.y][targetChunk.x].forEach(p=>{
+                    if (players[p].pos.x == targetPos.x && players[p].pos.y == targetPos.y) {
+                        this.aggro(p, 's', x);
+                        if (!players[p].aggroed.includes(this.data.id)) {
+                            players[p].aggroed.push(this.data.id);
+                        }
+                    }
+                })
+            }
+        }
     } 
     damage(session, dmg) {
         this.data.hp -= dmg;
