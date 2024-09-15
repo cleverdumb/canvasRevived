@@ -21,9 +21,6 @@
             let nextCmdId = 0;
             let unauthCmd = {}; // unauthorised command record: id - cmdName  
             let randomSeeds = {}; // random seed for each command: id - seed  
-
-            const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3, B.STONE, B.STONE1, B.STONE2, B.STONE3, B.IRON, B.IRON1, B.IRON2, B.IRON3];
-            const passable = [B.GRASS, B.STUMP, B.STONEBASE, B.IRONBASE];
             
             let lastInput = 0;
             // let inputCd = 300;
@@ -139,7 +136,6 @@
 
                 socket.on('npcData', data=>{
                     let d = JSON.parse(data);
-                    console.log(d);
                     npcs[d.id] = d;
                     render();
                 })

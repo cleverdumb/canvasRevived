@@ -208,6 +208,10 @@ function render() {
     }
 
     if (craftMenuOpen) {
+        let R = {...baseRecipes};
+        if (overMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] == B.SMELTER) {
+            R = {...R, ...smelterRecipes};
+        }
         let currX = craftBgX;
         let currY = craftBgY;
         ctx.fillStyle = '#685232';
@@ -235,6 +239,10 @@ function render() {
                 currX = craftBgX;
                 currY += craftBoxH + craftBoxMargY;
             }
+        }
+
+        if (craftCurrSel !== null && !R.hasOwnProperty(craftCurrSel)) {
+            craftCurrSel = null;
         }
 
         if (craftCurrSel !== null) {

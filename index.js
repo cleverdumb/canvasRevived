@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, R, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg} = require('./blockIds.js');
+const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -28,9 +28,6 @@ db.run(`
         data STRING NOT NULL
     )
 `)
-
-const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3, B.STONE, B.STONE1, B.STONE2, B.STONE3, B.IRON, B.IRON1, B.IRON2, B.IRON3];
-const passable = [B.GRASS, B.STUMP, B.STONEBASE, B.IRONBASE];
 
 const treeRegrowTime = 10000;
 const stoneRegrowTime = 10000;
@@ -62,20 +59,17 @@ for (let y=0; y<chunkY; y++) {
             for (let b=0; b<chunkW; b++) {
                 world[y][x][a].push([]);
                 for (let z=0; z<layers; z++) {
-                    // world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1) ? ((a+b)%2 ? B.STONE : B.IRON) : null);
+                    world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1) ? (B.IRON) : null);
                     // world[y][x][a][b].push(z==0 ? (Math.random() > 0.5 ? B.GRASS : B.STUMP) : null);
                     // world[y][x][a][b].push(z==0 ? B.GRASS : null);
-                    world[y][x][a][b].push(z==0 ? (a == chunkH-1 || b == chunkW-1 ? B.STONEBASE : B.GRASS) : null);
+                    // world[y][x][a][b].push(z==0 ? (a == chunkH-1 || b == chunkW-1 ? B.STONEBASE : B.GRASS) : null);
                 }
             }
         }
     }
 }
 
-// world[0][0][1][8][1] = B.STONE;
-// world[0][0][2][7][1] = B.STONE;
-// world[0][0][2][9][1] = B.STONE;
-// world[0][0][3][8][1] = B.STONE;
+world[0][0][1][1][1] = B.SMELTER;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -152,7 +146,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                         },
                         8: {
                             instances: 1,
-                            duras: [10]
+                            duras: [1000]
                         },
                         10: {
                             instances: 1,
@@ -161,7 +155,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                     },
                     hp: 75,
                     maxHp: 100,
-                    holding: {id: 10, ins: 0},
+                    holding: {id: 8, ins: 0},
                     faceLeft: false,
                     lastAction: 0,
                     aggroed: []
@@ -729,6 +723,10 @@ io.on('connection', (socket)=>{
     })
 
     socket.on('craft', (session, type, amount, cmdId) => {
+        let R = {...baseRecipes};
+        if (world[players[session].chunk.y][players[session].chunk.x][players[session].pos.y][players[session].pos.x][players[session].z] == B.SMELTER) {
+            R = {...R, ...smelterRecipes};
+        }
         if (!R.hasOwnProperty(type)) {
             io.to(socket.id).emit('rejectCmd', cmdId);
             return;
@@ -1325,24 +1323,24 @@ class CloseRangeNpc {
     }
 }
 
-new CloseRangeNpc({
-    chunk: {
-        x: 0,
-        y: 0
-    },
-    pos: {
-        x: 8,
-        y: 2
-    }
-})
+// new CloseRangeNpc({
+//     chunk: {
+//         x: 0,
+//         y: 0
+//     },
+//     pos: {
+//         x: 8,
+//         y: 2
+//     }
+// })
 
-new CloseRangeNpc({
-    chunk: {
-        x: 0,
-        y: 0
-    },
-    pos: {
-        x: 5,
-        y: 2
-    }
-})
+// new CloseRangeNpc({
+//     chunk: {
+//         x: 0,
+//         y: 0
+//     },
+//     pos: {
+//         x: 5,
+//         y: 2
+//     }
+// })

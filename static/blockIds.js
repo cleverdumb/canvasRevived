@@ -17,7 +17,8 @@ const B = {
     IRON1: 15,
     IRON2: 16,
     IRON3: 17,
-    IRONBASE: 18
+    IRONBASE: 18,
+    SMELTER: 19
 }
 
 const sprPos = {
@@ -39,7 +40,8 @@ const sprPos = {
     15: [224, 992],
     16: [240, 992],
     17: [256, 992],
-    18: [272, 992]
+    18: [272, 992],
+    19: [208, 992]
 }
 
 const iSprPos = {
@@ -53,7 +55,8 @@ const iSprPos = {
     7: [64, 64],
     8: [48, 64],
     9: [80, 64],
-    10: [160, 64]
+    10: [160, 64],
+    11: [272, 0]
 }
 
 const I = {
@@ -67,7 +70,8 @@ const I = {
     WOODAXE: 7,
     STONEPICK: 8,
     STONEAXE: 9,
-    WOODSWORD: 10
+    WOODSWORD: 10,
+    IRONBAR: 11
 }
 
 const toolSprPos = {
@@ -115,7 +119,14 @@ const dmg = {
     10: 20
 }
 
-const R = {
+const baseRecipes = {
     STONEWALL: {STONE: 1},
     WOODWALL: {WOOD: 4}
 }
+
+const smelterRecipes = {
+    IRONBAR: {IRONORE: 4} 
+}
+
+const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3, B.STONE, B.STONE1, B.STONE2, B.STONE3, B.IRON, B.IRON1, B.IRON2, B.IRON3];
+const passable = [B.GRASS, B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER];

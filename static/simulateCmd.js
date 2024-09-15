@@ -148,6 +148,10 @@ function simulateCmd(name, cmdId) {
                 }
             }
             else if (name.startsWith('cr')) {
+                let R = {...baseRecipes};
+                if (overMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] == B.SMELTER) {
+                    R = {...R, ...smelterRecipes};
+                }
                 let arg = name.substr(2);
                 let type = arg.split('-')[0];
                 let amount = parseInt(arg.split('-')[1]);
