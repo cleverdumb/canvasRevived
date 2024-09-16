@@ -513,10 +513,37 @@
             }
 
             function use(item) {
-                if (usable.includes(item) && fakePl.inv.hasOwnProperty(item) && fakePl.inv[item] > 0) {
-                    let cmdId = nextCmdId++;
-                    socket.emit('use', session, item, cmdId);
-                    unauthCmd[cmdId] = `use${item}`;
+                if (fakePl.inv.hasOwnProperty(item) && fakePl.inv[item] > 0) {
+                    if (placeable.some(x=>I[x] == item)) {
+                        let itemName = null;
+                        for (let n=0; n<placeable.length; n++) {
+                            if (I[placeable[n]] == item) {
+                                itemName = placeable[n];
+                                break;
+                            }
+                        }
+                        let blockId = B[itemName];
+                        if (fakePl.z < 5) {
+                            if (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] === null) {
+                                let newId = nextCmdId++;
+                                socket.emit('placeBlock', session, blockId, I[itemName], newId);
+                                unauthCmd[newId] = `pl${blockId}`;
+
+                                newId = nextCmdId++;
+                                socket.emit('use', session, I[itemName], newId);
+                                unauthCmd[newId] = `use${I[itemName]}`;
+
+                                simulateAllUnauth();
+                            }
+                        }
+                    }
+                    else {
+                        if (usable.includes(item)) {
+                            let cmdId = nextCmdId++;
+                            socket.emit('use', session, item, cmdId);
+                            unauthCmd[cmdId] = `use${item}`;
+                        }
+                    }
                 }
             }
 
@@ -578,6 +605,7 @@
             }
             
             function useEffect(id) {
+                if (placeable.some(x=>I[x] == id)) return;
                 switch (id) {
                     case I.APPLE:
                         fakePl.hp += 10;

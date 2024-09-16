@@ -134,6 +134,8 @@ const passable = [B.GRASS, B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER];
 const usable = [I.APPLE];
 
 const fallThrough = [B.SMELTER];
+
+const placeable = ['WOODWALL', 'STONEWALL'];
 module.exports = {
-    B, I, baseRecipes, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, fallThrough
+    B, I, baseRecipes, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, fallThrough, placeable
 };

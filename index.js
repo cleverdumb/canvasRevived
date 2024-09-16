@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, fallThrough} = require('./blockIds.js');
+const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, fallThrough, placeable} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -138,7 +138,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                         x: 4,
                         y: 4
                     },
-                    z: 3,
+                    z: 1,
                     inv: {
                         6: {
                             instances: 1,
@@ -152,7 +152,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                             instances: 1,
                             duras: [10]
                         },
-                        1: 100
+                        1: 100,
+                        5: 6
                     },
                     hp: 75,
                     maxHp: 100,
@@ -705,29 +706,11 @@ io.on('connection', (socket)=>{
         return;
     })
 
-    socket.on('placeBlock', (session, blockId, cmdId) => {
-        let data = players[session];
-        if (data.z > 4) {
-            setTimeout(()=>{
-                io.to(socket.id).emit('rejectCmd', cmdId);
-            }, lagSim);
-            return;
+    socket.on('placeBlock', (session, blockId, itemId, cmdId) => {
+        if (!(players[session].inv.hasOwnProperty(itemId) && players[session].inv[itemId] > 0)) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
         }
-
-        if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] !== null) {
-            setTimeout(()=>{
-                io.to(socket.id).emit('rejectCmd', cmdId);
-            }, lagSim);
-            return;
-        }
-
-        world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = blockId;
-        emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), blockId], socket);
-        while (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][players[session].z] !== null && players[session].z < 5) {
-            players[session].z++;
-        }
-        emitToAdjNoSender(data.chunk, 'newPlayer', JSON.stringify(data), socket);
-        io.to(socket.id).emit('authCmd', cmdId);
+        placeBlock(session, blockId, cmdId);
     })
 
     socket.on('craft', (session, type, amount, cmdId) => {
@@ -816,7 +799,7 @@ io.on('connection', (socket)=>{
     })
 
     socket.on('use', (session, id, cmdId)=>{
-        if (!usable.includes(id)) {
+        if (!placeable.some(x=>I[x] == id) && !usable.includes(id)) {
             io.to(socket.id).emit('rejectCmd', cmdId);
             return;
         }
@@ -831,7 +814,7 @@ io.on('connection', (socket)=>{
             return;
         }
 
-        useEffect(session, id);
+        useEffect(session, id, cmdId);
         io.to(socket.id).emit('authCmd', cmdId);
         return;
     })
@@ -846,6 +829,31 @@ io.on('connection', (socket)=>{
         }
     })
 })
+
+function placeBlock(session, blockId, cmdId) {
+    let data = players[session];
+    if (data.z > 4) {
+        setTimeout(()=>{
+            io.to(sockets[session].id).emit('rejectCmd', cmdId);
+        }, lagSim);
+        return;
+    }
+
+    if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] !== null) {
+        setTimeout(()=>{
+            io.to(sockets[session].id).emit('rejectCmd', cmdId);
+        }, lagSim);
+        return;
+    }
+
+    world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = blockId;
+    emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), blockId], sockets[session]);
+    while (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][players[session].z] !== null && players[session].z < 5) {
+        players[session].z++;
+    }
+    emitToAdjNoSender(data.chunk, 'newPlayer', JSON.stringify(data), sockets[session]);
+    io.to(sockets[session].id).emit('authCmd', cmdId);
+}
 
 function afterMovement(session, dir) {
     let currPos = players[session].pos;
@@ -1065,7 +1073,11 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
     }
 }
 
-function useEffect(session, item) {
+function useEffect(session, item, cmdId) {
+    if (placeable.some(x=>I[x] == item)) {
+        // placeBlock(session, item, cmdId);
+        return;
+    }
     switch (item) {
         case I.APPLE:
             players[session].hp = Math.min(players[session].maxHp, players[session].hp + 10);

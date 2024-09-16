@@ -18,7 +18,8 @@ const B = {
     IRON2: 16,
     IRON3: 17,
     IRONBASE: 18,
-    SMELTER: 19
+    SMELTER: 19,
+    STONEWALL: 20
 }
 
 const sprPos = {
@@ -41,7 +42,8 @@ const sprPos = {
     16: [240, 992],
     17: [256, 992],
     18: [272, 992],
-    19: [208, 992]
+    19: [208, 992],
+    20: [288, 0]
 }
 
 const iSprPos = {
@@ -134,3 +136,5 @@ const passable = [B.GRASS, B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER];
 const usable = [I.APPLE];
 
 const fallThrough = [B.SMELTER];
+
+const placeable = ['WOODWALL', 'STONEWALL'];

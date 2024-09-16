@@ -129,6 +129,13 @@ function render() {
     ctx.fillStyle = 'black';
     ctx.fillText(`HP: ${fakePl.hp}/${fakePl.maxHp}`, invStartX, by*bh + 25)
 
+    if (invSel !== null) {
+        if ((!fakePl.inv.hasOwnProperty(invSel)) || invSelIns >= fakePl.inv[invSel].instances) {
+            invSel = null;
+            invSelIns = null;
+        }
+    }
+
     let currBoxX = 0;
     let currBoxY = 0;
     for (let x in fakePl.inv) {
@@ -322,7 +329,7 @@ function render() {
         }
     }
 
-    if (usable.includes(parseInt(invSel))) {
+    if (placeable.some(x=>I[x] == parseInt(invSel)) || usable.includes(parseInt(invSel))) {
         ctx.strokeStyle = 'black';
         ctx.fillStyle = '#685232';
         ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('USE').width + 20, 26);
