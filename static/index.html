@@ -469,11 +469,13 @@
                     case 'p':
                     {
                         if (fakePl.z < 5) {
-                            let newId = nextCmdId++;
-                            socket.emit('placeBlock', session, B.WOODWALL, newId);
-                            unauthCmd[newId] = `pl${B.WOODWALL}`;
+                            if (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] === null) {
+                                let newId = nextCmdId++;
+                                socket.emit('placeBlock', session, B.WOODWALL, newId);
+                                unauthCmd[newId] = `pl${B.WOODWALL}`;
 
-                            simulateAllUnauth();
+                                simulateAllUnauth();
+                            }
                         }
                         break;
                     }

@@ -714,6 +714,13 @@ io.on('connection', (socket)=>{
             return;
         }
 
+        if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] !== null) {
+            setTimeout(()=>{
+                io.to(socket.id).emit('rejectCmd', cmdId);
+            }, lagSim);
+            return;
+        }
+
         world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = blockId;
         emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), blockId], socket);
         while (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][players[session].z] !== null && players[session].z < 5) {
