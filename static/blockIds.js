@@ -132,3 +132,5 @@ const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3, B.STONE, B.STONE1, B.ST
 const passable = [B.GRASS, B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER];
 
 const usable = [I.APPLE];
+
+const fallThrough = [B.SMELTER];

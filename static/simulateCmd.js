@@ -19,7 +19,7 @@ function simulateCmd(name, cmdId) {
             destColumn = fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
             // destColumn.reverse();
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null) {
+                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
                     destZ -= i;
                     break;
                 }
@@ -47,7 +47,7 @@ function simulateCmd(name, cmdId) {
             destColumn = fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
             
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null) {
+                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
                     destZ -= i;
                     break;
                 }
@@ -74,7 +74,7 @@ function simulateCmd(name, cmdId) {
             destZ = fakePl.z;
             destColumn = fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null) {
+                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
                     destZ -= i;
                     break;
                 }
@@ -100,7 +100,7 @@ function simulateCmd(name, cmdId) {
             destZ = fakePl.z;
             destColumn = fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null) {
+                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
                     destZ -= i;
                     break;
                 }

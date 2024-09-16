@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable} = require('./blockIds.js');
+const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, fallThrough} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -367,7 +367,7 @@ io.on('connection', (socket)=>{
 
             let destColumn = world[destChunk.y][destChunk.x][destPos.y][destPos.x].slice(0, destPos.z).slice().reverse();
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null) {
+                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
                     destPos.z -= i;
                     break;
                 }
@@ -535,7 +535,7 @@ io.on('connection', (socket)=>{
 
             let destColumn = world[destChunk.y][destChunk.x][destPos.y][destPos.x].slice(0, destPos.z).slice().reverse();
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null) {
+                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
                     destPos.z -= i;
                     break;
                 }
