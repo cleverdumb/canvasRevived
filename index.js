@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, fallThrough, placeable} = require('./blockIds.js');
+const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -47,6 +47,7 @@ let chunkY = 24;
 let chunkW = 50;
 let chunkH = 25;
 let layers = 5;  // 0 is ground, 1/2/3 go up, 3 is top
+let cropHeartBeat = [];
 
 // * world gen
 
@@ -153,7 +154,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                             duras: [10]
                         },
                         1: 100,
-                        5: 6
+                        5: 6,
+                        12: 5
                     },
                     hp: 75,
                     maxHp: 100,
@@ -368,7 +370,7 @@ io.on('connection', (socket)=>{
 
             let destColumn = world[destChunk.y][destChunk.x][destPos.y][destPos.x].slice(0, destPos.z).slice().reverse();
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
+                if (destColumn[i] !== null && ((!passable.includes(destColumn[i])) || nonFallThrough.includes(destColumn[i]))) {
                     destPos.z -= i;
                     break;
                 }
@@ -536,7 +538,7 @@ io.on('connection', (socket)=>{
 
             let destColumn = world[destChunk.y][destChunk.x][destPos.y][destPos.x].slice(0, destPos.z).slice().reverse();
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
+                if (destColumn[i] !== null && ((!passable.includes(destColumn[i])) || nonFallThrough.includes(destColumn[i]))) {
                     destPos.z -= i;
                     break;
                 }
@@ -1082,6 +1084,13 @@ function useEffect(session, item, cmdId) {
         case I.APPLE:
             players[session].hp = Math.min(players[session].maxHp, players[session].hp + 10);
             emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], sockets[session]);
+            break;
+        case I.TOMATOSEED:
+            let data = players[session];
+            if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z - 1] == B.GRASS) {
+                world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = B.TOMATO1;
+                emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), B.TOMATO1], sockets[session]);
+            }
             break;
     }
 }

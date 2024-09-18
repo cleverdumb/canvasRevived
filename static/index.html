@@ -605,12 +605,17 @@
             }
             
             function useEffect(id) {
-                if (placeable.some(x=>I[x] == id)) return;
+                if (placeable.some(x=>I[x] == id)) return true;
                 switch (id) {
                     case I.APPLE:
                         fakePl.hp += 10;
                         fakePl.hp = Math.min(fakePl.maxHp, fakePl.hp);
-                        break;
+                        return true;
+                    case I.TOMATOSEED:
+                        if (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z - 1] == B.GRASS) {
+                            fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] = B.TOMATO1;
+                        }
+                        return true;
                 }
             }
 

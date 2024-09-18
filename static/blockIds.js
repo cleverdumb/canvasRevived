@@ -19,7 +19,10 @@ const B = {
     IRON3: 17,
     IRONBASE: 18,
     SMELTER: 19,
-    STONEWALL: 20
+    STONEWALL: 20,
+    TOMATO1: 21,
+    TOMATO2: 22,
+    TOMATO3: 33
 }
 
 const sprPos = {
@@ -43,22 +46,10 @@ const sprPos = {
     17: [256, 992],
     18: [272, 992],
     19: [208, 992],
-    20: [288, 0]
-}
-
-const iSprPos = {
-    0: [96, 0],
-    1: [304, 160],
-    2: [256, 0],
-    3: [160, 992],
-    4: [112, 0],
-    5: [288, 0],
-    6: [32, 64],
-    7: [64, 64],
-    8: [48, 64],
-    9: [80, 64],
-    10: [160, 64],
-    11: [272, 0]
+    20: [288, 0],
+    21: [0, 512],
+    22: [16, 512],
+    23: [32, 512]
 }
 
 const I = {
@@ -73,7 +64,26 @@ const I = {
     STONEPICK: 8,
     STONEAXE: 9,
     WOODSWORD: 10,
-    IRONBAR: 11
+    IRONBAR: 11,
+    TOMATOSEED: 12,
+    TOMATO: 13 
+}
+
+const iSprPos = {
+    0: [96, 0],
+    1: [304, 160],
+    2: [256, 0],
+    3: [160, 992],
+    4: [112, 0],
+    5: [288, 0],
+    6: [32, 64],
+    7: [64, 64],
+    8: [48, 64],
+    9: [80, 64],
+    10: [160, 64],
+    11: [272, 0],
+    12: [192, 512],
+    13: [48, 512]
 }
 
 const toolSprPos = {
@@ -131,10 +141,10 @@ const smelterRecipes = {
 }
 
 const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3, B.STONE, B.STONE1, B.STONE2, B.STONE3, B.IRON, B.IRON1, B.IRON2, B.IRON3];
-const passable = [B.GRASS, B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER];
+const passable = [B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER, B.TOMATO1, B.TOMATO2, B.TOMATO3];
 
-const usable = [I.APPLE];
+const usable = [I.APPLE, I.TOMATOSEED];
 
-const fallThrough = [B.SMELTER];
+const nonFallThrough = [];
 
 const placeable = ['WOODWALL', 'STONEWALL'];

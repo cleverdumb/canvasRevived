@@ -19,7 +19,7 @@ function simulateCmd(name, cmdId) {
             destColumn = fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
             // destColumn.reverse();
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
+                if (destColumn[i] !== null && (((!passable.includes(destColumn[i]))) || nonFallThrough.includes(destColumn[i]))) {
                     destZ -= i;
                     break;
                 }
@@ -47,7 +47,7 @@ function simulateCmd(name, cmdId) {
             destColumn = fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
             
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
+                if (destColumn[i] !== null && ((!passable.includes(destColumn[i])) || nonFallThrough.includes(destColumn[i]))) {
                     destZ -= i;
                     break;
                 }
@@ -74,7 +74,7 @@ function simulateCmd(name, cmdId) {
             destZ = fakePl.z;
             destColumn = fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
+                if (destColumn[i] !== null && ((!passable.includes(destColumn[i])) || nonFallThrough.includes(destColumn[i]))) {
                     destZ -= i;
                     break;
                 }
@@ -100,7 +100,7 @@ function simulateCmd(name, cmdId) {
             destZ = fakePl.z;
             destColumn = fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x].slice(0, fakePl.z).toReversed();
             for (let i=0; i<destColumn.length; i++) {
-                if (destColumn[i] !== null && !fallThrough.includes(destColumn[i])) {
+                if (destColumn[i] !== null && ((!passable.includes(destColumn[i])) || nonFallThrough.includes(destColumn[i]))) {
                     destZ -= i;
                     break;
                 }
@@ -180,8 +180,9 @@ function simulateCmd(name, cmdId) {
             else if (name.startsWith('use')) {
                 let id = name.substr(3);
 
-                useEffect(parseInt(id));
-                removeFromInv(parseInt(id), null);
+                if (useEffect(parseInt(id))) {
+                    removeFromInv(parseInt(id), null);
+                }
             }
         break;
     }
