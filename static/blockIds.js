@@ -22,7 +22,7 @@ const B = {
     STONEWALL: 20,
     TOMATO1: 21,
     TOMATO2: 22,
-    TOMATO3: 33
+    TOMATO3: 23
 }
 
 const sprPos = {
@@ -66,7 +66,8 @@ const I = {
     WOODSWORD: 10,
     IRONBAR: 11,
     TOMATOSEED: 12,
-    TOMATO: 13 
+    TOMATO: 13,
+    WATERBUCKET: 14
 }
 
 const iSprPos = {
@@ -83,7 +84,8 @@ const iSprPos = {
     10: [160, 64],
     11: [272, 0],
     12: [192, 512],
-    13: [48, 512]
+    13: [48, 512],
+    14: [304, 32]
 }
 
 const toolSprPos = {
@@ -143,7 +145,7 @@ const smelterRecipes = {
 const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3, B.STONE, B.STONE1, B.STONE2, B.STONE3, B.IRON, B.IRON1, B.IRON2, B.IRON3];
 const passable = [B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER, B.TOMATO1, B.TOMATO2, B.TOMATO3];
 
-const usable = [I.APPLE, I.TOMATOSEED];
+const usable = [I.APPLE, I.TOMATOSEED, I.WATERBUCKET];
 
 const nonFallThrough = [];
 

@@ -3,7 +3,7 @@
         <title>Canvas revived</title>
     </head>
     <body>
-        <p>Controls: wasd to move, p to build up, c to toggle crafting menu, e to equip item when inv item selected</p>
+        <p>Controls: wasd to move, c to toggle crafting menu, e to equip item when inv item selected</p>
         <input placeholder='username' id='user'>
         <input placeholder='password' id='pass'>
         <button id='signupBtn' onclick='signup(document.getElementById(`user`).value, document.getElementById(`pass`).value, afterSpriteLoaded)'>SIGN UP</button>
@@ -466,19 +466,6 @@
                         }
                         break;
                     }
-                    case 'p':
-                    {
-                        if (fakePl.z < 5) {
-                            if (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] === null) {
-                                let newId = nextCmdId++;
-                                socket.emit('placeBlock', session, B.WOODWALL, newId);
-                                unauthCmd[newId] = `pl${B.WOODWALL}`;
-
-                                simulateAllUnauth();
-                            }
-                        }
-                        break;
-                    }
                     case 'c':
                         craftMenuOpen = !craftMenuOpen;
                         render();
@@ -554,7 +541,7 @@
             }
 
             function interact(type, chunk, pos, seed) {
-                if (fakePl.holding.id != I.WOODPICK) {
+                if (fakePl.holding.id != I.WOODPICK && fakePl.holding.id != I.WOODAXE) {
                     fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins]--;
                 }
 
@@ -572,6 +559,9 @@
                     addToInventory(I.WOOD);
                     if (seed % 2 === 0) {
                         addToInventory(I.APPLE);
+                    }
+                    if (seed % 3 === 0) {
+                        addToInventory(I.TOMATOSEED);
                     }
                 }
 

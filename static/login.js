@@ -41,15 +41,6 @@ for (let y=0; y<chny; y++) {
     fakeOverMap.push([]);
     for (let x=0; x<chnx; x++) {
         fakeOverMap[y].push(null);
-        // for (let a=0; a<chh; a++) {
-        //     fakeOverMap[y][x].push([]);
-        //     for (let b=0; b<chw; b++) {
-        //         fakeOverMap[y][x][a].push([]);
-        //         for (let z=0; z<layers; z++) {
-        //             fakeOverMap[y][x][a][b].push(null);
-        //         }
-        //     }
-        // }
     }
 }
 

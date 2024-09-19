@@ -15,7 +15,7 @@ let invImgH = 40;
 let invStartX = 60;
 let invStartY = by*bh + 50;
 let invBoxX = 15;
-let invSel = I.APPLE;
+let invSel = I.TOMATOSEED;
 let invSelIns = null;
 
 let craftMenuOpen = false;

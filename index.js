@@ -29,10 +29,11 @@ db.run(`
     )
 `)
 
-const treeRegrowTime = 10000;
-const stoneRegrowTime = 10000;
+const treeRegrowTime = 200000;
+const stoneRegrowTime = 200000;
+const cropStageTime = 5000;
 
-// ! Ceilings go in the floor below, passable but players fall on top
+// ! Ceilings go in the floor below, passable but non-fall through, no render when player below or on the same layer
 
 // ! testing use
 let lagSim = 0;
@@ -60,17 +61,49 @@ for (let y=0; y<chunkY; y++) {
             for (let b=0; b<chunkW; b++) {
                 world[y][x][a].push([]);
                 for (let z=0; z<layers; z++) {
-                    world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1) ? (B.IRON) : null);
+                    // world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1 && a>b) ? (B.TREE) : null);
                     // world[y][x][a][b].push(z==0 ? (Math.random() > 0.5 ? B.GRASS : B.STUMP) : null);
                     // world[y][x][a][b].push(z==0 ? B.GRASS : null);
                     // world[y][x][a][b].push(z==0 ? (a == chunkH-1 || b == chunkW-1 ? B.STONEBASE : B.GRASS) : null);
+                    if (z == 0) {
+                        world[y][x][a][b].push(B.GRASS);
+                    }
+                    else if (z == 1) {
+                        if (x==0 && y==0) {
+                            if (a/2 >= b) {
+                                world[y][x][a][b].push(B.TREE);
+                            }
+                            else if (b/2 >= a) {
+                                if (Math.random() > 0.9) {
+                                    world[y][x][a][b].push(B.IRON);
+                                }
+                                else { 
+                                    world[y][x][a][b].push(B.STONE);
+                                }
+                            }
+                            else {
+                                if ((a+b) > 8 && (a+b) < 15) {
+                                    world[y][x][a][b].push(B.SMELTER);
+                                }
+                                else {
+                                    world[y][x][a][b].push(null);
+                                }
+                            }
+                        }
+                        else {
+                            world[y][x][a][b].push(null);
+                        }
+                    }
+                    else {
+                        world[y][x][a][b].push(null);
+                    }
                 }
             }
         }
     }
 }
 
-world[0][0][1][1][1] = B.SMELTER;
+world[0][0][4][4][1] = B.SMELTER;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -145,7 +178,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                             instances: 1,
                             duras: [10]
                         },
-                        8: {
+                        7: {
                             instances: 1,
                             duras: [10]
                         },
@@ -153,13 +186,14 @@ app.post('/signup', jsonParser, (req, res)=>{
                             instances: 1,
                             duras: [10]
                         },
+                        14: 1,
                         1: 100,
                         5: 6,
                         12: 5
                     },
                     hp: 75,
                     maxHp: 100,
-                    holding: {id: 8, ins: 0},
+                    holding: null,
                     faceLeft: false,
                     lastAction: 0,
                     aggroed: []
@@ -816,7 +850,9 @@ io.on('connection', (socket)=>{
             return;
         }
 
-        useEffect(session, id, cmdId);
+        if (useEffect(session, id, cmdId)) {
+            removeFromInv(session, id, null);
+        }
         io.to(socket.id).emit('authCmd', cmdId);
         return;
     })
@@ -831,6 +867,19 @@ io.on('connection', (socket)=>{
         }
     })
 })
+
+function removeFromInv(session, item, ins) {
+    if (ins === null) {
+        if (players[session].inv.hasOwnProperty(item)) {
+            if (players[session].inv[item] > 1) {
+                players[session].inv[item]--;
+            }
+            else {
+                delete players[session].inv[item];
+            }
+        }
+    }
+}
 
 function placeBlock(session, blockId, cmdId) {
     let data = players[session];
@@ -1001,7 +1050,7 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
         }, lagSim)
     }
 
-    if (players[session].holding.id != I.WOODPICK) {
+    if (players[session].holding.id != I.WOODPICK && players[session].holding.id != I.WOODAXE) {
         players[session].inv[players[session].holding.id].duras[players[session].holding.ins]--;
     }
 
@@ -1027,6 +1076,9 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
         }, treeRegrowTime)
         if (seed % 2 == 0) {
             addToInv(session, I.APPLE);
+        }
+        if (seed % 3 == 0) {
+            addToInv(session, I.TOMATOSEED);
         }
     }
     else if (type == B.STONE) {
@@ -1078,20 +1130,44 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
 function useEffect(session, item, cmdId) {
     if (placeable.some(x=>I[x] == item)) {
         // placeBlock(session, item, cmdId);
-        return;
+        return true;
     }
     switch (item) {
         case I.APPLE:
             players[session].hp = Math.min(players[session].maxHp, players[session].hp + 10);
             emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], sockets[session]);
-            break;
-        case I.TOMATOSEED:
+            return true;
+        case I.TOMATOSEED: {
             let data = players[session];
             if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z - 1] == B.GRASS) {
                 world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = B.TOMATO1;
                 emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), B.TOMATO1], sockets[session]);
+                let copyChunk = JSON.parse(JSON.stringify(data.chunk));
+                let copyPos = JSON.parse(JSON.stringify(data.pos));
+
+                cropHeartBeat[`${data.chunk.x}-${data.chunk.y}-${data.pos.x}-${data.pos.y}`] = setTimeout(()=>{
+                    world[copyChunk.y][copyChunk.x][copyPos.y][copyPos.x][data.z] = B.TOMATO2;
+                    emitToAdj(copyChunk, 'blockChange', [JSON.stringify(copyChunk), JSON.stringify({x: copyPos.x, y: copyPos.y, z: data.z}), B.TOMATO2]);
+                }, cropStageTime)
+                return true;
             }
-            break;
+            return false;
+        }
+        case I.WATERBUCKET: {
+            let data = players[session];
+            if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] == B.TOMATO2) {
+                // world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = B.TOMATO1;
+                // emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), B.TOMATO1], sockets[session]);
+                let copyChunk = JSON.parse(JSON.stringify(data.chunk));
+                let copyPos = JSON.parse(JSON.stringify(data.pos));
+
+                cropHeartBeat[`${data.chunk.x}-${data.chunk.y}-${data.pos.x}-${data.pos.y}`] = setTimeout(()=>{
+                    world[copyChunk.y][copyChunk.x][copyPos.y][copyPos.x][data.z] = B.TOMATO3;
+                    emitToAdj(copyChunk, 'blockChange', [JSON.stringify(copyChunk), JSON.stringify({x: copyPos.x, y: copyPos.y, z: data.z}), B.TOMATO3]);
+                }, cropStageTime)
+            }
+            return false;
+        }
     }
 }
 
