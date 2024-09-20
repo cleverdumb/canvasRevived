@@ -541,11 +541,35 @@
             }
 
             function interact(type, chunk, pos, seed) {
-                if (fakePl.holding.id != I.WOODPICK && fakePl.holding.id != I.WOODAXE) {
-                    fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins]--;
+                if (requireAxe.includes(type)) {
+                    if (fakePl.holding.id != I.WOODAXE) {
+                        fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins]--;
+                    }
                 }
+                if (requirePickaxe.includes(type)) {
+                    if (fakePl.holding.id != I.WOODPICK) {
+                        fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins]--;
+                    }
+                }
+                
 
-                if (type == B.TREE) {
+                if (type == B.TOMATO2) {
+                    console.log(chunk.y, chunk.x, pos.y, pos.x, pos.z)
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+                    addToInventory(I.TOMATO, null);
+                    addToInventory(I.TOMATO, null);
+                    addToInventory(I.TOMATOSEED, null);
+                }
+                else if (type == B.TOMATO3) {
+                    console.log(chunk.y, chunk.x, pos.y, pos.x, pos.z)
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+                    for (let x=0; x<6; x++) {
+                        addToInventory(I.TOMATO, null);
+                    }
+                    addToInventory(I.TOMATOSEED, null);
+                    addToInventory(I.TOMATOSEED, null);
+                }
+                else if (type == B.TREE) {
                     fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1;
                 }
                 else if (type == B.TREE1) {

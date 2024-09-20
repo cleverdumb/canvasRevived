@@ -36,6 +36,8 @@ let sec1H = 100;
 let sec2H = 300;
 let craftCurrCount = 1;
 
+const pickable = [B.TOMATO2, B.TOMATO3];
+
 let buttons = []; // {x, y, w, h, cb}
 
 cvs.width = bw * bx;
@@ -344,6 +346,31 @@ function render() {
             h: 26,
             cb: ()=>{
                 use(parseInt(invSel));
+            }
+        })
+    }
+
+    if (pickable.includes(fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z])) {
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle = '#685232';
+        ctx.fillRect(invStartX + 20 + 200, invStartY - 103, ctx.measureText('PICK').width + 20, 26);
+        ctx.strokeRect(invStartX + 20 + 200, invStartY - 103, ctx.measureText('PICK').width + 20, 26);
+        ctx.font = '20px monospace';
+        ctx.fillStyle = 'white';
+        ctx.fillText('PICK', invStartX + 20 + 10 + 200, invStartY - 100 + 18);
+        buttons.push({
+            x: invStartX + 20 + 200,
+            y: invStartY - 103,
+            w: ctx.measureText('PICK').width + 20,
+            h: 26,
+            cb: ()=>{
+                let cmdId = nextCmdId++;
+                let seed = Math.round(Math.random()*1e5);
+                unauthCmd[cmdId] = 'inH';
+                randomSeeds[cmdId] = seed;
+                socket.emit('interact', session, 'h', cmdId, seed);
+                // interact(fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z], fakePl.chunk, fakePl.pos);
+                
             }
         })
     }

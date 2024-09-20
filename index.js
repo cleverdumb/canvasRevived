@@ -103,7 +103,8 @@ for (let y=0; y<chunkY; y++) {
     }
 }
 
-world[0][0][4][4][1] = B.SMELTER;
+world[0][0][4][4][1] = B.TOMATO2;
+world[0][0][4][5][1] = B.TOMATO3;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -730,6 +731,17 @@ io.on('connection', (socket)=>{
                 z: data.z
             }
         }
+        else if (direction == 'h') {
+            destChunk = {
+                x: data.chunk.x,
+                y: data.chunk.y
+            }
+            destPos = {
+                x: data.pos.x,
+                y: data.pos.y,
+                z: data.z
+            }
+        }
 
         if (!interactable.includes(world[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z])) {
             setTimeout(()=>{
@@ -1007,15 +1019,14 @@ function afterMovement(session, dir) {
 }
 
 function interact(type, chunk, pos, socket, session, seed, cmdId) {
-    if (players[session].inv[players[session].holding.id].duras[players[session].holding.ins] < 1) {
-        setTimeout(()=>{
-            io.to(socket.id).emit('rejectCmd', cmdId);
-        }, lagSim)
-        return;
-    }
-
     if (requireAxe.includes(type)) {
         if (players[session].holding === null || !axe.includes(parseInt(players[session].holding.id))) {
+            setTimeout(()=>{
+                io.to(socket.id).emit('rejectCmd', cmdId);
+            }, lagSim)
+            return;
+        }
+        if (players[session].inv[players[session].holding.id].duras[players[session].holding.ins] < 1) {
             setTimeout(()=>{
                 io.to(socket.id).emit('rejectCmd', cmdId);
             }, lagSim)
@@ -1027,13 +1038,21 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
             }, lagSim)
             return;
         } 
-        setTimeout(()=>{
-            io.to(socket.id).emit('authCmd', cmdId);
-        }, lagSim)
-        lastAction = Date.now();
+
+        if (players[session].holding.id != I.WOODPICK && players[session].holding.id != I.WOODAXE) {
+            players[session].inv[players[session].holding.id].duras[players[session].holding.ins]--;
+        }
+
+        players[session].lastAction = Date.now();
     }
     if (requirePickaxe.includes(type)) {
         if (players[session].holding === null || !pickaxe.includes(parseInt(players[session].holding.id))) {
+            setTimeout(()=>{
+                io.to(socket.id).emit('rejectCmd', cmdId);
+            }, lagSim)
+            return;
+        }
+        if (players[session].inv[players[session].holding.id].duras[players[session].holding.ins] < 1) {
             setTimeout(()=>{
                 io.to(socket.id).emit('rejectCmd', cmdId);
             }, lagSim)
@@ -1045,16 +1064,35 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
             }, lagSim)
             return;
         }
-        setTimeout(()=>{
-            io.to(socket.id).emit('authCmd', cmdId);
-        }, lagSim)
+        
+        if (players[session].holding.id != I.WOODPICK && players[session].holding.id != I.WOODAXE) {
+            players[session].inv[players[session].holding.id].duras[players[session].holding.ins]--;
+        }
+        players[session].lastAction = Date.now();
     }
 
-    if (players[session].holding.id != I.WOODPICK && players[session].holding.id != I.WOODAXE) {
-        players[session].inv[players[session].holding.id].duras[players[session].holding.ins]--;
-    }
+    setTimeout(()=>{
+        io.to(socket.id).emit('authCmd', cmdId);
+    }, lagSim)
 
-    if (type == B.TREE) {
+    if (type == B.TOMATO2) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+        addToInv(session, I.TOMATO, null);
+        addToInv(session, I.TOMATO, null);
+        addToInv(session, I.TOMATOSEED, null);
+
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), null], socket);
+    }
+    else if (type == B.TOMATO3) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+        for (let x=0; x<6; x++) {
+            addToInv(session, I.TOMATO, null);
+        }
+        addToInv(session, I.TOMATOSEED, null);
+        addToInv(session, I.TOMATOSEED, null);
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), null], socket);
+    }
+    else if (type == B.TREE) {
         world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE1], socket);
     }
