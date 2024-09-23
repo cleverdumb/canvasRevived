@@ -588,6 +588,14 @@
                     addToInventory(I.WHEATSEED, null);
                     addToInventory(I.WHEATSEED, null);
                 }
+                else if (type == B.CARROT2) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+                    for (let x=0; x<6; x++) {
+                        addToInventory(I.CARROT, null);
+                    }
+                    addToInventory(I.CARROTSEED, null);
+                    addToInventory(I.CARROTSEED, null);
+                }
                 else if (type == B.TREE) {
                     fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1;
                 }
@@ -652,6 +660,11 @@
                     case I.WHEATSEED:
                         if (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z - 1] == B.GRASS) {
                             fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] = B.WHEAT1;
+                        }
+                        return true;
+                    case I.CARROTSEED:
+                        if (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z - 1] == B.GRASS) {
+                            fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] = B.CARROT1;
                         }
                         return true;
                 }

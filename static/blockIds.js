@@ -26,7 +26,9 @@ const B = {
     WHEAT1: 24,
     WHEAT2: 25,
     WHEAT3: 26,
-    WHEAT4: 27
+    WHEAT4: 27,
+    CARROT1: 28,
+    CARROT2: 29
 }
 
 const sprPos = {
@@ -57,7 +59,9 @@ const sprPos = {
     24: [256, 448],
     25: [240, 448],
     26: [224, 448],
-    27: [272, 448]
+    27: [272, 448],
+    28: [0, 528],
+    29: [304, 512]
 }
 
 const I = {
@@ -77,7 +81,9 @@ const I = {
     TOMATO: 13,
     WATERBUCKET: 14,
     WHEATSEED: 15,
-    WHEAT: 16
+    WHEAT: 16,
+    CARROTSEED: 17,
+    CARROT: 18
 }
 
 const iSprPos = {
@@ -97,7 +103,9 @@ const iSprPos = {
     13: [48, 512],
     14: [304, 32],
     15: [288, 448],
-    16: [240, 432]
+    16: [240, 432],
+    17: [16, 528],
+    18: [288, 512]
 }
 
 const toolSprPos = {
@@ -155,10 +163,10 @@ const smelterRecipes = {
 }
 
 const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3, B.STONE, B.STONE1, B.STONE2, B.STONE3, B.IRON, B.IRON1, B.IRON2, B.IRON3, B.TOMATO2, B.TOMATO3,
-B.WHEAT2, B.WHEAT3, B.WHEAT4];
-const passable = [B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER, B.TOMATO1, B.TOMATO2, B.TOMATO3, B.WHEAT1, B.WHEAT2, B.WHEAT3, B.WHEAT4];
+B.WHEAT2, B.WHEAT3, B.WHEAT4, B.CARROT2];
+const passable = [B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER, B.TOMATO1, B.TOMATO2, B.TOMATO3, B.WHEAT1, B.WHEAT2, B.WHEAT3, B.WHEAT4, B.CARROT1, B.CARROT2];
 
-const usable = [I.APPLE, I.TOMATOSEED, I.WATERBUCKET, I.WHEATSEED];
+const usable = [I.APPLE, I.TOMATOSEED, I.WATERBUCKET, I.WHEATSEED, I.CARROTSEED];
 
 const nonFallThrough = [];
 

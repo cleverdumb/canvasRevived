@@ -191,7 +191,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                         1: 100,
                         5: 6,
                         15: 50,
-                        12: 50
+                        12: 50,
+                        17: 50
                     },
                     hp: 75,
                     maxHp: 100,
@@ -1124,6 +1125,15 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
         addToInv(session, I.WHEATSEED, null);
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), null], socket);
     }
+    else if (type == B.CARROT2) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+        for (let x=0; x<6; x++) {
+            addToInv(session, I.CARROT, null);
+        }
+        addToInv(session, I.CARROTSEED, null);
+        addToInv(session, I.CARROTSEED, null);
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), null], socket);
+    }
     else if (type == B.TREE) {
         world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE1], socket);
@@ -1209,7 +1219,7 @@ function useEffect(session, item, cmdId) {
             return true;
         case I.TOMATOSEED: {
             let data = players[session];
-            if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z - 1] == B.GRASS) {
+            if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z - 1] == B.GRASS && world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] === null) {
                 world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = B.TOMATO1;
                 emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), B.TOMATO1], sockets[session]);
                 let copyChunk = JSON.parse(JSON.stringify(data.chunk));
@@ -1225,7 +1235,7 @@ function useEffect(session, item, cmdId) {
         }
         case I.WHEATSEED: {
             let data = players[session];
-            if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z - 1] == B.GRASS) {
+            if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z - 1] == B.GRASS && world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] === null) {
                 world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = B.WHEAT1;
                 emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), B.WHEAT1], sockets[session]);
                 let copyChunk = JSON.parse(JSON.stringify(data.chunk));
@@ -1234,6 +1244,22 @@ function useEffect(session, item, cmdId) {
                 cropHeartBeat[`${data.chunk.x}-${data.chunk.y}-${data.pos.x}-${data.pos.y}`] = setTimeout(()=>{
                     world[copyChunk.y][copyChunk.x][copyPos.y][copyPos.x][data.z] = B.WHEAT2;
                     emitToAdj(copyChunk, 'blockChange', [JSON.stringify(copyChunk), JSON.stringify({x: copyPos.x, y: copyPos.y, z: data.z}), B.WHEAT2]);
+                }, cropStageTime)
+                return true;
+            }
+            return false;
+        }
+        case I.CARROTSEED: {
+            let data = players[session];
+            if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z - 1] == B.GRASS && world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] === null) {
+                world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = B.CARROT1;
+                emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), B.CARROT1], sockets[session]);
+                let copyChunk = JSON.parse(JSON.stringify(data.chunk));
+                let copyPos = JSON.parse(JSON.stringify(data.pos));
+
+                cropHeartBeat[`${data.chunk.x}-${data.chunk.y}-${data.pos.x}-${data.pos.y}`] = setTimeout(()=>{
+                    world[copyChunk.y][copyChunk.x][copyPos.y][copyPos.x][data.z] = B.CARROT2;
+                    emitToAdj(copyChunk, 'blockChange', [JSON.stringify(copyChunk), JSON.stringify({x: copyPos.x, y: copyPos.y, z: data.z}), B.CARROT2]);
                 }, cropStageTime)
                 return true;
             }

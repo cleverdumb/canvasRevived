@@ -36,7 +36,7 @@ let sec1H = 100;
 let sec2H = 300;
 let craftCurrCount = 1;
 
-const pickable = [B.TOMATO2, B.TOMATO3, B.WHEAT2, B.WHEAT3, B.WHEAT4];
+const pickable = [B.TOMATO2, B.TOMATO3, B.WHEAT2, B.WHEAT3, B.WHEAT4, B.CARROT2];
 
 let buttons = []; // {x, y, w, h, cb}
 
