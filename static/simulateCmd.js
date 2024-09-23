@@ -24,8 +24,9 @@ function simulateCmd(name, cmdId) {
                     break;
                 }
             }
-            fakePl.z = destZ;
             fakePl.faceLeft = false;
+            fakePl.facing = 'd';
+            fakePl.z = destZ;
             render();
             break;
         case 'mvA':
@@ -54,6 +55,7 @@ function simulateCmd(name, cmdId) {
             }
             fakePl.z = destZ;
             fakePl.faceLeft = true;
+            fakePl.facing = 'a';
             render();
             break;
         case 'mvS':
@@ -80,6 +82,7 @@ function simulateCmd(name, cmdId) {
                 }
             }
             fakePl.z = destZ;
+            fakePl.facing = 's';
             render();
             break;
         case 'mvW':
@@ -106,6 +109,7 @@ function simulateCmd(name, cmdId) {
                 }
             }
             fakePl.z = destZ;
+            fakePl.facing = 'w';
             render();
             break;
         case 'inD':
@@ -121,6 +125,8 @@ function simulateCmd(name, cmdId) {
                 z: fakePl.z
             }
             interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, randomSeeds[cmdId]);
+            fakePl.faceLeft = (name == 'inA');
+            fakePl.facing = name[2].toLowerCase();
             break;
         }
         case 'inS':
@@ -136,6 +142,7 @@ function simulateCmd(name, cmdId) {
                 z: fakePl.z
             }
             interact(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z], destChunk, destPos, randomSeeds[cmdId]);
+            fakePl.facing = name[2].toLowerCase();
             break;
         }
         case 'inH': {

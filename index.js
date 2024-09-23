@@ -64,47 +64,47 @@ for (let y=0; y<chunkY; y++) {
                     // world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1 && a>b) ? (B.TREE) : null);
                     // world[y][x][a][b].push(z==0 ? (Math.random() > 0.5 ? B.GRASS : B.STUMP) : null);
                     // world[y][x][a][b].push(z==0 ? B.GRASS : null);
-                    // world[y][x][a][b].push(z==0 ? (a == chunkH-1 || b == chunkW-1 ? B.STONEBASE : B.GRASS) : null);
-                    if (z == 0) {
-                        world[y][x][a][b].push(B.GRASS);
-                    }
-                    else if (z == 1) {
-                        if (x==0 && y==0) {
-                            if (a/2 >= b) {
-                                world[y][x][a][b].push(B.TREE);
-                            }
-                            else if (b/2 >= a) {
-                                if (Math.random() > 0.9) {
-                                    world[y][x][a][b].push(B.IRON);
-                                }
-                                else { 
-                                    world[y][x][a][b].push(B.STONE);
-                                }
-                            }
-                            else {
-                                if ((a+b) > 8 && (a+b) < 15) {
-                                    world[y][x][a][b].push(B.SMELTER);
-                                }
-                                else {
-                                    world[y][x][a][b].push(null);
-                                }
-                            }
-                        }
-                        else {
-                            world[y][x][a][b].push(null);
-                        }
-                    }
-                    else {
-                        world[y][x][a][b].push(null);
-                    }
+                    world[y][x][a][b].push(z==0 ? (a == chunkH-1 || b == chunkW-1 ? B.STONEBASE : B.GRASS) : null);
+                    // if (z == 0) {
+                    //     world[y][x][a][b].push(B.GRASS);
+                    // }
+                    // else if (z == 1) {
+                    //     if (x==0 && y==0) {
+                    //         if (a/2 >= b) {
+                    //             world[y][x][a][b].push(B.TREE);
+                    //         }
+                    //         else if (b/2 >= a) {
+                    //             if (Math.random() > 0.9) {
+                    //                 world[y][x][a][b].push(B.IRON);
+                    //             }
+                    //             else { 
+                    //                 world[y][x][a][b].push(B.STONE);
+                    //             }
+                    //         }
+                    //         else {
+                    //             if ((a+b) > 8 && (a+b) < 15) {
+                    //                 world[y][x][a][b].push(B.SMELTER);
+                    //             }
+                    //             else {
+                    //                 world[y][x][a][b].push(null);
+                    //             }
+                    //         }
+                    //     }
+                    //     else {
+                    //         world[y][x][a][b].push(null);
+                    //     }
+                    // }
+                    // else {
+                    //     world[y][x][a][b].push(null);
+                    // }
                 }
             }
         }
     }
 }
 
-world[0][0][4][4][1] = B.TOMATO2;
-world[0][0][4][5][1] = B.TOMATO3;
+// world[0][0][4][4][1] = B.TOMATO2;
+// world[0][0][4][5][1] = B.TOMATO3;
 
 let plRooms = [];
 for (let y=0; y<chunkY; y++) {
@@ -190,7 +190,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                         14: 1,
                         1: 100,
                         5: 6,
-                        12: 5
+                        15: 50,
+                        12: 50
                     },
                     hp: 75,
                     maxHp: 100,
@@ -340,6 +341,8 @@ io.on('connection', (socket)=>{
 
     socket.on('movement', (session, direction, cmdId) => {
         if (direction == 'd' || direction == 'a') {
+            players[session].faceLeft = direction == 'a';
+            players[session].facing = direction;
             // world boundary check
             if (direction == 'd' && players[session].chunk.x >= chunkX-1 && players[session].pos.x >= chunkW-1) {
                 setTimeout(()=>{
@@ -412,7 +415,6 @@ io.on('connection', (socket)=>{
             }
 
             players[session].z = destPos.z;
-            players[session].faceLeft = direction == 'a';
             // inc pos
             players[session].pos.x += multiplier;
             // roll over chunk
@@ -507,6 +509,7 @@ io.on('connection', (socket)=>{
             afterMovement(session, direction);
         }
         else if (direction == 's' || direction == 'w') {
+            players[session].facing = direction;
             // world boundary check
             if (direction == 's' && players[session].chunk.y >= chunkY-1 && players[session].pos.y >= chunkH-1) {
                 setTimeout(()=>{
@@ -704,6 +707,9 @@ io.on('connection', (socket)=>{
                 y: data.pos.y,
                 z: data.z
             }
+
+            players[session].facing = direction;
+            players[session].faceLeft = direction == 'a';
         }
         else if (direction == 's' || direction == 'w') {
             if (direction == 's' && players[session].chunk.y >= chunkY-1 && players[session].pos.y >= chunkH-1) {
@@ -730,6 +736,8 @@ io.on('connection', (socket)=>{
                 y: (data.pos.y + yMult + chunkH)%chunkH,
                 z: data.z
             }
+
+            players[session].facing = direction;
         }
         else if (direction == 'h') {
             destChunk = {
@@ -1092,6 +1100,30 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
         addToInv(session, I.TOMATOSEED, null);
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), null], socket);
     }
+    else if (type == B.WHEAT2) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+        for (let x=0; x<3; x++) {
+            addToInv(session, I.WHEAT, null);
+        }
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), null], socket);
+    }
+    else if (type == B.WHEAT3) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+        for (let x=0; x<9; x++) {
+            addToInv(session, I.WHEAT, null);
+        }
+        addToInv(session, I.WHEATSEED, null);
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), null], socket);
+    }
+    else if (type == B.WHEAT4) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+        for (let x=0; x<20; x++) {
+            addToInv(session, I.WHEAT, null);
+        }
+        addToInv(session, I.WHEATSEED, null);
+        addToInv(session, I.WHEATSEED, null);
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), null], socket);
+    }
     else if (type == B.TREE) {
         world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1; 
         emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.TREE1], socket);
@@ -1191,6 +1223,22 @@ function useEffect(session, item, cmdId) {
             }
             return false;
         }
+        case I.WHEATSEED: {
+            let data = players[session];
+            if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z - 1] == B.GRASS) {
+                world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = B.WHEAT1;
+                emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), B.WHEAT1], sockets[session]);
+                let copyChunk = JSON.parse(JSON.stringify(data.chunk));
+                let copyPos = JSON.parse(JSON.stringify(data.pos));
+
+                cropHeartBeat[`${data.chunk.x}-${data.chunk.y}-${data.pos.x}-${data.pos.y}`] = setTimeout(()=>{
+                    world[copyChunk.y][copyChunk.x][copyPos.y][copyPos.x][data.z] = B.WHEAT2;
+                    emitToAdj(copyChunk, 'blockChange', [JSON.stringify(copyChunk), JSON.stringify({x: copyPos.x, y: copyPos.y, z: data.z}), B.WHEAT2]);
+                }, cropStageTime)
+                return true;
+            }
+            return false;
+        }
         case I.WATERBUCKET: {
             let data = players[session];
             if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] == B.TOMATO2) {
@@ -1202,6 +1250,28 @@ function useEffect(session, item, cmdId) {
                 cropHeartBeat[`${data.chunk.x}-${data.chunk.y}-${data.pos.x}-${data.pos.y}`] = setTimeout(()=>{
                     world[copyChunk.y][copyChunk.x][copyPos.y][copyPos.x][data.z] = B.TOMATO3;
                     emitToAdj(copyChunk, 'blockChange', [JSON.stringify(copyChunk), JSON.stringify({x: copyPos.x, y: copyPos.y, z: data.z}), B.TOMATO3]);
+                }, cropStageTime)
+            }
+            else if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] == B.WHEAT2) {
+                // world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = B.TOMATO1;
+                // emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), B.TOMATO1], sockets[session]);
+                let copyChunk = JSON.parse(JSON.stringify(data.chunk));
+                let copyPos = JSON.parse(JSON.stringify(data.pos));
+
+                cropHeartBeat[`${data.chunk.x}-${data.chunk.y}-${data.pos.x}-${data.pos.y}`] = setTimeout(()=>{
+                    world[copyChunk.y][copyChunk.x][copyPos.y][copyPos.x][data.z] = B.WHEAT3;
+                    emitToAdj(copyChunk, 'blockChange', [JSON.stringify(copyChunk), JSON.stringify({x: copyPos.x, y: copyPos.y, z: data.z}), B.WHEAT3]);
+                }, cropStageTime)
+            }
+            else if (world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] == B.WHEAT3) {
+                // world[data.chunk.y][data.chunk.x][data.pos.y][data.pos.x][data.z] = B.TOMATO1;
+                // emitToAdjNoSender(data.chunk, 'blockChange', [JSON.stringify(data.chunk), JSON.stringify({x: data.pos.x, y: data.pos.y, z: data.z}), B.TOMATO1], sockets[session]);
+                let copyChunk = JSON.parse(JSON.stringify(data.chunk));
+                let copyPos = JSON.parse(JSON.stringify(data.pos));
+
+                cropHeartBeat[`${data.chunk.x}-${data.chunk.y}-${data.pos.x}-${data.pos.y}`] = setTimeout(()=>{
+                    world[copyChunk.y][copyChunk.x][copyPos.y][copyPos.x][data.z] = B.WHEAT4;
+                    emitToAdj(copyChunk, 'blockChange', [JSON.stringify(copyChunk), JSON.stringify({x: copyPos.x, y: copyPos.y, z: data.z}), B.WHEAT4]);
                 }, cropStageTime)
             }
             return false;

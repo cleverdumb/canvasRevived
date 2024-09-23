@@ -554,20 +554,39 @@
                 
 
                 if (type == B.TOMATO2) {
-                    console.log(chunk.y, chunk.x, pos.y, pos.x, pos.z)
                     fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
                     addToInventory(I.TOMATO, null);
                     addToInventory(I.TOMATO, null);
                     addToInventory(I.TOMATOSEED, null);
                 }
                 else if (type == B.TOMATO3) {
-                    console.log(chunk.y, chunk.x, pos.y, pos.x, pos.z)
                     fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
                     for (let x=0; x<6; x++) {
                         addToInventory(I.TOMATO, null);
                     }
                     addToInventory(I.TOMATOSEED, null);
                     addToInventory(I.TOMATOSEED, null);
+                }
+                else if (type == B.WHEAT2) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+                    for (let x=0; x<3; x++) {
+                        addToInventory(I.WHEAT, null);
+                    }
+                }
+                else if (type == B.WHEAT3) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+                    for (let x=0; x<9; x++) {
+                        addToInventory(I.WHEAT, null);
+                    }
+                    addToInventory(I.WHEATSEED, null);
+                }
+                else if (type == B.WHEAT4) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
+                    for (let x=0; x<20; x++) {
+                        addToInventory(I.WHEAT, null);
+                    }
+                    addToInventory(I.WHEATSEED, null);
+                    addToInventory(I.WHEATSEED, null);
                 }
                 else if (type == B.TREE) {
                     fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.TREE1;
@@ -628,6 +647,11 @@
                     case I.TOMATOSEED:
                         if (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z - 1] == B.GRASS) {
                             fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] = B.TOMATO1;
+                        }
+                        return true;
+                    case I.WHEATSEED:
+                        if (fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z - 1] == B.GRASS) {
+                            fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] = B.WHEAT1;
                         }
                         return true;
                 }
