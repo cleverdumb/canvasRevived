@@ -340,7 +340,7 @@ io.on('connection', (socket)=>{
         })
     })
 
-    socket.on('movement', (session, direction, cmdId) => {
+    socket.on('movement', (session, direction, cmdId, hitNpc) => {
         if (direction == 'd' || direction == 'a') {
             players[session].faceLeft = direction == 'a';
             players[session].facing = direction;
@@ -371,25 +371,28 @@ io.on('connection', (socket)=>{
                 z: players[session].z
             }
 
-            if (players[session].holding !== null && sword.includes(parseInt(players[session].holding.id))) { 
-                let npcInDest = false;
-                let targetNpc = null;
-                npcs[destChunk.y][destChunk.x].forEach(n=>{
-                    if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && destPos.z == 1) {
-                        npcInDest = true;
-                        targetNpc = n;
-                    }
-                })
+            if (hitNpc) {
+                if (players[session].holding !== null && sword.includes(parseInt(players[session].holding.id))) { 
+                    let npcInDest = false;
+                    let targetNpc = null;
+                    npcs[destChunk.y][destChunk.x].forEach(n=>{
+                        if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && destPos.z == 1) {
+                            npcInDest = true;
+                            targetNpc = n;
+                        }
+                    })
 
-                if (npcInDest) {
-                    targetNpc.move(direction);
-                    targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
-                    if (cmdId === null) return;
-                    setTimeout(()=>{
-                        io.to(socket.id).emit('rejectCmd', cmdId);
-                    }, lagSim);
-                    return;
+                    if (npcInDest) {
+                        targetNpc.move(direction);
+                        targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
+                        
+                        // setTimeout(()=>{
+                        //     io.to(socket.id).emit('rejectCmd', cmdId);
+                        // }, lagSim);
+                        io.to(socket.id).emit('authCmd', cmdId);
+                    }
                 }
+                return;
             }
 
             // check if there is player in dest
@@ -538,26 +541,25 @@ io.on('connection', (socket)=>{
                 z: players[session].z
             }
 
-            if (players[session].holding !== null && sword.includes(parseInt(players[session].holding.id))) { 
-                let npcInDest = false;
-                let targetNpc = null;
-                npcs[destChunk.y][destChunk.x].forEach(n=>{
-                    if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && destPos.z == 1) {
-                        npcInDest = true;
-                        targetNpc = n;
-                    }
-                })
+            if (hitNpc) {
+                if (players[session].holding !== null && sword.includes(parseInt(players[session].holding.id))) { 
+                    let npcInDest = false;
+                    let targetNpc = null;
+                    npcs[destChunk.y][destChunk.x].forEach(n=>{
+                        if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && destPos.z == 1) {
+                            npcInDest = true;
+                            targetNpc = n;
+                        }
+                    })
 
-                if (npcInDest && (Date.now() - players[session].lastAction) > toolCd[parseInt(players[session].holding.id)]) {
-                    players[session].lastAction = Date.now();
-                    targetNpc.move(direction);
-                    targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
-                    if (cmdId === null) return;
-                    setTimeout(()=>{
-                        io.to(socket.id).emit('rejectCmd', cmdId);
-                    }, lagSim);
-                    return;
+                    if (npcInDest && (Date.now() - players[session].lastAction) > toolCd[parseInt(players[session].holding.id)]) {
+                        players[session].lastAction = Date.now();
+                        targetNpc.move(direction);
+                        targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
+                        io.to(socket.id).emit('authCmd', cmdId);
+                    }
                 }
+                return;
             }
 
             // check if there is player in dest
@@ -1331,7 +1333,7 @@ function addToInv(ses, item, dura) {
 let nextNpcId = 0;
 
 class CloseRangeNpc {
-    static maxPathLength = 5;
+    static maxPathLength = 20;
     constructor (arg) {
         this.data = arg;
         npcs[arg.chunk.y][arg.chunk.x].push(this);
@@ -1592,16 +1594,16 @@ class CloseRangeNpc {
     }
 }
 
-// new CloseRangeNpc({
-//     chunk: {
-//         x: 0,
-//         y: 0
-//     },
-//     pos: {
-//         x: 8,
-//         y: 2
-//     }
-// })
+new CloseRangeNpc({
+    chunk: {
+        x: 0,
+        y: 0
+    },
+    pos: {
+        x: 8,
+        y: 2
+    }
+})
 
 // new CloseRangeNpc({
 //     chunk: {
