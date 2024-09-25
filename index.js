@@ -383,13 +383,16 @@ io.on('connection', (socket)=>{
                     })
 
                     if (npcInDest) {
+                        players[session].lastAction = Date.now();
                         targetNpc.move(direction);
                         targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
-                        
-                        // setTimeout(()=>{
-                        //     io.to(socket.id).emit('rejectCmd', cmdId);
-                        // }, lagSim);
+                        players[session].facing = direction;
+                        if (direction == 'a') players[session].faceLeft = true;
+                        if (direction == 'd') players[session].faceLeft = false;
                         io.to(socket.id).emit('authCmd', cmdId);
+                    }
+                    else {
+                        io.to(socket.id).emit('rejectCmd', cmdId);
                     }
                 }
                 return;
@@ -556,7 +559,13 @@ io.on('connection', (socket)=>{
                         players[session].lastAction = Date.now();
                         targetNpc.move(direction);
                         targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
+                        players[session].facing = direction;
+                        if (direction == 'a') players[session].faceLeft = true;
+                        if (direction == 'd') players[session].faceLeft = false;
                         io.to(socket.id).emit('authCmd', cmdId);
+                    }
+                    else {
+                        io.to(socket.id).emit('rejectCmd', cmdId);
                     }
                 }
                 return;
@@ -1332,34 +1341,14 @@ function addToInv(ses, item, dura) {
 
 let nextNpcId = 0;
 
-class CloseRangeNpc {
-    static maxPathLength = 20;
-    constructor (arg) {
+class GenNpc {
+    constructor(arg) {
         this.data = arg;
         npcs[arg.chunk.y][arg.chunk.x].push(this);
-        this.data.faceLeft = true;
+        // this.data.faceLeft = true;
         this.data.id = nextNpcId++;
-        this.data.target = null;
-        this.data.path = [];
-        this.data.hp = 100;
-        this.data.maxHp = 100;
-        this.heartBeat = setInterval(()=>{
-            if (this.data.path.length > CloseRangeNpc.maxPathLength) {
-                this.data.path = [];
-                players[this.data.target].aggroed = players[this.data.target].aggroed.filter(x=>npcObj[x].data.id != this.data.id)
-                this.target = null;
-            }
-            if (this.data.path.length > 0) {
-                let next = this.data.path.shift();
-                this.move(next)
-            }
-            // else {
-            //     this.move('wasd'[Math.round(Math.random()*3)]);
-            // }
-        }, 1000);
+        
         npcObj[this.data.id] = this;
-
-        emitToAdj(this.data.chunk, 'npcData', [JSON.stringify(this.data)]);
     }
     teleport(cx, cy, x, y) {
         let oriChunk = {x: this.data.chunk.x, y: this.data.chunk.y}
@@ -1453,6 +1442,13 @@ class CloseRangeNpc {
 
         this.data.chunk = destChunk;
         this.data.pos = destPos;
+        if (this.data.fourDir) {
+            this.data.facing = dir;
+        }
+        else {
+            if (dir == 'a') this.data.faceLeft = true;
+            if (dir == 'd') this.data.faceLeft = false;
+        }
 
         if (destChunk.x != oriChunk.x || destChunk.y != oriChunk.y) {
             npcs[oriChunk.y][oriChunk.x] = npcs[oriChunk.y][oriChunk.x].filter(n=>n.id!=this.id);
@@ -1557,6 +1553,32 @@ class CloseRangeNpc {
             }
         }
     } 
+}
+
+class CloseRangeNpc extends GenNpc{
+    static maxPathLength = 20;
+    constructor (arg) {
+        super(arg);
+        this.data.hp = 100;
+        this.data.maxHp = 100;
+        this.data.target = null;
+        this.data.path = [];
+        this.heartBeat = setInterval(()=>{
+            if (this.data.path.length > CloseRangeNpc.maxPathLength) {
+                this.data.path = [];
+                players[this.data.target].aggroed = players[this.data.target].aggroed.filter(x=>npcObj[x].data.id != this.data.id)
+                this.target = null;
+            }
+            if (this.data.path.length > 0) {
+                let next = this.data.path.shift();
+                this.move(next)
+            }
+        }, 1000);
+        this.data.fourDir = false;
+        this.data.faceLeft = true;
+
+        emitToAdj(this.data.chunk, 'npcData', [JSON.stringify(this.data)]);
+    }
     damage(session, dmg) {
         this.data.hp -= dmg;
         this.data.hp = Math.max(this.data.hp, 0);
@@ -1575,6 +1597,8 @@ class CloseRangeNpc {
 
         npcs[this.data.chunk.y][this.data.chunk.x] = npcs[this.data.chunk.y][this.data.chunk.x].filter(n=>n.data.id != this.data.id);
         emitToAdj(this.data.chunk, 'npcDie', [this.data.id]);
+
+        clearInterval(this.heartBeat);
 
         new CloseRangeNpc({
             chunk: {

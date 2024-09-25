@@ -358,7 +358,9 @@
 
                                     if (npcInDest) {
                                         if (fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z] === null || passable.includes(fakeOverMap[destChunk.y][destChunk.x][destPos.y][destPos.x][destPos.z]) || fakePl.z >= 5) {
-                                            socket.emit('movement', session, key, null, true);
+                                            let newId = nextCmdId++;
+                                            socket.emit('movement', session, key, newId, true);
+                                            unauthCmd[newId] = 'rot' + key.toUpperCase();
 
                                             simulateAllUnauth();
                                         }

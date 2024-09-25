@@ -195,6 +195,15 @@ function simulateCmd(name, cmdId) {
                     removeFromInv(parseInt(id), null);
                 }
             }
+            else if (name.startsWith('rot')) {
+                fakePl.facing = name[3].toLowerCase();
+                if (name[3] == 'D') {
+                    fakePl.faceLeft = false;
+                }
+                else if (name[3] == 'A') {
+                    fakePl.faceLeft = true;
+                }
+            }
         break;
     }
 }
