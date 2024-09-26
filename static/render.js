@@ -111,7 +111,12 @@ function render() {
             for (let n in npcs) {
                 let p = npcs[n];
                 if ((fakePl.chunk.y-1+chy == p.chunk.y) && (fakePl.chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
-                    ctx.drawImage(sprite, p.faceLeft ? 80 : 80, p.faceLeft ? 32 : 16, 16, 16, x*bw, y*bh, bw, bh);
+                    if (p.fourDir) {
+                        ctx.drawImage(sprite, p.sprite[p.facing == 'd' ? 0 : (p.facing == 'a' ? 2 : (p.facing == 'w' ? 1 : 3))][0], p.sprite[p.facing == 'd' ? 0 : (p.facing == 'a' ? 2 : (p.facing == 'w' ? 1 : 3))][1], 16, 16, x*bw, y*bh, bw, bh);
+                    }
+                    else {
+                        ctx.drawImage(sprite, p.sprite[p.faceLeft ? 0 : 1][0], p.sprite[p.faceLeft ? 0 : 1][1], 16, 16, x*bw, y*bh, bw, bh);
+                    }
                     ctx.fillStyle = 'red';
                     ctx.fillRect(x*bw + 2, y*bh + bh - 3, (bw-4) * p.hp/p.maxHp, 3);
                 }

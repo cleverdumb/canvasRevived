@@ -1576,7 +1576,8 @@ class CloseRangeNpc extends GenNpc{
         }, 1000);
         this.data.fourDir = false;
         this.data.faceLeft = true;
-
+    }
+    afterSpawn() {
         emitToAdj(this.data.chunk, 'npcData', [JSON.stringify(this.data)]);
     }
     damage(session, dmg) {
@@ -1600,7 +1601,7 @@ class CloseRangeNpc extends GenNpc{
 
         clearInterval(this.heartBeat);
 
-        new CloseRangeNpc({
+        new Goblin({
             chunk: {
                 x: 0,
                 y: 0
@@ -1618,7 +1619,19 @@ class CloseRangeNpc extends GenNpc{
     }
 }
 
-new CloseRangeNpc({
+class Goblin extends CloseRangeNpc{
+    constructor (arg) {
+        super(arg);
+        this.data.sprite = [
+            [80, 32],
+            [80, 16]
+        ];
+
+        this.afterSpawn();
+    }
+}
+
+new Goblin({
     chunk: {
         x: 0,
         y: 0
