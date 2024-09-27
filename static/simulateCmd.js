@@ -149,6 +149,9 @@ function simulateCmd(name, cmdId) {
             interact(fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z], fakePl.chunk, {x: fakePl.pos.x, y: fakePl.pos.y, z: fakePl.z}, randomSeeds[cmdId]);
             break;
         }
+        case 'shoot':
+            fakePl.inv[I.BOW].duras[fakePl.holding.ins]--;
+            break;
         default:
             if (name.startsWith('pl')) {
                 let blockId = parseInt(name.substr(2));

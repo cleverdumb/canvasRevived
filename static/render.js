@@ -15,8 +15,8 @@ let invImgH = 40;
 let invStartX = 60;
 let invStartY = by*bh + 50;
 let invBoxX = 15;
-let invSel = I.TOMATOSEED;
-let invSelIns = null;
+let invSel = I.BOW;
+let invSelIns = 0;
 
 let craftMenuOpen = false;
 let craftBoxW = 20;
@@ -206,7 +206,7 @@ function render() {
                 ctx.fillStyle = 'red';
                 ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW, 5);
                 ctx.fillStyle = 'green';
-                ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW * (fakePl.inv[x].duras[i]/10), 5);
+                ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW * (fakePl.inv[x].duras[i]/toolMaxDura[parseInt(x)]), 5);
                 if (fakePl.holding !== null && fakePl.holding.id == x && fakePl.holding.ins == i) {
                     ctx.fillStyle = 'black';
                     ctx.font = '10px monospace'
@@ -334,6 +334,25 @@ function render() {
                 currY += 15 + 5;
             }
         }
+    }
+
+    if (invSel == I.BOW && fakePl.inv[parseInt(invSel)].instances > parseInt(invSelIns) && fakePl.inv[parseInt(invSel)].duras[parseInt(invSelIns)] > 0) {
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle = '#685232';
+        ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('FIRE').width + 20, 26);
+        ctx.strokeRect(invStartX + 20, invStartY - 103, ctx.measureText('FIRE').width + 20, 26);
+        ctx.font = '20px monospace';
+        ctx.fillStyle = 'white';
+        ctx.fillText('FIRE', invStartX + 20 + 10, invStartY - 100 + 18);
+        buttons.push({
+            x: invStartX + 20,
+            y: invStartY - 103,
+            w: ctx.measureText('FIRE').width + 20,
+            h: 26,
+            cb: ()=>{
+                shootBow();
+            }
+        })
     }
 
     if (placeable.some(x=>I[x] == parseInt(invSel)) || usable.includes(parseInt(invSel))) {

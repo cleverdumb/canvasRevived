@@ -349,7 +349,7 @@
                                     let targetNpc = null;
                                     for (x in npcs) {
                                         let n = npcs[x];
-                                        if (n.chunk.x == destChunk.x && n.chunk.y == destChunk.y && n.pos.x == destPos.x && n.pos.y == destPos.y && destPos.z == 1) {
+                                        if (n.chunk.x == destChunk.x && n.chunk.y == destChunk.y && n.pos.x == destPos.x && n.pos.y == destPos.y && n.pos.z == destPos.z) {
                                             npcInDest = true;
                                             targetNpc = x;
                                             break;
@@ -440,7 +440,7 @@
                                     let targetNpc = null;
                                     for (x in npcs) {
                                         let n = npcs[x];
-                                        if (n.chunk.x == destChunk.x && n.chunk.y == destChunk.y && n.pos.x == destPos.x && n.pos.y == destPos.y && destPos.z == 1) {
+                                        if (n.chunk.x == destChunk.x && n.chunk.y == destChunk.y && n.pos.x == destPos.x && n.pos.y == destPos.y && n.pos.z == destPos.z) {
                                             npcInDest = true;
                                             targetNpc = x;
                                             break;
@@ -480,7 +480,7 @@
                             // check if inventory has the item
                             if (invSel !== null && fakePl.inv.hasOwnProperty(invSel) && invSelIns < fakePl.inv[invSel].instances) {
                                 // check if it is held-equipment
-                                if (axe.includes(parseInt(invSel)) || pickaxe.includes(parseInt(invSel)) || sword.includes(parseInt(invSel))) {
+                                if (axe.includes(parseInt(invSel)) || pickaxe.includes(parseInt(invSel)) || sword.includes(parseInt(invSel)) || invSel == I.BOW) {
                                     // check if it is currently equiped
                                     if (!(fakePl.holding !== null && fakePl.holding.id == invSel && fakePl.holding.ins == invSelIns)) {
                                         let newId = nextCmdId++;
@@ -500,6 +500,16 @@
                             }
                         }
                         break;
+                }
+            }
+
+            function shootBow() {
+                if (fakePl.holding !== null && fakePl.holding.id == I.BOW && fakePl.inv[I.BOW].instances > fakePl.holding.ins && fakePl.inv[I.BOW].duras[fakePl.holding.ins] > 0) {
+                    let cmdId = nextCmdId++;
+                    unauthCmd[cmdId] = `shoot`;
+                    socket.emit('shootBow', session, cmdId);
+
+                    simulateAllUnauth();
                 }
             }
 
@@ -671,6 +681,8 @@
                             fakeOverMap[fakePl.chunk.y][fakePl.chunk.x][fakePl.pos.y][fakePl.pos.x][fakePl.z] = B.CARROT1;
                         }
                         return true;
+                    case I.BOW:
+                        return false;
                 }
             }
 
