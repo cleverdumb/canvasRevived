@@ -111,7 +111,6 @@
                 })
 
                 socket.on('fakePlAddToInv', itemId => {
-                    console.log(itemId);
                     if (!unstack.includes(itemId)) {
                         if (plData[plId].inv.hasOwnProperty(itemId)) {
                             plData[plId].inv[itemId]++;

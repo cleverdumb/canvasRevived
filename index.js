@@ -898,7 +898,7 @@ io.on('connection', (socket)=>{
         if ((Date.now() - players[session].lastAction) < toolCd[I.BOW] - 20) {
             io.to(socket.id).emit('rejectCmd', cmdId);
         }
-        
+
         if (players[session].holding === null || players[session].holding.id != I.BOW) {
             io.to(socket.id).emit('rejectCmd', cmdId);
         }
@@ -922,7 +922,8 @@ io.on('connection', (socket)=>{
                 z: players[session].z
             },
             chunk: players[session].chunk,
-            dir: players[session].facing
+            dir: players[session].facing,
+            firedBy: session
         })
     })
 
@@ -981,7 +982,7 @@ function afterMovement(session, dir) {
     players[session].aggroed.forEach(n=>{
         npcObj[n].data.path.push(dir);
     })
-    for (let x=1; x<6; x++) {
+    for (let x=1; x<7; x++) {
         let targetPos = {
             x: (currPos.x + x) % chunkW,
             y: currPos.y
@@ -1006,7 +1007,7 @@ function afterMovement(session, dir) {
             })
         }
     }
-    for (let x=1; x<6; x++) {
+    for (let x=1; x<7; x++) {
         let targetPos = {
             x: (currPos.x - x + chunkW) % chunkW,
             y: currPos.y
@@ -1031,7 +1032,7 @@ function afterMovement(session, dir) {
             })
         }
     }
-    for (let x=1; x<6; x++) {
+    for (let x=1; x<7; x++) {
         let targetPos = {
             x: currPos.x,
             y: (currPos.y - x + chunkH) % chunkH
@@ -1056,7 +1057,7 @@ function afterMovement(session, dir) {
             })
         }
     }
-    for (let x=1; x<6; x++) {
+    for (let x=1; x<7; x++) {
         let targetPos = {
             x: currPos.x,
             y: (currPos.y + x) % chunkH
@@ -1461,7 +1462,7 @@ class GenNpc {
             let d = players[p];
             if (d.pos.x == destPos.x && d.pos.y == destPos.y && d.z == destPos.z) {
                 plInDest = true;
-                if (cbs.collidePlayer) cbs.collidePlayer(p);
+                if (cbs.collidePlayer) cbs.collidePlayer(p, dir, destChunk, destPos);
             }
         })
 
@@ -1477,11 +1478,13 @@ class GenNpc {
         })
 
         if (npcInDest) {
-            this.data.path = [];
-            if (this.aggroable) {
-                if (this.target !== null) {
-                    players[this.data.target].aggroed = players[this.data.target].aggroed.filter(x=>npcObj[x].data.id != this.data.id)
-                    this.target = null;
+            if (targetNpc.pathStopping) {
+                this.data.path = [];
+                if (this.aggroable) {
+                    if (this.target !== null) {
+                        players[this.data.target].aggroed = players[this.data.target].aggroed.filter(x=>npcObj[x].data.id != this.data.id)
+                        this.target = null;
+                    }
                 }
             }
 
@@ -1511,7 +1514,7 @@ class GenNpc {
         if (this.aggroable) {
             let currPos = this.data.pos;
             let currChunk = this.data.chunk;
-            for (let x=1; x<6; x++) {
+            for (let x=1; x<7; x++) {
                 let targetPos = {
                     x: (currPos.x + x) % chunkW,
                     y: currPos.y
@@ -1534,7 +1537,7 @@ class GenNpc {
                     })
                 }
             }
-            for (let x=1; x<6; x++) {
+            for (let x=1; x<7; x++) {
                 let targetPos = {
                     x: (currPos.x - x + chunkW) % chunkW,
                     y: currPos.y
@@ -1557,7 +1560,7 @@ class GenNpc {
                     })
                 }
             }
-            for (let x=1; x<6; x++) {
+            for (let x=1; x<7; x++) {
                 let targetPos = {
                     x: currPos.x,
                     y: (currPos.y - x + chunkH) % chunkH
@@ -1580,7 +1583,7 @@ class GenNpc {
                     })
                 }
             }
-            for (let x=1; x<6; x++) {
+            for (let x=1; x<7; x++) {
                 let targetPos = {
                     x: currPos.x,
                     y: (currPos.y + x) % chunkH
@@ -1611,7 +1614,7 @@ class GenNpc {
         npcs[this.data.chunk.y][this.data.chunk.x] = npcs[this.data.chunk.y][this.data.chunk.x].filter(n=>n.data.id != this.data.id);
         emitToAdj(this.data.chunk, 'npcDie', [this.data.id]);
 
-        if (this.aggroable) {
+        if (this.aggroable && this.target) {
             players[this.target].aggroed = players[this.target].aggroed.filter(x=>x != this.data.id);
         }
 
@@ -1623,7 +1626,7 @@ class GenNpc {
 }
 
 class Arrow extends GenNpc {
-    static lifeSpan = 10;
+    static lifeSpan = 5;
     constructor (arg) {
         super(arg);
         this.heartBeat = setInterval(()=>{
@@ -1635,6 +1638,10 @@ class Arrow extends GenNpc {
                     this.die();
                 },
                 collidePlayer: () => {
+                    this.die();
+                },
+                collideNpc: (n) => {
+                    n.damage(this.data.firedBy, 20);
                     this.die();
                 }
             });
@@ -1648,6 +1655,7 @@ class Arrow extends GenNpc {
             [224, 240]
         ]
         this.travelled = 0;
+        this.pathStopping = false; // stopping short range npc
 
         this.afterSpawn();
     }
@@ -1676,7 +1684,7 @@ class CloseRangeNpc extends GenNpc{
             if (this.data.path.length > 0) {
                 let next = this.data.path.shift();
                 this.move(next, {
-                    collidePlayer: (p)=>{
+                    collidePlayer: (p, dir, destChunk, destPos)=>{
                         players[p].hp -= 10;
                         players[p].hp = Math.max(players[p].hp, 0);
 
@@ -1739,17 +1747,17 @@ class Goblin extends CloseRangeNpc{
     }
 }
 
-// new Goblin({
-//     chunk: {
-//         x: 0,
-//         y: 0
-//     },
-//     pos: {
-//         x: 8,
-//         y: 2,
-//         z: 1
-//     }
-// })
+new Goblin({
+    chunk: {
+        x: 0,
+        y: 0
+    },
+    pos: {
+        x: 8,
+        y: 2,
+        z: 1
+    }
+})
 
 // new CloseRangeNpc({
 //     chunk: {
