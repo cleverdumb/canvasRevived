@@ -895,6 +895,10 @@ io.on('connection', (socket)=>{
     })
 
     socket.on('shootBow', (session, cmdId) => {
+        if ((Date.now() - players[session].lastAction) < toolCd[I.BOW] - 20) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+        }
+        
         if (players[session].holding === null || players[session].holding.id != I.BOW) {
             io.to(socket.id).emit('rejectCmd', cmdId);
         }

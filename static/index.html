@@ -504,12 +504,16 @@
             }
 
             function shootBow() {
-                if (fakePl.holding !== null && fakePl.holding.id == I.BOW && fakePl.inv[I.BOW].instances > fakePl.holding.ins && fakePl.inv[I.BOW].duras[fakePl.holding.ins] > 0) {
-                    let cmdId = nextCmdId++;
-                    unauthCmd[cmdId] = `shoot`;
-                    socket.emit('shootBow', session, cmdId);
+                if ((Date.now() - lastInput) > toolCd[I.BOW]) {
+                    if (fakePl.holding !== null && fakePl.holding.id == I.BOW && fakePl.inv[I.BOW].instances > fakePl.holding.ins && fakePl.inv[I.BOW].duras[fakePl.holding.ins] > 0) {
+                        lastInput = Date.now();
 
-                    simulateAllUnauth();
+                        let cmdId = nextCmdId++;
+                        unauthCmd[cmdId] = `shoot`;
+                        socket.emit('shootBow', session, cmdId);
+
+                        simulateAllUnauth();
+                    }
                 }
             }
 

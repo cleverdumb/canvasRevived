@@ -149,7 +149,8 @@ const toolCd = {
     7: 500,
     8: 250,
     9: 250,
-    10: 500
+    10: 500,
+    19: 400
 }
 
 const toolMaxDura = {
