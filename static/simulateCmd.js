@@ -151,7 +151,7 @@ function simulateCmd(name, cmdId) {
         }
         case 'shoot':
             fakePl.inv[I.BOW].duras[fakePl.holding.ins]--;
-            if (randomSeeds[cmdId] % 5 === 0) {
+            if (randomSeeds[cmdId] % 20 === 0) {
                 removeFromInv(fakePl.ammo, null);
                 if (!fakePl.inv.hasOwnProperty(fakePl.ammo)) {
                     fakePl.ammo = null;

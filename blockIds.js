@@ -171,7 +171,9 @@ const toolMaxDura = {
 }
 
 const dmg = {
-    10: 20
+    10: 20,
+    20: 15,
+    21: 25
 }
 
 const baseRecipes = {

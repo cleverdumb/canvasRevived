@@ -935,16 +935,17 @@ io.on('connection', (socket)=>{
             },
             chunk: players[session].chunk,
             dir: players[session].facing,
-            firedBy: session
+            firedBy: session,
+            dmg: dmg[players[session].ammo]
         })
 
-        if (seed % 5 === 0) {
+        if (seed % 20 === 0) {
             removeFromInv(session, players[session].ammo, null);
             if (!players[session].inv.hasOwnProperty(players[session].ammo)) {
                 players[session].ammo = null;
             }
         }
-        
+
         io.to(socket.id).emit('authCmd', cmdId);
     })
 
@@ -1682,7 +1683,7 @@ class Arrow extends GenNpc {
                     this.die();
                 },
                 collideNpc: (n) => {
-                    n.damage(this.data.firedBy, 20);
+                    n.damage(this.data.firedBy, this.data.dmg);
                     this.die();
                 }
             });
