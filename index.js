@@ -103,7 +103,7 @@ for (let y=0; y<chunkY; y++) {
     }
 }
 
-// world[0][0][4][4][1] = B.TOMATO2;
+world[0][0][5][5][3] = B.STONE;
 // world[0][0][4][5][1] = B.TOMATO3;
 
 let plRooms = [];

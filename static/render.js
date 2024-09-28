@@ -99,26 +99,62 @@ function render() {
                 let p = plData[q];
                 // console.log(x);
                 if (plId != q && (fakePl.chunk.y-1+chy == p.chunk.y) && (fakePl.chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
-                    if (p.holding === null) {
-                        ctx.drawImage(sprite, p.faceLeft ? 0 : 0, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                    let covered = false;
+                    let column = fakeOverMap[p.chunk.y][p.chunk.x][p.pos.y][p.pos.x];
+                    if (roofOnTop) {
+                        column.slice(p.z, fakePl.z + 1).forEach((b)=>{
+                            if (b !== null) {
+                                covered = true;
+                            }
+                        })
                     }
                     else {
-                        ctx.drawImage(sprite, p.faceLeft ? 16 : 16, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
-                        ctx.drawImage(sprite, p.faceLeft ? toolSprPos[parseInt(p.holding.id)][0][0] : toolSprPos[parseInt(p.holding.id)][1][0], p.faceLeft ? toolSprPos[parseInt(p.holding.id)][0][1] : toolSprPos[parseInt(p.holding.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                        column.slice(p.z).forEach((b, i)=>{
+                            if (b !== null) {
+                                covered = true;
+                            }
+                        })
+                    }
+                    if (!covered) {
+                        if (p.holding === null) {
+                            ctx.drawImage(sprite, p.faceLeft ? 0 : 0, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                        }
+                        else {
+                            ctx.drawImage(sprite, p.faceLeft ? 16 : 16, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                            ctx.drawImage(sprite, p.faceLeft ? toolSprPos[parseInt(p.holding.id)][0][0] : toolSprPos[parseInt(p.holding.id)][1][0], p.faceLeft ? toolSprPos[parseInt(p.holding.id)][0][1] : toolSprPos[parseInt(p.holding.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                        }
                     }
                 }
             }
             for (let n in npcs) {
                 let p = npcs[n];
-                if ((fakePl.chunk.y-1+chy == p.chunk.y) && (fakePl.chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
-                    if (p.fourDir) {
-                        ctx.drawImage(sprite, p.sprite[p.facing == 'd' ? 0 : (p.facing == 'a' ? 2 : (p.facing == 'w' ? 1 : 3))][0], p.sprite[p.facing == 'd' ? 0 : (p.facing == 'a' ? 2 : (p.facing == 'w' ? 1 : 3))][1], 16, 16, x*bw, y*bh, bw, bh);
+                let covered = false;
+                let column = fakeOverMap[p.chunk.y][p.chunk.x][p.pos.y][p.pos.x];
+                if (roofOnTop) {
+                    column.slice(p.z, fakePl.z + 1).forEach((b)=>{
+                        if (b !== null) {
+                            covered = true;
+                        }
+                    })
+                }
+                else {
+                    column.slice(p.z).forEach((b, i)=>{
+                        if (b !== null) {
+                            covered = true;
+                        }
+                    })
+                }
+                if (!covered) {
+                    if ((fakePl.chunk.y-1+chy == p.chunk.y) && (fakePl.chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
+                        if (p.fourDir) {
+                            ctx.drawImage(sprite, p.sprite[p.facing == 'd' ? 0 : (p.facing == 'a' ? 2 : (p.facing == 'w' ? 1 : 3))][0], p.sprite[p.facing == 'd' ? 0 : (p.facing == 'a' ? 2 : (p.facing == 'w' ? 1 : 3))][1], 16, 16, x*bw, y*bh, bw, bh);
+                        }
+                        else {
+                            ctx.drawImage(sprite, p.sprite[p.faceLeft ? 0 : 1][0], p.sprite[p.faceLeft ? 0 : 1][1], 16, 16, x*bw, y*bh, bw, bh);
+                        }
+                        ctx.fillStyle = 'red';
+                        ctx.fillRect(x*bw + 2, y*bh + bh - 3, (bw-4) * p.hp/p.maxHp, 3);
                     }
-                    else {
-                        ctx.drawImage(sprite, p.sprite[p.faceLeft ? 0 : 1][0], p.sprite[p.faceLeft ? 0 : 1][1], 16, 16, x*bw, y*bh, bw, bh);
-                    }
-                    ctx.fillStyle = 'red';
-                    ctx.fillRect(x*bw + 2, y*bh + bh - 3, (bw-4) * p.hp/p.maxHp, 3);
                 }
             }
             // console.log(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw])
