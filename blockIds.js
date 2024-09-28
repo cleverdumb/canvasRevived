@@ -86,7 +86,9 @@ const I = {
     CARROT: 18,
     BOW: 19,
     WOODARROW: 20,
-    COPPERARROW: 21
+    COPPERARROW: 21,
+    COPPERARMOR: 22,
+    COPPERHELM: 23
 }
 
 const iSprPos = {
@@ -111,7 +113,9 @@ const iSprPos = {
     18: [288, 512],
     19: [32, 240],
     20: [48, 240],
-    21: [0, 960]
+    21: [0, 960],
+    22: [272, 272],
+    23: [192, 352]
 }
 
 const toolSprPos = {
@@ -141,6 +145,14 @@ const sword = [
 
 const arrow = [
     20, 21
+]
+
+const armor = [
+    22
+]
+
+const helm = [
+    23
 ]
 
 const requireAxe = [

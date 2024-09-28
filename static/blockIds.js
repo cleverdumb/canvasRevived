@@ -127,6 +127,10 @@ const toolSprPos = {
     19: [[144, 240], [128, 240]]
 }
 
+const clothingSprPos = {
+    22: [[192, 352], [176, 368], [160, 368]]
+}
+
 const unstack = [
     6, 7, 8, 9, 10, 19
 ]
@@ -145,6 +149,14 @@ const sword = [
 
 const arrow = [
     20, 21
+]
+
+const armor = [
+    22
+]
+
+const helm = [
+    23
 ]
 
 const requireAxe = [

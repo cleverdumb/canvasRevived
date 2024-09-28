@@ -103,7 +103,7 @@ for (let y=0; y<chunkY; y++) {
     }
 }
 
-world[0][0][5][5][3] = B.STONE;
+// world[0][0][5][5][3] = B.STONE;
 // world[0][0][4][5][1] = B.TOMATO3;
 
 let plRooms = [];
@@ -188,6 +188,14 @@ app.post('/signup', jsonParser, (req, res)=>{
                             duras: [10]
                         },
                         19: {
+                            instances: 1,
+                            duras: [100]
+                        },
+                        22: {
+                            instances: 1,
+                            duras: [100]
+                        },
+                        23: {
                             instances: 1,
                             duras: [100]
                         },
@@ -1021,9 +1029,16 @@ function placeBlock(session, blockId, cmdId) {
 function afterMovement(session, dir) {
     let currPos = players[session].pos;
     let currChunk = players[session].chunk;
+    let toDelete = [];
     players[session].aggroed.forEach(n=>{
-        npcObj[n].data.path.push(dir);
+        if (npcObj.hasOwnProperty(n)) {
+            npcObj[n].data.path.push(dir);
+        }
+        else {
+            toDelete.push(n);
+        }
     })
+    players[session].aggroed = players[session].aggroed.filter(x=>!toDelete.includes(x));
     for (let x=1; x<7; x++) {
         let targetPos = {
             x: (currPos.x + x) % chunkW,

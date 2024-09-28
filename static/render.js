@@ -144,7 +144,7 @@ function render() {
                         }
                     })
                 }
-                if (!covered) {
+                // if (!covered) {
                     if ((fakePl.chunk.y-1+chy == p.chunk.y) && (fakePl.chunk.x-1+chx == p.chunk.x) && (cy%chh == p.pos.y) && (cx%chw == p.pos.x)) {
                         if (p.fourDir) {
                             ctx.drawImage(sprite, p.sprite[p.facing == 'd' ? 0 : (p.facing == 'a' ? 2 : (p.facing == 'w' ? 1 : 3))][0], p.sprite[p.facing == 'd' ? 0 : (p.facing == 'a' ? 2 : (p.facing == 'w' ? 1 : 3))][1], 16, 16, x*bw, y*bh, bw, bh);
@@ -155,7 +155,7 @@ function render() {
                         ctx.fillStyle = 'red';
                         ctx.fillRect(x*bw + 2, y*bh + bh - 3, (bw-4) * p.hp/p.maxHp, 3);
                     }
-                }
+                // }
             }
             // console.log(mapData[pl.chunk.y-1+chy][pl.chunk.x-1+chx][cy%chh][cx%chw])
             // ctx.fillStyle = 'black';
