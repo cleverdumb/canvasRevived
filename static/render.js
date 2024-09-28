@@ -170,7 +170,7 @@ function render() {
             ctx.drawImage(sprite, iSprPos[x][0], iSprPos[x][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
             ctx.font = '20px monospace';
             ctx.fillStyle = 'black';
-            ctx.fillText(fakePl.inv[x], currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 15);
+            ctx.fillText(fakePl.inv[x] + (fakePl.ammo == x ? 'A' : ''), currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 15);
             currBoxX++;
             if (currBoxX >= invBoxX) {
                 currBoxY++;
@@ -351,6 +351,25 @@ function render() {
             h: 26,
             cb: ()=>{
                 shootBow();
+            }
+        })
+    }
+
+    if (arrow.includes(parseInt(invSel))) {
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle = '#685232';
+        ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('AMMO').width + 20, 26);
+        ctx.strokeRect(invStartX + 20, invStartY - 103, ctx.measureText('AMMO').width + 20, 26);
+        ctx.font = '20px monospace';
+        ctx.fillStyle = 'white';
+        ctx.fillText('AMMO', invStartX + 20 + 10, invStartY - 100 + 18);
+        buttons.push({
+            x: invStartX + 20,
+            y: invStartY - 103,
+            w: ctx.measureText('AMMO').width + 20,
+            h: 26,
+            cb: ()=>{
+                setAsAmmo();
             }
         })
     }

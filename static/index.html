@@ -516,6 +516,16 @@
                 }
             }
 
+            function setAsAmmo() {
+                if (arrow.includes(parseInt(invSel))) {
+                    let cmdId = nextCmdId++;
+                    unauthCmd[cmdId] = `ammo${invSel}`;
+                    socket.emit('ammo', session, parseInt(invSel), cmdId);
+
+                    simulateAllUnauth();
+                }
+            }
+
             function use(item) {
                 if (fakePl.inv.hasOwnProperty(item) && fakePl.inv[item] > 0) {
                     if (placeable.some(x=>I[x] == item)) {

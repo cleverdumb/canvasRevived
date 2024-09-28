@@ -84,7 +84,9 @@ const I = {
     WHEAT: 16,
     CARROTSEED: 17,
     CARROT: 18,
-    BOW: 19
+    BOW: 19,
+    WOODARROW: 20,
+    COPPERARROW: 21
 }
 
 const iSprPos = {
@@ -107,7 +109,9 @@ const iSprPos = {
     16: [240, 432],
     17: [16, 528],
     18: [288, 512],
-    19: [32, 240]
+    19: [32, 240],
+    20: [48, 240],
+    21: [0, 960]
 }
 
 const toolSprPos = {
@@ -133,6 +137,10 @@ const pickaxe = [
 
 const sword = [
     10
+]
+
+const arrow = [
+    20, 21
 ]
 
 const requireAxe = [
@@ -185,5 +193,5 @@ const nonFallThrough = [];
 
 const placeable = ['WOODWALL', 'STONEWALL'];
 module.exports = {
-    B, I, baseRecipes, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, passable, interactable, toolMaxDura
+    B, I, baseRecipes, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, passable, interactable, toolMaxDura, arrow
 };

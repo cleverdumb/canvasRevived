@@ -207,6 +207,14 @@ function simulateCmd(name, cmdId) {
                     fakePl.faceLeft = true;
                 }
             }
+            else if (name.startsWith('ammo')) {
+                if (fakePl.ammo == parseInt(name.substr(4))) {
+                    fakePl.ammo = null;
+                }
+                else {
+                    fakePl.ammo = parseInt(name.substr(4));
+                }
+            }
         break;
     }
 }

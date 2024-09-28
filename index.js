@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, toolMaxDura} = require('./blockIds.js');
+const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, toolMaxDura, arrow} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -191,6 +191,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                             instances: 1,
                             duras: [100]
                         },
+                        20: 3,
+                        21: 4,
                         14: 1,
                         1: 100,
                         5: 6,
@@ -201,6 +203,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                     hp: 75,
                     maxHp: 100,
                     holding: {id: 19, ins: 0},
+                    ammo: null,
                     faceLeft: false,
                     facing: 'd',
                     lastAction: 0,
@@ -897,10 +900,12 @@ io.on('connection', (socket)=>{
     socket.on('shootBow', (session, cmdId) => {
         if ((Date.now() - players[session].lastAction) < toolCd[I.BOW] - 20) {
             io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
         }
 
         if (players[session].holding === null || players[session].holding.id != I.BOW) {
             io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
         }
         else {
             ins = players[session].holding.ins;
@@ -908,10 +913,12 @@ io.on('connection', (socket)=>{
 
         if (!players[session].inv.hasOwnProperty(I.BOW)) {
             io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
         }
 
         if (players[session].inv[I.BOW].instances <= ins || players[session].inv[I.BOW].duras[ins] <= 0) {
             io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
         }
 
         players[session].inv[I.BOW].duras[ins]--;
@@ -925,6 +932,26 @@ io.on('connection', (socket)=>{
             dir: players[session].facing,
             firedBy: session
         })
+    })
+
+    socket.on('ammo', (session, id, cmdId) => {
+        if (!arrow.includes(id)) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+
+        if (!players[session].inv.hasOwnProperty(id) || players[session].inv[id] <= 0) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+
+        if (players[session].ammo == id) {
+            players[session].ammo = null;
+        }
+        else {
+            players[session].ammo = id;
+        }
+        io.to(socket.id).emit('authCmd', cmdId);
     })
 
     socket.on('disconnect', ()=>{
