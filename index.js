@@ -1614,7 +1614,7 @@ class GenNpc {
         npcs[this.data.chunk.y][this.data.chunk.x] = npcs[this.data.chunk.y][this.data.chunk.x].filter(n=>n.data.id != this.data.id);
         emitToAdj(this.data.chunk, 'npcDie', [this.data.id]);
 
-        if (this.aggroable && this.target !== null) {
+        if (this.aggroable && this.data.target) {
             players[this.data.target].aggroed = players[this.data.target].aggroed.filter(x=>x != this.data.id);
         }
 
