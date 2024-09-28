@@ -336,7 +336,7 @@ function render() {
         }
     }
 
-    if (invSel == I.BOW && fakePl.inv[parseInt(invSel)].instances > parseInt(invSelIns) && fakePl.inv[parseInt(invSel)].duras[parseInt(invSelIns)] > 0) {
+    if (invSel == I.BOW && fakePl.inv[parseInt(invSel)].instances > parseInt(invSelIns) && fakePl.inv[parseInt(invSel)].duras[parseInt(invSelIns)] > 0 && fakePl.ammo !== null) {
         ctx.strokeStyle = 'black';
         ctx.fillStyle = '#685232';
         ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('FIRE').width + 20, 26);

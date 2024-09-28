@@ -505,13 +505,17 @@
             function shootBow() {
                 if ((Date.now() - lastInput) > toolCd[I.BOW]) {
                     if (fakePl.holding !== null && fakePl.holding.id == I.BOW && fakePl.inv[I.BOW].instances > fakePl.holding.ins && fakePl.inv[I.BOW].duras[fakePl.holding.ins] > 0) {
-                        lastInput = Date.now();
+                        if (fakePl.ammo !== null && arrow.includes(fakePl.ammo)) {
+                            lastInput = Date.now();
 
-                        let cmdId = nextCmdId++;
-                        unauthCmd[cmdId] = `shoot`;
-                        socket.emit('shootBow', session, cmdId);
+                            let cmdId = nextCmdId++;
+                            let seed = Math.round(Math.random()*1e5);
+                            randomSeeds[cmdId] = seed;
+                            unauthCmd[cmdId] = `shoot`;
+                            socket.emit('shootBow', session, cmdId, seed);
 
-                        simulateAllUnauth();
+                            simulateAllUnauth();
+                        }
                     }
                 }
             }

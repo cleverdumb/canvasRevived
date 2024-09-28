@@ -897,7 +897,7 @@ io.on('connection', (socket)=>{
         return;
     })
 
-    socket.on('shootBow', (session, cmdId) => {
+    socket.on('shootBow', (session, cmdId, seed) => {
         if ((Date.now() - players[session].lastAction) < toolCd[I.BOW] - 20) {
             io.to(socket.id).emit('rejectCmd', cmdId);
             return;
@@ -921,6 +921,11 @@ io.on('connection', (socket)=>{
             return;
         }
 
+        if (players[session].ammo === null || !arrow.includes(players[session].ammo) || !players[session].inv.hasOwnProperty(players[session].ammo)) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+
         players[session].inv[I.BOW].duras[ins]--;
         new Arrow({
             pos: {
@@ -932,6 +937,15 @@ io.on('connection', (socket)=>{
             dir: players[session].facing,
             firedBy: session
         })
+
+        if (seed % 5 === 0) {
+            removeFromInv(session, players[session].ammo, null);
+            if (!players[session].inv.hasOwnProperty(players[session].ammo)) {
+                players[session].ammo = null;
+            }
+        }
+        
+        io.to(socket.id).emit('authCmd', cmdId);
     })
 
     socket.on('ammo', (session, id, cmdId) => {
