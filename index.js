@@ -853,6 +853,7 @@ io.on('connection', (socket)=>{
             return;
         }
         
+        console.log(item);
         if (sword.includes(item) || pickaxe.includes(item) || axe.includes(item) || item == I.BOW) {
             players[session].holding = {id: item, ins: instance};
         }
@@ -864,6 +865,8 @@ io.on('connection', (socket)=>{
         }
 
         io.to(socket.id).emit('authCmd', cmdId);
+
+        console.log(players[session].holding);
 
         emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], socket);
     })
@@ -912,6 +915,8 @@ io.on('connection', (socket)=>{
         }
 
         io.to(socket.id).emit('authCmd', cmdId);
+
+        console.log(players[session].holding);
 
         emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], socket);
     })
@@ -1838,17 +1843,17 @@ class Goblin extends CloseRangeNpc{
     }
 }
 
-new Goblin({
-    chunk: {
-        x: 0,
-        y: 0
-    },
-    pos: {
-        x: 9,
-        y: 9,
-        z: 1
-    }
-})
+// new Goblin({
+//     chunk: {
+//         x: 0,
+//         y: 0
+//     },
+//     pos: {
+//         x: 9,
+//         y: 9,
+//         z: 1
+//     }
+// })
 
 // new CloseRangeNpc({
 //     chunk: {
