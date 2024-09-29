@@ -215,7 +215,9 @@ app.post('/signup', jsonParser, (req, res)=>{
                     faceLeft: false,
                     facing: 'd',
                     lastAction: 0,
-                    aggroed: []
+                    aggroed: [],
+                    armor: {id: 22, ins: 0},
+                    helm: {id: 23, ins: 0}
                 })], err => {
                     if (err) throw err;
                     res.send('0');
