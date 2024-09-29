@@ -189,13 +189,28 @@ function simulateCmd(name, cmdId) {
                 let id = name.substr(2).split('-')[0];
                 let ins = name.substr(2).split('-')[1];
                 
-                fakePl.holding = {id: id, ins: ins};
+                if (sword.includes(parseInt(id)) || pickaxe.includes(parseInt(id)) || axe.includes(parseInt(id)) || parseInt(id) == I.BOW) {
+                    fakePl.holding = {id: id, ins: ins};
+                }
+                else if (armor.includes(parseInt(id))) {
+                    fakePl.armor = {id: id, ins: ins};
+                }
+                else if (helm.includes(parseInt(id))) {
+                    fakePl.helm = {id: id, ins: ins};
+                }
             }
             else if (name.startsWith('unho')) {
                 let id = name.substr(4).split('-')[0];
-                let ins = name.substr(4).split('-')[1];
-                
-                fakePl.holding = null;
+
+                if (sword.includes(parseInt(id)) || pickaxe.includes(parseInt(id)) || axe.includes(parseInt(id)) || parseInt(id) == I.BOW) {
+                    fakePl.holding = null;
+                }
+                else if (armor.includes(parseInt(id))) {
+                    fakePl.armor = null;
+                }
+                else if (helm.includes(parseInt(id))) {
+                    fakePl.helm = null;
+                }
             }
             else if (name.startsWith('use')) {
                 let id = name.substr(3);

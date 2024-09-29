@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, toolMaxDura, arrow} = require('./blockIds.js');
+const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, toolMaxDura, arrow, armor, helm} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -850,9 +850,19 @@ io.on('connection', (socket)=>{
 
         if (!unstack.includes(parseInt(item))) {
             io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
         }
         
-        players[session].holding = {id: item, ins: instance};
+        if (sword.includes(item) || pickaxe.includes(item) || axe.includes(item) || item == I.BOW) {
+            players[session].holding = {id: item, ins: instance};
+        }
+        else if (armor.includes(item)) {
+            players[session].armor = {id: item, ins: instance};
+        }
+        else if (helm.includes(item)) {
+            players[session].helm = {id: item, ins: instance};
+        }
+
         io.to(socket.id).emit('authCmd', cmdId);
 
         emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], socket);
@@ -869,16 +879,38 @@ io.on('connection', (socket)=>{
             return;
         }
 
-        if (players[session] === null || players[session].holding.id != item || players[session].holding.ins != instance) {
+        if (!unstack.includes(parseInt(item))) {
             io.to(socket.id).emit('rejectCmd', cmdId);
             return;
         }
 
-        if (!unstack.includes(parseInt(item))) {
+        if (players[session].holding === null) {
             io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
         }
 
-        players[session].holding = null;
+        if (sword.includes(item) || pickaxe.includes(item) || axe.includes(item) || item == I.BOW) {
+            if (players[session] === null || players[session].holding.id != item || players[session].holding.ins != instance) {
+                io.to(socket.id).emit('rejectCmd', cmdId);
+                return;
+            }
+            players[session].holding = null;
+        }
+        else if (armor.includes(item)) {
+            if (players[session] === null || players[session].armor.id != item || players[session].armor.ins != instance) {
+                io.to(socket.id).emit('rejectCmd', cmdId);
+                return;
+            }
+            players[session].armor = null;
+        }
+        else if (helm.includes(item)) {
+            if (players[session] === null || players[session].helm.id != item || players[session].helm.ins != instance) {
+                io.to(socket.id).emit('rejectCmd', cmdId);
+                return;
+            }
+            players[session].helm = null;
+        }
+
         io.to(socket.id).emit('authCmd', cmdId);
 
         emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], socket);

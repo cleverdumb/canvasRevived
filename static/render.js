@@ -131,20 +131,20 @@ function render() {
                         if (p.holding === null) {
                             ctx.drawImage(sprite, p.faceLeft ? 0 : 0, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
                             if (p.armor !== null) {
-                                ctx.drawImage(sprite, p.faceLeft ? clothingSprPos[p.armor.id][0][0] : clothingSprPos[p.armor.id][1][0], p.faceLeft ? clothingSprPos[p.armor.id][0][1] : clothingSprPos[p.armor.id][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                                ctx.drawImage(sprite, p.faceLeft ? clothingSprPos[parseInt(p.armor.id)][0][0] : clothingSprPos[parseInt(p.armor.id)][1][0], p.faceLeft ? clothingSprPos[parseInt(p.armor.id)][0][1] : clothingSprPos[parseInt(p.armor.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
                             }
                             if (p.helm !== null) {
-                                ctx.drawImage(sprite, p.faceLeft ? clothingSprPos[p.helm.id][0][0] : clothingSprPos[p.helm.id][1][0], p.faceLeft ? clothingSprPos[p.helm.id][0][1] : clothingSprPos[p.helm.id][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                                ctx.drawImage(sprite, p.faceLeft ? clothingSprPos[parseInt(p.helm.id)][0][0] : clothingSprPos[parseInt(p.helm.id)][1][0], p.faceLeft ? clothingSprPos[parseInt(p.helm.id)][0][1] : clothingSprPos[parseInt(p.helm.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
                             }                        
                         }
                         else {
                             ctx.drawImage(sprite, p.faceLeft ? 16 : 16, p.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
                             ctx.drawImage(sprite, p.faceLeft ? toolSprPos[parseInt(p.holding.id)][0][0] : toolSprPos[parseInt(p.holding.id)][1][0], p.faceLeft ? toolSprPos[parseInt(p.holding.id)][0][1] : toolSprPos[parseInt(p.holding.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
                             if (p.armor !== null) {
-                                ctx.drawImage(sprite, p.faceLeft ? clothingSprPos[p.armor.id][2][0] : clothingSprPos[p.armor.id][3][0], p.faceLeft ? clothingSprPos[p.armor.id][2][1] : clothingSprPos[p.armor.id][3][1], 16, 16, x*bw, y*bh, bw, bh);
+                                ctx.drawImage(sprite, p.faceLeft ? clothingSprPos[parseInt(p.armor.id)][2][0] : clothingSprPos[parseInt(p.armor.id)][3][0], p.faceLeft ? clothingSprPos[parseInt(p.armor.id)][2][1] : clothingSprPos[parseInt(p.armor.id)][3][1], 16, 16, x*bw, y*bh, bw, bh);
                             }
                             if (p.helm !== null) {
-                                ctx.drawImage(sprite, p.faceLeft ? clothingSprPos[p.helm.id][0][0] : clothingSprPos[p.helm.id][1][0], p.faceLeft ? clothingSprPos[p.helm.id][0][1] : clothingSprPos[p.helm.id][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                                ctx.drawImage(sprite, p.faceLeft ? clothingSprPos[parseInt(p.helm.id)][0][0] : clothingSprPos[parseInt(p.helm.id)][1][0], p.faceLeft ? clothingSprPos[parseInt(p.helm.id)][0][1] : clothingSprPos[parseInt(p.helm.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
                             }
                         }
                     }
@@ -267,7 +267,7 @@ function render() {
                 ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW, 5);
                 ctx.fillStyle = 'green';
                 ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW * (fakePl.inv[x].duras[i]/toolMaxDura[parseInt(x)]), 5);
-                if (fakePl.holding !== null && fakePl.holding.id == x && fakePl.holding.ins == i) {
+                if ((fakePl.holding !== null && fakePl.holding.id == x && fakePl.holding.ins == i) || (fakePl.armor !== null && fakePl.armor.id == x && fakePl.armor.ins == i) || (fakePl.helm !== null && fakePl.helm.id == x && fakePl.helm.ins == i)) {
                     ctx.fillStyle = 'black';
                     ctx.font = '10px monospace'
                     ctx.fillText('E', currBoxX * invBoxW + invStartX + 5, currBoxY * invBoxH + invStartY + invImgH + 5 + 10)

@@ -87,8 +87,8 @@ const I = {
     BOW: 19,
     WOODARROW: 20,
     COPPERARROW: 21,
-    COPPERARMOR: 22,
-    COPPERHELM: 23
+    IRONARMOR: 22,
+    IRONHELM: 23
 }
 
 const iSprPos = {
@@ -114,8 +114,8 @@ const iSprPos = {
     19: [32, 240],
     20: [48, 240],
     21: [0, 960],
-    22: [272, 272],
-    23: [192, 352]
+    22: [288, 208],
+    23: [160, 352]
 }
 
 const toolSprPos = {
@@ -127,8 +127,13 @@ const toolSprPos = {
     19: [[144, 240], [128, 240]]
 }
 
+const clothingSprPos = {
+    22: [[144, 272], [96, 272], [128, 272], [112, 272]],
+    23: [[144, 368], [128, 368]]
+}
+
 const unstack = [
-    6, 7, 8, 9, 10, 19
+    6, 7, 8, 9, 10, 19, 22, 23
 ]
 
 const axe = [
@@ -179,7 +184,9 @@ const toolMaxDura = {
     8: 100,
     9: 100,
     10: 10,
-    19: 100
+    19: 100,
+    22: 100,
+    23: 100
 }
 
 const dmg = {
@@ -207,5 +214,5 @@ const nonFallThrough = [];
 
 const placeable = ['WOODWALL', 'STONEWALL'];
 module.exports = {
-    B, I, baseRecipes, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, passable, interactable, toolMaxDura, arrow
+    B, I, baseRecipes, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, passable, interactable, toolMaxDura, arrow, armor, helm
 };

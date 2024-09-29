@@ -133,7 +133,7 @@ const clothingSprPos = {
 }
 
 const unstack = [
-    6, 7, 8, 9, 10, 19
+    6, 7, 8, 9, 10, 19, 22, 23
 ]
 
 const axe = [

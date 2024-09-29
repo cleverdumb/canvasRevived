@@ -479,9 +479,41 @@
                             // check if inventory has the item
                             if (invSel !== null && fakePl.inv.hasOwnProperty(invSel) && invSelIns < fakePl.inv[invSel].instances) {
                                 // check if it is held-equipment
-                                if (axe.includes(parseInt(invSel)) || pickaxe.includes(parseInt(invSel)) || sword.includes(parseInt(invSel)) || invSel == I.BOW) {
+                                if (axe.includes(parseInt(invSel)) || pickaxe.includes(parseInt(invSel)) || sword.includes(parseInt(invSel)) || parseInt(invSel) == I.BOW) {
                                     // check if it is currently equiped
                                     if (!(fakePl.holding !== null && fakePl.holding.id == invSel && fakePl.holding.ins == invSelIns)) {
+                                        let newId = nextCmdId++;
+                                        socket.emit('hold', session, invSel, invSelIns, newId);
+                                        unauthCmd[newId] = `ho${invSel}-${invSelIns}`;
+
+                                        simulateAllUnauth();
+                                    }
+                                    else {
+                                        let newId = nextCmdId++;
+                                        socket.emit('unhold', session, invSel, invSelIns, newId);
+                                        unauthCmd[newId] = `unho${invSel}-${invSelIns}`;
+
+                                        simulateAllUnauth();
+                                    }
+                                }
+                                else if (armor.includes(parseInt(invSel))) {
+                                    if (!(fakePl.armor !== null && fakePl.armor.id == invSel && fakePl.armor.ins == invSelIns)) {
+                                        let newId = nextCmdId++;
+                                        socket.emit('hold', session, invSel, invSelIns, newId);
+                                        unauthCmd[newId] = `ho${invSel}-${invSelIns}`;
+
+                                        simulateAllUnauth();
+                                    }
+                                    else {
+                                        let newId = nextCmdId++;
+                                        socket.emit('unhold', session, invSel, invSelIns, newId);
+                                        unauthCmd[newId] = `unho${invSel}-${invSelIns}`;
+
+                                        simulateAllUnauth();
+                                    }
+                                }
+                                else if (helm.includes(parseInt(invSel))) {
+                                    if (!(fakePl.helm !== null && fakePl.helm.id == invSel && fakePl.helm.ins == invSelIns)) {
                                         let newId = nextCmdId++;
                                         socket.emit('hold', session, invSel, invSelIns, newId);
                                         unauthCmd[newId] = `ho${invSel}-${invSelIns}`;
