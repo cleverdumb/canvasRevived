@@ -64,39 +64,39 @@ for (let y=0; y<chunkY; y++) {
                     // world[y][x][a][b].push(z==0 ? B.GRASS : ((a>5 || b>5) && z==1) ? (B.TREE) : null);
                     // world[y][x][a][b].push(z==0 ? (Math.random() > 0.5 ? B.GRASS : B.STUMP) : null);
                     // world[y][x][a][b].push(z==0 ? B.GRASS : null);
-                    world[y][x][a][b].push(z==0 ? (a == chunkH-1 || b == chunkW-1 ? B.STONEBASE : B.GRASS) : null);
-                    // if (z == 0) {
-                    //     world[y][x][a][b].push(B.GRASS);
-                    // }
-                    // else if (z == 1) {
-                    //     if (x==0 && y==0) {
-                    //         if (a/2 >= b) {
-                    //             world[y][x][a][b].push(B.TREE);
-                    //         }
-                    //         else if (b/2 >= a) {
-                    //             if (Math.random() > 0.9) {
-                    //                 world[y][x][a][b].push(B.IRON);
-                    //             }
-                    //             else { 
-                    //                 world[y][x][a][b].push(B.STONE);
-                    //             }
-                    //         }
-                    //         else {
-                    //             if ((a+b) > 8 && (a+b) < 15) {
-                    //                 world[y][x][a][b].push(B.SMELTER);
-                    //             }
-                    //             else {
-                    //                 world[y][x][a][b].push(null);
-                    //             }
-                    //         }
-                    //     }
-                    //     else {
-                    //         world[y][x][a][b].push(null);
-                    //     }
-                    // }
-                    // else {
-                    //     world[y][x][a][b].push(null);
-                    // }
+                    // world[y][x][a][b].push(z==0 ? (a == chunkH-1 || b == chunkW-1 ? B.STONEBASE : B.GRASS) : null);
+                    if (z == 0) {
+                        world[y][x][a][b].push(B.GRASS);
+                    }
+                    else if (z == 1) {
+                        if (x==0 && y==0) {
+                            if (a/2 >= b) {
+                                world[y][x][a][b].push(B.TREE);
+                            }
+                            else if (b/2 >= a) {
+                                if (Math.random() > 0.9) {
+                                    world[y][x][a][b].push(B.IRON);
+                                }
+                                else { 
+                                    world[y][x][a][b].push(B.STONE);
+                                }
+                            }
+                            else {
+                                if ((a+b) > 8 && (a+b) < 15) {
+                                    world[y][x][a][b].push(B.SMELTER);
+                                }
+                                else {
+                                    world[y][x][a][b].push(null);
+                                }
+                            }
+                        }
+                        else {
+                            world[y][x][a][b].push(null);
+                        }
+                    }
+                    else {
+                        world[y][x][a][b].push(null);
+                    }
                 }
             }
         }
@@ -1844,8 +1844,8 @@ new Goblin({
         y: 0
     },
     pos: {
-        x: 8,
-        y: 2,
+        x: 9,
+        y: 9,
         z: 1
     }
 })
