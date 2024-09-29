@@ -114,14 +114,14 @@ function render() {
                     let covered = false;
                     let column = fakeOverMap[p.chunk.y][p.chunk.x][p.pos.y][p.pos.x];
                     if (roofOnTop) {
-                        column.slice(p.z, fakePl.z + 1).forEach((b)=>{
+                        column.slice(p.z+1, fakePl.z + 1).forEach((b)=>{
                             if (b !== null) {
                                 covered = true;
                             }
                         })
                     }
                     else {
-                        column.slice(p.z).forEach((b, i)=>{
+                        column.slice(p.z+1).forEach((b, i)=>{
                             if (b !== null) {
                                 covered = true;
                             }
@@ -155,14 +155,14 @@ function render() {
                 let covered = false;
                 let column = fakeOverMap[p.chunk.y][p.chunk.x][p.pos.y][p.pos.x];
                 if (roofOnTop) {
-                    column.slice(p.pos.z, fakePl.z + 1).forEach((b)=>{
+                    column.slice(p.pos.z+1, fakePl.z + 1).forEach((b)=>{
                         if (b !== null) {
                             covered = true;
                         }
                     })
                 }
                 else {
-                    column.slice(p.pos.z).forEach((b, i)=>{
+                    column.slice(p.pos.z+1).forEach((b, i)=>{
                         if (b !== null) {
                             covered = true;
                         }

@@ -866,8 +866,6 @@ io.on('connection', (socket)=>{
 
         io.to(socket.id).emit('authCmd', cmdId);
 
-        console.log(players[session].holding);
-
         emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], socket);
     })
 
@@ -915,8 +913,6 @@ io.on('connection', (socket)=>{
         }
 
         io.to(socket.id).emit('authCmd', cmdId);
-
-        console.log(players[session].holding);
 
         emitToAdjNoSender(players[session].chunk, 'newPlayer', [JSON.stringify(players[session])], socket);
     })
