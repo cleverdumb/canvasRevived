@@ -213,3 +213,8 @@ const usable = [I.APPLE, I.TOMATOSEED, I.WATERBUCKET, I.WHEATSEED, I.CARROTSEED]
 const nonFallThrough = [];
 
 const placeable = ['WOODWALL', 'STONEWALL'];
+
+const armorDmgReduction = {
+    22: 2,
+    23: 2
+}

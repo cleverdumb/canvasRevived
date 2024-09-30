@@ -213,6 +213,11 @@ const usable = [I.APPLE, I.TOMATOSEED, I.WATERBUCKET, I.WHEATSEED, I.CARROTSEED]
 const nonFallThrough = [];
 
 const placeable = ['WOODWALL', 'STONEWALL'];
+
+const armorDmgReduction = {
+    22: 2,
+    23: 2
+}
 module.exports = {
-    B, I, baseRecipes, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, passable, interactable, toolMaxDura, arrow, armor, helm
+    B, I, baseRecipes, axe, pickaxe, unstack, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, passable, interactable, toolMaxDura, arrow, armor, helm, armorDmgReduction
 };

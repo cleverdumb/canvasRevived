@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('data.db', sqlite3.OPEN_READWRITE);
 
-const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, toolMaxDura, arrow, armor, helm} = require('./blockIds.js');
+const {B, I, baseRecipes, unstack, axe, pickaxe, requireAxe, requirePickaxe, toolCd, sword, dmg, interactable, passable, smelterRecipes, usable, nonFallThrough, placeable, toolMaxDura, arrow, armor, helm, armorDmgReduction} = require('./blockIds.js');
 
 db.run(`
     CREATE TABLE IF NOT EXISTS accData (
@@ -853,7 +853,6 @@ io.on('connection', (socket)=>{
             return;
         }
         
-        console.log(item);
         if (sword.includes(item) || pickaxe.includes(item) || axe.includes(item) || item == I.BOW) {
             players[session].holding = {id: item, ins: instance};
         }
@@ -1777,7 +1776,14 @@ class CloseRangeNpc extends GenNpc{
                 let next = this.data.path.shift();
                 this.move(next, {
                     collidePlayer: (p, dir, destChunk, destPos)=>{
-                        players[p].hp -= 10;
+                        let dmgDealt = this.data.dmg;
+                        if (players[p].armor !== null) {
+                            dmgDealt -= armorDmgReduction[parseInt(players[p].armor.id)];
+                        }
+                        if (players[p].helm !== null) {
+                            dmgDealt -= armorDmgReduction[parseInt(players[p].helm.id)];
+                        }
+                        players[p].hp -= dmgDealt;
                         players[p].hp = Math.max(players[p].hp, 0);
 
                         this.data.path.push(dir);
@@ -1834,22 +1840,23 @@ class Goblin extends CloseRangeNpc{
             [80, 16]
         ];
         this.aggroable = true;
+        this.data.dmg = 10;
 
         this.afterSpawn();
     }
 }
 
-// new Goblin({
-//     chunk: {
-//         x: 0,
-//         y: 0
-//     },
-//     pos: {
-//         x: 9,
-//         y: 9,
-//         z: 1
-//     }
-// })
+new Goblin({
+    chunk: {
+        x: 0,
+        y: 0
+    },
+    pos: {
+        x: 9,
+        y: 9,
+        z: 1
+    }
+})
 
 // new CloseRangeNpc({
 //     chunk: {
