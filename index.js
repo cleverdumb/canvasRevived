@@ -1813,14 +1813,14 @@ class CloseRangeNpc extends GenNpc{
         addToInv(session, I.APPLE, null);
         io.to(sockets[session].id).emit('fakePlAddToInv', I.APPLE);
 
-        new Goblin({
+        new Spider({
             chunk: {
                 x: 0,
                 y: 0
             },
             pos: {
-                x: 8,
-                y: 4,
+                x: 9,
+                y: 9,
                 z: 1
             }
         })
@@ -1846,7 +1846,21 @@ class Goblin extends CloseRangeNpc{
     }
 }
 
-new Goblin({
+class Spider extends CloseRangeNpc{
+    constructor (arg) {
+        super(arg);
+        this.data.sprite = [
+            [112, 240],
+            [96, 240]
+        ];
+        this.aggroable = true;
+        this.data.dmg = 10;
+
+        this.afterSpawn();
+    }
+}
+
+new Spider({
     chunk: {
         x: 0,
         y: 0
