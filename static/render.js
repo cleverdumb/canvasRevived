@@ -420,17 +420,18 @@ function render() {
     }
 
     if (invSel == I.BOW && fakePl.inv[parseInt(invSel)].instances > parseInt(invSelIns) && fakePl.inv[parseInt(invSel)].duras[parseInt(invSelIns)] > 0 && fakePl.ammo !== null) {
+        console.log('BOW');
         ctx.strokeStyle = 'black';
         ctx.fillStyle = '#685232';
-        ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('FIRE').width + 20, 26);
-        ctx.strokeRect(invStartX + 20, invStartY - 103, ctx.measureText('FIRE').width + 20, 26);
+        ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('FIRE').width + 40, 26);
+        ctx.strokeRect(invStartX + 20, invStartY - 103, ctx.measureText('FIRE').width + 40, 26);
         ctx.font = '20px monospace';
         ctx.fillStyle = 'white';
         ctx.fillText('FIRE', invStartX + 20 + 10, invStartY - 100 + 18);
         buttons.push({
             x: invStartX + 20,
             y: invStartY - 103,
-            w: ctx.measureText('FIRE').width + 20,
+            w: ctx.measureText('FIRE').width + 40,
             h: 26,
             cb: ()=>{
                 shootBow();
@@ -441,15 +442,15 @@ function render() {
     if (arrow.includes(parseInt(invSel))) {
         ctx.strokeStyle = 'black';
         ctx.fillStyle = '#685232';
-        ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('AMMO').width + 20, 26);
-        ctx.strokeRect(invStartX + 20, invStartY - 103, ctx.measureText('AMMO').width + 20, 26);
+        ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('AMMO').width + 40, 26);
+        ctx.strokeRect(invStartX + 20, invStartY - 103, ctx.measureText('AMMO').width + 40, 26);
         ctx.font = '20px monospace';
         ctx.fillStyle = 'white';
         ctx.fillText('AMMO', invStartX + 20 + 10, invStartY - 100 + 18);
         buttons.push({
             x: invStartX + 20,
             y: invStartY - 103,
-            w: ctx.measureText('AMMO').width + 20,
+            w: ctx.measureText('AMMO').width + 40,
             h: 26,
             cb: ()=>{
                 setAsAmmo();
@@ -460,15 +461,15 @@ function render() {
     if (placeable.some(x=>I[x] == parseInt(invSel)) || usable.includes(parseInt(invSel))) {
         ctx.strokeStyle = 'black';
         ctx.fillStyle = '#685232';
-        ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('USE').width + 20, 26);
-        ctx.strokeRect(invStartX + 20, invStartY - 103, ctx.measureText('USE').width + 20, 26);
+        ctx.fillRect(invStartX + 20, invStartY - 103, ctx.measureText('USE').width + 40, 26);
+        ctx.strokeRect(invStartX + 20, invStartY - 103, ctx.measureText('USE').width + 40, 26);
         ctx.font = '20px monospace';
         ctx.fillStyle = 'white';
         ctx.fillText('USE', invStartX + 20 + 10, invStartY - 100 + 18);
         buttons.push({
             x: invStartX + 20,
             y: invStartY - 103,
-            w: ctx.measureText('USE').width + 20,
+            w: ctx.measureText('USE').width + 40,
             h: 26,
             cb: ()=>{
                 use(parseInt(invSel));

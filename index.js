@@ -1901,14 +1901,3 @@ new Spider({
         z: 1
     }
 })
-
-// new CloseRangeNpc({
-//     chunk: {
-//         x: 0,
-//         y: 0
-//     },
-//     pos: {
-//         x: 5,
-//         y: 2
-//     }
-// })
