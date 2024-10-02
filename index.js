@@ -217,7 +217,19 @@ app.post('/signup', jsonParser, (req, res)=>{
                     lastAction: 0,
                     aggroed: [],
                     armor: {id: 22, ins: 0},
-                    helm: {id: 23, ins: 0}
+                    helm: {id: 23, ins: 0},
+                    lvs: {
+                        mining: {
+                            lv: 1,
+                            xp: 0,
+                            req: 10
+                        },
+                        chopping: {
+                            lv: 1,
+                            xp: 0,
+                            req: 10
+                        }
+                    }
                 })], err => {
                     if (err) throw err;
                     res.send('0');
@@ -1308,6 +1320,8 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
         if (seed % 3 == 0) {
             addToInv(session, I.TOMATOSEED);
         }
+
+        giveXp(session, 'chopping', 1);
     }
     else if (type == B.STONE) {
         world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONE1; 
@@ -1329,6 +1343,8 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
             emitToAdj(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.STONE]);
             world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.STONE;
         }, stoneRegrowTime)
+
+        giveXp(session, 'mining', 1);
     }
 
     else if (type == B.IRON) {
@@ -1352,6 +1368,8 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
             emitToAdj(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.IRON]);
             world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRON;
         }, stoneRegrowTime)
+
+        giveXp(session, 'mining', 1);
     }
 }
 
@@ -1473,6 +1491,18 @@ function addToInv(ses, item, dura) {
                 duras: [dura]
             }
         }
+    }
+}
+
+function giveXp(session, skill, xp) {
+    players[session].lvs[skill].xp += xp;
+                
+    while (players[session].lvs[skill].xp >= players[session].lvs[skill].req) {
+        players[session].lvs[skill].xp -= players[session].lvs[skill].req;
+        players[session].lvs[skill].lv ++;
+
+        players[session].lvs[skill].req *= 1.3;
+        players[session].lvs[skill].req = Math.floor(players[session].lvs[skill].req);
     }
 }
 

@@ -36,6 +36,8 @@ let sec1H = 100;
 let sec2H = 300;
 let craftCurrCount = 1;
 
+let lvsMenuOpen = false;
+
 const pickable = [B.TOMATO2, B.TOMATO3, B.WHEAT2, B.WHEAT3, B.WHEAT4, B.CARROT2];
 
 let buttons = []; // {x, y, w, h, cb}
@@ -393,6 +395,27 @@ function render() {
                 ctx.fillText(`${fakePl.inv[I[x]] || 0}/${R[craftCurrSel][x] * craftCurrCount}`, currX + 15 + 5, currY + 12);
                 currY += 15 + 5;
             }
+        }
+    }
+    else if (lvsMenuOpen) {
+        ctx.fillStyle = '#685232';
+        ctx.fillRect(50, 50, 350, 400);
+
+        let currY = 80;
+
+        for (let s in fakePl.lvs) {
+            ctx.font = '20px monospace';
+            ctx.fillStyle = 'white';
+            ctx.fillText(`${s.toUpperCase()} ${fakePl.lvs[s].lv}`, 70, currY + 10);
+            currY += 20;
+            ctx.strokeStyle = 'black';
+            ctx.strokeRect(75, currY, 200, 15);
+            ctx.fillStyle = 'green';
+            ctx.fillRect(75, currY, fakePl.lvs[s].xp / fakePl.lvs[s].req * 200, 15);
+            ctx.font = '10px monospace';
+            ctx.fillStyle = 'white';
+            ctx.fillText(`${fakePl.lvs[s].xp}/${fakePl.lvs[s].req}`, 280, currY + 10);
+            currY += 35;
         }
     }
 
