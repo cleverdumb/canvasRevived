@@ -192,6 +192,9 @@
                     render();
                 })
 
+                const miningCdRed = 50;
+                const choppingCdRed = 50;
+
                 document.body.addEventListener('keydown', e=>{
                     let cd = 300;
                     let clickCd = 100;
@@ -228,6 +231,14 @@
                             if (axe.includes(parseInt(fakePl.holding.id)) || pickaxe.includes(parseInt(fakePl.holding.id))) {
                                 if (target !== undefined && requireAxe.includes(target) || requirePickaxe.includes(target)) {
                                     cd = toolCd[parseInt(fakePl.holding.id)];
+                                    if (pickaxe.includes(parseInt(fakePl.holding.id))) {
+                                        cd -= miningCdRed * fakePl.lvs.mining.lv;
+                                        cd = Math.max(50, cd); 
+                                    }
+                                    else if (axe.includes(parseInt(fakePl.holding.id))) {
+                                        cd -= choppingCdRed * fakePl.lvs.chopping.lv;
+                                        cd = Math.max(50, cd); 
+                                    }
                                     clickCd = toolCd[parseInt(fakePl.holding.id)];
                                 }
                             }

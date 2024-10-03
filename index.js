@@ -403,26 +403,28 @@ io.on('connection', (socket)=>{
 
             if (hitNpc) {
                 if (players[session].holding !== null && sword.includes(parseInt(players[session].holding.id))) { 
-                    let npcInDest = false;
-                    let targetNpc = null;
-                    npcs[destChunk.y][destChunk.x].forEach(n=>{
-                        if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && n.data.pos.z == destPos.z) {
-                            npcInDest = true;
-                            targetNpc = n;
-                        }
-                    })
+                    if ((Date.now() - players[session].lastAction) > (toolCd[parseInt(players[session].holding.id)] - 10)) {
+                        let npcInDest = false;
+                        let targetNpc = null;
+                        npcs[destChunk.y][destChunk.x].forEach(n=>{
+                            if (n.data.pos.x==destPos.x && n.data.pos.y == destPos.y && n.data.pos.z == destPos.z) {
+                                npcInDest = true;
+                                targetNpc = n;
+                            }
+                        })
 
-                    if (npcInDest) {
-                        players[session].lastAction = Date.now();
-                        targetNpc.move(direction);
-                        targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
-                        players[session].facing = direction;
-                        if (direction == 'a') players[session].faceLeft = true;
-                        if (direction == 'd') players[session].faceLeft = false;
-                        io.to(socket.id).emit('authCmd', cmdId);
-                    }
-                    else {
-                        io.to(socket.id).emit('rejectCmd', cmdId);
+                        if (npcInDest) {
+                            players[session].lastAction = Date.now();
+                            targetNpc.move(direction);
+                            targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
+                            players[session].facing = direction;
+                            if (direction == 'a') players[session].faceLeft = true;
+                            if (direction == 'd') players[session].faceLeft = false;
+                            io.to(socket.id).emit('authCmd', cmdId);
+                        }
+                        else {
+                            io.to(socket.id).emit('rejectCmd', cmdId);
+                        }
                     }
                 }
                 return;
@@ -1187,6 +1189,9 @@ function afterMovement(session, dir) {
     }
 }
 
+const miningCdRed = 50;
+const choppingCdRed = 50;
+
 function interact(type, chunk, pos, socket, session, seed, cmdId) {
     if (requireAxe.includes(type)) {
         if (players[session].holding === null || !axe.includes(parseInt(players[session].holding.id))) {
@@ -1201,7 +1206,9 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
             }, lagSim)
             return;
         }
-        if ((Date.now() - players[session].lastAction) <= (toolCd[parseInt(players[session].holding.id)] - 10)) {
+        let cd = toolCd[parseInt(players[session].holding.id)] - players[session].lvs.chopping.lv * choppingCdRed;
+        cd = Math.max(cd, 50);
+        if ((Date.now() - players[session].lastAction) <= (cd - 10)) {
             setTimeout(()=>{
                 io.to(socket.id).emit('rejectCmd', cmdId);
             }, lagSim)
@@ -1227,7 +1234,9 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
             }, lagSim)
             return;
         }
-        if ((Date.now() - players[session].lastAction) <= (toolCd[parseInt(players[session].holding.id)] - 10)) {
+        let cd = toolCd[parseInt(players[session].holding.id)] - players[session].lvs.mining.lv * miningCdRed;
+        cd = Math.max(cd, 50);
+        if ((Date.now() - players[session].lastAction) <= (cd - 10)) {
             setTimeout(()=>{
                 io.to(socket.id).emit('rejectCmd', cmdId);
             }, lagSim)
