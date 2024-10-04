@@ -112,6 +112,8 @@
                         plData[plId].lvs[skill].req *= 1.3;
                         plData[plId].lvs[skill].req = Math.floor(plData[plId].lvs[skill].req);
                     }
+
+                    simulateAllUnauth();
                 })
 
                 socket.on('npcDie', id=>{

@@ -232,7 +232,7 @@ app.post('/signup', jsonParser, (req, res)=>{
                         melee: {
                             lv: 1,
                             xp: 0,
-                            req: 30
+                            req: 10
                         }
                     }
                 })], err => {
@@ -421,7 +421,7 @@ io.on('connection', (socket)=>{
                         if (npcInDest) {
                             players[session].lastAction = Date.now();
                             targetNpc.move(direction);
-                            targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
+                            targetNpc.damage(session, dmg[parseInt(players[session].holding.id)] + players[session].lvs.melee.lv);
                             players[session].facing = direction;
                             if (direction == 'a') players[session].faceLeft = true;
                             if (direction == 'd') players[session].faceLeft = false;
@@ -598,7 +598,7 @@ io.on('connection', (socket)=>{
                     if (npcInDest && (Date.now() - players[session].lastAction) > toolCd[parseInt(players[session].holding.id)]) {
                         players[session].lastAction = Date.now();
                         targetNpc.move(direction);
-                        targetNpc.damage(session, dmg[parseInt(players[session].holding.id)]);
+                        targetNpc.damage(session, dmg[parseInt(players[session].holding.id)] + players[session].lvs.melee.lv);
                         players[session].facing = direction;
                         if (direction == 'a') players[session].faceLeft = true;
                         if (direction == 'd') players[session].faceLeft = false;
