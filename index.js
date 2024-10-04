@@ -228,6 +228,11 @@ app.post('/signup', jsonParser, (req, res)=>{
                             lv: 1,
                             xp: 0,
                             req: 10
+                        },
+                        melee: {
+                            lv: 1,
+                            xp: 0,
+                            req: 30
                         }
                     }
                 })], err => {
@@ -421,6 +426,9 @@ io.on('connection', (socket)=>{
                             if (direction == 'a') players[session].faceLeft = true;
                             if (direction == 'd') players[session].faceLeft = false;
                             io.to(socket.id).emit('authCmd', cmdId);
+
+                            giveXp(session, 'melee', 1);
+                            io.to(socket.id).emit('fakePlGiveXp', 'melee', 1);
                         }
                         else {
                             io.to(socket.id).emit('rejectCmd', cmdId);
@@ -595,6 +603,9 @@ io.on('connection', (socket)=>{
                         if (direction == 'a') players[session].faceLeft = true;
                         if (direction == 'd') players[session].faceLeft = false;
                         io.to(socket.id).emit('authCmd', cmdId);
+
+                        giveXp(session, 'melee', 1);
+                        io.to(socket.id).emit('fakePlGiveXp', 'melee', 1);
                     }
                     else {
                         io.to(socket.id).emit('rejectCmd', cmdId);

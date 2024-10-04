@@ -102,6 +102,18 @@
                     simulateAllUnauth();
                 })
 
+                socket.on('fakePlGiveXp', (skill, xp) => {
+                    plData[plId].lvs[skill].xp += xp;
+
+                    while (plData[plId].lvs[skill].xp >= plData[plId].lvs[skill].req) {
+                        plData[plId].lvs[skill].xp -= plData[plId].lvs[skill].req;
+                        plData[plId].lvs[skill].lv ++;
+
+                        plData[plId].lvs[skill].req *= 1.3;
+                        plData[plId].lvs[skill].req = Math.floor(plData[plId].lvs[skill].req);
+                    }
+                })
+
                 socket.on('npcDie', id=>{
                     if (npcs.hasOwnProperty(id)) {
                         delete npcs[id];
