@@ -234,7 +234,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                             xp: 0,
                             req: 10
                         }
-                    }
+                    },
+                    lastGotHit: 0
                 })], err => {
                     if (err) throw err;
                     res.send('0');
@@ -1837,6 +1838,17 @@ class CloseRangeNpc extends GenNpc{
                         players[p].hp = Math.max(players[p].hp, 0);
 
                         this.data.path.push(dir);
+                        
+                        players[p].lastGotHit++;
+                        players[p].lastGotHit %= 3;
+                        if (players[p].lastGotHit == 0) {
+                            if (players[p].maxHp > 5) { 
+                                players[p].maxHp -= 1;
+                            }
+                            players[p].hp = Math.min(players[p].hp, players[p].maxHp);
+
+                            io.to(sockets[p].id).emit('fakePlProp', 'maxHp', players[p].maxHp);
+                        }
 
                         emitToAdj(destChunk, 'newPlayer', [JSON.stringify(players[p])]);
                         io.to(sockets[p].id).emit('fakePlProp', 'hp', players[p].hp);
