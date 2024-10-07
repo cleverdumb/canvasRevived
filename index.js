@@ -1875,6 +1875,16 @@ class CloseRangeNpc extends GenNpc{
         addToInv(session, I.APPLE, null);
         io.to(sockets[session].id).emit('fakePlAddToInv', I.APPLE);
 
+        if (Math.random() > 0.5) {
+            addToInv(session, I.SLASHSCROLL, null);
+            io.to(sockets[session].id).emit('fakePlAddToInv', I.SLASHSCROLL);
+        }
+
+        if (Math.random() > 0.5) {
+            addToInv(session, I.TORNADOSCROLL, null);
+            io.to(sockets[session].id).emit('fakePlAddToInv', I.TORNADOSCROLL);
+        }
+
         new Spider({
             chunk: {
                 x: 0,

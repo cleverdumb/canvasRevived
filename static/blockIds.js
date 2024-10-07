@@ -88,7 +88,9 @@ const I = {
     WOODARROW: 20,
     COPPERARROW: 21,
     IRONARMOR: 22,
-    IRONHELM: 23
+    IRONHELM: 23,
+    SLASHSCROLL: 24,
+    TORNADOSCROLL: 25
 }
 
 const iSprPos = {
@@ -115,7 +117,9 @@ const iSprPos = {
     20: [48, 240],
     21: [0, 960],
     22: [288, 208],
-    23: [160, 352]
+    23: [160, 352],
+    24: [288, 384],
+    25: [160, 460]
 }
 
 const toolSprPos = {
