@@ -769,6 +769,12 @@
                         return true;
                     case I.BOW:
                         return false;
+                    case I.TORNADOSCROLL:
+                        giveXp('tornado', 1);
+                        return true;
+                    case I.SLASHSCROLL:
+                        giveXp('slash', 1);
+                        return true;
                 }
             }
 

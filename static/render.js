@@ -404,18 +404,20 @@ function render() {
         let currY = 80;
 
         for (let s in fakePl.lvs) {
-            ctx.font = '20px monospace';
-            ctx.fillStyle = 'white';
-            ctx.fillText(`${s.toUpperCase()} ${fakePl.lvs[s].lv}`, 70, currY + 10);
-            currY += 20;
-            ctx.strokeStyle = 'black';
-            ctx.strokeRect(75, currY, 200, 15);
-            ctx.fillStyle = 'green';
-            ctx.fillRect(75, currY, fakePl.lvs[s].xp / fakePl.lvs[s].req * 200, 15);
-            ctx.font = '10px monospace';
-            ctx.fillStyle = 'white';
-            ctx.fillText(`${fakePl.lvs[s].xp}/${fakePl.lvs[s].req}`, 280, currY + 10);
-            currY += 35;
+            // if (!fakePl.lvs[s].ability) {
+                ctx.font = '20px monospace';
+                ctx.fillStyle = 'white';
+                ctx.fillText(`${s.toUpperCase()} ${fakePl.lvs[s].lv}`, 70, currY + 10);
+                currY += 20;
+                ctx.strokeStyle = 'black';
+                ctx.strokeRect(75, currY, 200, 15);
+                ctx.fillStyle = 'green';
+                ctx.fillRect(75, currY, fakePl.lvs[s].xp / fakePl.lvs[s].req * 200, 15);
+                ctx.font = '10px monospace';
+                ctx.fillStyle = 'white';
+                ctx.fillText(`${fakePl.lvs[s].xp}/${fakePl.lvs[s].req}`, 280, currY + 10);
+                currY += 35;
+            // }
         }
     }
 

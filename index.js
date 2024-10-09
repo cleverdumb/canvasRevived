@@ -206,7 +206,9 @@ app.post('/signup', jsonParser, (req, res)=>{
                         5: 6,
                         15: 50,
                         12: 50,
-                        17: 50
+                        17: 50,
+                        24: 10,
+                        25: 10
                     },
                     hp: 75,
                     maxHp: 100,
@@ -222,17 +224,32 @@ app.post('/signup', jsonParser, (req, res)=>{
                         mining: {
                             lv: 1,
                             xp: 0,
-                            req: 10
+                            req: 10,
+                            ability: false
                         },
                         chopping: {
                             lv: 1,
                             xp: 0,
-                            req: 10
+                            req: 10,
+                            ability: false
                         },
                         melee: {
                             lv: 1,
                             xp: 0,
-                            req: 10
+                            req: 10,
+                            ability: false
+                        },
+                        tornado: {
+                            lv: 1,
+                            xp: 0,
+                            req: 5,
+                            ability: true
+                        },
+                        slash: {
+                            lv: 1,
+                            xp: 0,
+                            req: 5,
+                            ability: true
                         }
                     },
                     lastGotHit: 0
@@ -1489,6 +1506,12 @@ function useEffect(session, item, cmdId) {
             }
             return false;
         }
+        case I.SLASHSCROLL:
+            giveXp(session, 'slash', 1)
+            return true;
+        case I.TORNADOSCROLL:
+            giveXp(session, 'tornado', 1)
+            return true;
     }
 }
 
