@@ -9,6 +9,8 @@ let bh = 20; // px
 let bx = 39; // boxes
 let by = 25; // boxes
 
+let invPage = 'inv';
+
 let invBoxW = 40;
 let invBoxH = 60;
 let invImgH = 40;
@@ -198,6 +200,40 @@ function render() {
     ctx.fillStyle = 'black';
     ctx.fillText(`HP: ${fakePl.hp}/${fakePl.maxHp}`, invStartX, by*bh + 25)
 
+    ctx.fillStyle = '#685232';
+    ctx.font = '15px monospace';
+    ctx.fillRect(invStartX + 300 + 20, by*bh + 10, 100, 30);
+    ctx.fillStyle = 'white';
+    ctx.fillText('Abilities', invStartX + 300 + 20 + 10, by*bh + 30);
+
+    buttons.push({
+        x: invStartX + 300 + 20,
+        y: by*bh + 10,
+        w: 100,
+        h: 30,
+        cb: ()=>{
+            invPage = 'abi';
+            render();
+        }
+    })
+
+    ctx.fillStyle = '#685232';
+    ctx.font = '15px monospace';
+    ctx.fillRect(invStartX + 300 + 20 + 120, by*bh + 10, 100, 30);
+    ctx.fillStyle = 'white';
+    ctx.fillText('Inventory', invStartX + 300 + 20 + 120 + 10, by*bh + 30);
+
+    buttons.push({
+        x: invStartX + 300 + 20 + 120,
+        y: by*bh + 10,
+        w: 100,
+        h: 30,
+        cb: ()=>{
+            invPage = 'inv';
+            render();
+        }
+    })
+
     if (invSel !== null) {
         if ((!fakePl.inv.hasOwnProperty(invSel)) || invSelIns >= fakePl.inv[invSel].instances) {
             invSel = null;
@@ -205,43 +241,12 @@ function render() {
         }
     }
 
-    let currBoxX = 0;
-    let currBoxY = 0;
-    for (let x in fakePl.inv) {
-        if (typeof fakePl.inv[x] === 'number') {
-            if (invSel == x) {
-                ctx.fillStyle = '#8E8462';
-                ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
-            }
-            ctx.strokeRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
-            buttons.push({
-                x: currBoxX * invBoxW + invStartX,
-                y: currBoxY * invBoxH + invStartY,
-                w: invBoxW,
-                h: invBoxH,
-                cb: ()=>{
-                    if (invSel !== x) {
-                        invSel = x;
-                    }
-                    else {
-                        invSel = null;
-                    }
-                    render();
-                }
-            })
-            ctx.drawImage(sprite, iSprPos[x][0], iSprPos[x][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
-            ctx.font = '20px monospace';
-            ctx.fillStyle = 'black';
-            ctx.fillText(fakePl.inv[x] + (fakePl.ammo == x ? 'A' : ''), currBoxX * invBoxW + invStartX+5, currBoxY * invImgH + invStartY + invImgH + 15);
-            currBoxX++;
-            if (currBoxX >= invBoxX) {
-                currBoxY++;
-                currBoxX = 0;
-            }
-        }
-        else {
-            for (let i=0; i<fakePl.inv[x].instances; i++) {
-                if (invSel == x && invSelIns == i) {
+    if (invPage == 'inv') {
+        let currBoxX = 0;
+        let currBoxY = 0;
+        for (let x in fakePl.inv) {
+            if (typeof fakePl.inv[x] === 'number') {
+                if (invSel == x) {
                     ctx.fillStyle = '#8E8462';
                     ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
                 }
@@ -252,33 +257,74 @@ function render() {
                     w: invBoxW,
                     h: invBoxH,
                     cb: ()=>{
-                        if (invSel !== x || invSelIns !== i) {
+                        if (invSel !== x) {
                             invSel = x;
-                            invSelIns = i;
                         }
                         else {
                             invSel = null;
-                            invSelIns = null;
                         }
                         render();
                     }
                 })
                 ctx.drawImage(sprite, iSprPos[x][0], iSprPos[x][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
                 ctx.font = '20px monospace';
-                ctx.fillStyle = 'red';
-                ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW, 5);
-                ctx.fillStyle = 'green';
-                ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW * (fakePl.inv[x].duras[i]/toolMaxDura[parseInt(x)]), 5);
-                if ((fakePl.holding !== null && fakePl.holding.id == x && fakePl.holding.ins == i) || (fakePl.armor !== null && fakePl.armor.id == x && fakePl.armor.ins == i) || (fakePl.helm !== null && fakePl.helm.id == x && fakePl.helm.ins == i)) {
-                    ctx.fillStyle = 'black';
-                    ctx.font = '10px monospace'
-                    ctx.fillText('E', currBoxX * invBoxW + invStartX + 5, currBoxY * invBoxH + invStartY + invImgH + 5 + 10)
-                }
+                ctx.fillStyle = 'black';
+                ctx.fillText(fakePl.inv[x] + (fakePl.ammo == x ? 'A' : ''), currBoxX * invBoxW + invStartX+5, currBoxY * invBoxH + invStartY + invImgH + 15);
                 currBoxX++;
                 if (currBoxX >= invBoxX) {
                     currBoxY++;
+                    console.log('inc');
                     currBoxX = 0;
                 }
+            }
+            else {
+                for (let i=0; i<fakePl.inv[x].instances; i++) {
+                    if (invSel == x && invSelIns == i) {
+                        ctx.fillStyle = '#8E8462';
+                        ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
+                    }
+                    ctx.strokeRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
+                    buttons.push({
+                        x: currBoxX * invBoxW + invStartX,
+                        y: currBoxY * invBoxH + invStartY,
+                        w: invBoxW,
+                        h: invBoxH,
+                        cb: ()=>{
+                            if (invSel !== x || invSelIns !== i) {
+                                invSel = x;
+                                invSelIns = i;
+                            }
+                            else {
+                                invSel = null;
+                                invSelIns = null;
+                            }
+                            render();
+                        }
+                    })
+                    ctx.drawImage(sprite, iSprPos[x][0], iSprPos[x][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
+                    ctx.font = '20px monospace';
+                    ctx.fillStyle = 'red';
+                    ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW, 5);
+                    ctx.fillStyle = 'green';
+                    ctx.fillRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY + invImgH, invBoxW * (fakePl.inv[x].duras[i]/toolMaxDura[parseInt(x)]), 5);
+                    if ((fakePl.holding !== null && fakePl.holding.id == x && fakePl.holding.ins == i) || (fakePl.armor !== null && fakePl.armor.id == x && fakePl.armor.ins == i) || (fakePl.helm !== null && fakePl.helm.id == x && fakePl.helm.ins == i)) {
+                        ctx.fillStyle = 'black';
+                        ctx.font = '10px monospace'
+                        ctx.fillText('E', currBoxX * invBoxW + invStartX + 5, currBoxY * invBoxH + invStartY + invImgH + 5 + 10)
+                    }
+                    currBoxX++;
+                    if (currBoxX >= invBoxX) {
+                        currBoxY++;
+                        currBoxX = 0;
+                    }
+                }
+            }
+        }
+    }
+    else if (invPage == 'abi') {
+        for (x in fakePl.lvs) {
+            if (fakePl.lvs[x].ability) {
+
             }
         }
     }
