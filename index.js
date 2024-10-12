@@ -1058,7 +1058,7 @@ io.on('connection', (socket)=>{
                     z: players[session].z
                 },
                 chunk: players[session].chunk,
-                dir: players[session].facing,
+                faceLeft: true,
                 firedBy: session,
                 dmg: 50
             })
@@ -1881,6 +1881,55 @@ class Slash extends ArrowLike {
             [96, 432]
         ]
         this.afterSpawn();
+    }
+}
+
+class Pathed extends GenNpc {
+    constructor (arg) {
+        super(arg);
+        this.heartBeat = setInterval(()=>{
+            if (this.path.length <= 0) {
+                this.die();
+            }
+            else {
+                this.move(this.path[0], {
+                    collideEdge: () => {
+                        this.die();
+                    },
+                    collideBlock: () => {
+                        this.die();
+                    },
+                    collidePlayer: () => {
+                        this.die();
+                    },
+                    collideNpc: (n) => {
+                        n.damage(this.data.firedBy, this.data.dmg);
+                        this.die();
+                    }
+                });
+                this.path.shift();
+            }
+        }, 100)
+        this.aggroable = false;
+        
+        this.pathStopping = false; // stopping short range npc
+    }
+    afterMovement() {
+        if (this.path.length <= 0) {
+            this.die();
+        }
+    }
+}
+
+class Tornado extends Pathed {
+    constructor (arg) {
+        super(arg);
+        this.path = 'dwaassdd'.split('');
+        this.data.fourDir = false;
+        this.data.sprite = [
+            [144, 464],
+            [144, 464]
+        ]
     }
 }
 
