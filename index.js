@@ -1047,7 +1047,7 @@ io.on('connection', (socket)=>{
                 chunk: players[session].chunk,
                 dir: players[session].facing,
                 firedBy: session,
-                dmg: 50
+                dmg: 20 + players[session].lvs.slash.lv * 5
             })
         }
         else if (name == 'tornado') {
@@ -1060,7 +1060,7 @@ io.on('connection', (socket)=>{
                 chunk: players[session].chunk,
                 faceLeft: true,
                 firedBy: session,
-                dmg: 50
+                dmg: 20 + players[session].lvs.tornado.lv * 5
             })
         }
     })
@@ -1909,7 +1909,7 @@ class Pathed extends GenNpc {
                 });
                 this.path.shift();
             }
-        }, 100)
+        }, 50)
         this.aggroable = false;
         
         this.pathStopping = false; // stopping short range npc
