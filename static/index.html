@@ -583,6 +583,10 @@
                 }
             }
 
+            function cast(name) {
+                socket.emit('cast', session, name);
+            }
+
             function setAsAmmo() {
                 if (arrow.includes(parseInt(invSel))) {
                     let cmdId = nextCmdId++;

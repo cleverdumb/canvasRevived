@@ -243,13 +243,15 @@ app.post('/signup', jsonParser, (req, res)=>{
                             lv: 1,
                             xp: 0,
                             req: 5,
-                            ability: true
+                            ability: true,
+                            itemName: 'TORNADOSCROLL'
                         },
                         slash: {
                             lv: 1,
                             xp: 0,
                             req: 5,
-                            ability: true
+                            ability: true,
+                            itemName: 'SLASHSCROLL'
                         }
                     },
                     lastGotHit: 0
@@ -1034,6 +1036,35 @@ io.on('connection', (socket)=>{
         io.to(socket.id).emit('authCmd', cmdId);
     })
 
+    socket.on('cast', (session, name) => {
+        if (name == 'slash') {
+            new Slash({
+                pos: {
+                    x: players[session].pos.x,
+                    y: players[session].pos.y,
+                    z: players[session].z
+                },
+                chunk: players[session].chunk,
+                dir: players[session].facing,
+                firedBy: session,
+                dmg: 50
+            })
+        }
+        else if (name == 'tornado') {
+            new Tornado({
+                pos: {
+                    x: players[session].pos.x,
+                    y: players[session].pos.y,
+                    z: players[session].z
+                },
+                chunk: players[session].chunk,
+                dir: players[session].facing,
+                firedBy: session,
+                dmg: 50
+            })
+        }
+    })
+
     socket.on('ammo', (session, id, cmdId) => {
         if (!arrow.includes(id)) {
             io.to(socket.id).emit('rejectCmd', cmdId);
@@ -1790,8 +1821,7 @@ class GenNpc {
     }
 }
 
-class Arrow extends GenNpc {
-    static lifeSpan = 5;
+class ArrowLike extends GenNpc{
     constructor (arg) {
         super(arg);
         this.heartBeat = setInterval(()=>{
@@ -1812,6 +1842,22 @@ class Arrow extends GenNpc {
             });
         }, 100)
         this.aggroable = false;
+        
+        this.travelled = 0;
+        this.pathStopping = false; // stopping short range npc
+    }
+    afterMovement() {
+        this.travelled ++;
+        if (this.travelled > Arrow.lifeSpan) {
+            this.die();
+        }
+    }
+}
+
+class Arrow extends ArrowLike {
+    static lifeSpan = 5;
+    constructor (arg) {
+        super(arg)
         this.data.fourDir = true;
         this.data.sprite = [
             [256, 240],
@@ -1819,16 +1865,22 @@ class Arrow extends GenNpc {
             [240, 240],
             [224, 240]
         ]
-        this.travelled = 0;
-        this.pathStopping = false; // stopping short range npc
-
         this.afterSpawn();
     }
-    afterMovement() {
-        this.travelled ++;
-        if (this.travelled > Arrow.lifeSpan) {
-            this.die();
-        }
+}
+
+class Slash extends ArrowLike {
+    static lifeSpan = 5;
+    constructor (arg) {
+        super(arg)
+        this.data.fourDir = true;
+        this.data.sprite = [
+            [128, 432],
+            [80, 432],
+            [112, 432],
+            [96, 432]
+        ]
+        this.afterSpawn();
     }
 }
 

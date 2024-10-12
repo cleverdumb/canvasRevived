@@ -273,7 +273,6 @@ function render() {
                 currBoxX++;
                 if (currBoxX >= invBoxX) {
                     currBoxY++;
-                    console.log('inc');
                     currBoxX = 0;
                 }
             }
@@ -322,9 +321,30 @@ function render() {
         }
     }
     else if (invPage == 'abi') {
+        let currBoxX = 0;
+        let currBoxY = 0;
         for (x in fakePl.lvs) {
             if (fakePl.lvs[x].ability) {
-
+                let name = x;
+                ctx.drawImage(sprite, iSprPos[I[fakePl.lvs[x].itemName]][0], iSprPos[I[fakePl.lvs[x].itemName]][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
+                ctx.font = '20px monospace';
+                ctx.fillStyle = 'black';
+                ctx.fillText(fakePl.lvs[x].lv, currBoxX * invBoxW + invStartX+5, currBoxY * invBoxH + invStartY + invImgH + 15);
+                ctx.strokeRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
+                buttons.push({
+                    x: currBoxX * invBoxW + invStartX,
+                    y: currBoxY * invBoxH + invStartY,
+                    w: invBoxW,
+                    h: invBoxH,
+                    cb: ()=>{
+                        cast(name);
+                    }
+                })
+                currBoxX++;
+                if (currBoxX >= invBoxX) {
+                    currBoxY++;
+                    currBoxX = 0;
+                }
             }
         }
     }
