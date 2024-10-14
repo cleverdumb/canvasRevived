@@ -1836,7 +1836,9 @@ class ArrowLike extends GenNpc{
                     this.die();
                 },
                 collideNpc: (n) => {
-                    n.damage(this.data.firedBy, this.data.dmg);
+                    if (n.damage) {
+                        n.damage(this.data.firedBy, this.data.dmg);
+                    }
                     this.die();
                 }
             });
@@ -1903,7 +1905,9 @@ class Pathed extends GenNpc {
                         this.die();
                     },
                     collideNpc: (n) => {
-                        n.damage(this.data.firedBy, this.data.dmg);
+                        if (n.damage) {
+                            n.damage(this.data.firedBy, this.data.dmg);
+                        }
                         this.die();
                     }
                 });
