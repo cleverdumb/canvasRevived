@@ -333,7 +333,7 @@ function render() {
                 ctx.drawImage(sprite, iSprPos[I[fakePl.lvs[x].itemName]][0], iSprPos[I[fakePl.lvs[x].itemName]][1], 16, 16, currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invImgH);
                 ctx.font = '20px monospace';
                 ctx.fillStyle = 'black';
-                ctx.fillText(fakePl.lvs[x].lv, currBoxX * invBoxW + invStartX+5, currBoxY * invBoxH + invStartY + invImgH + 15);
+                ctx.fillText(fakePl.lvs[x].lv + ((Date.now() - fakePl.lvs[x].lastUse) < fakePl.lvs[x].cd ? ' X' : ''), currBoxX * invBoxW + invStartX+5, currBoxY * invBoxH + invStartY + invImgH + 15);
                 ctx.strokeRect(currBoxX * invBoxW + invStartX, currBoxY * invBoxH + invStartY, invBoxW, invBoxH);
                 buttons.push({
                     x: currBoxX * invBoxW + invStartX,

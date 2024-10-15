@@ -583,7 +583,13 @@
             }
 
             function cast(name) {
-                socket.emit('cast', session, name);
+                if ((Date.now() - fakePl.lvs[name].lastUse) >= fakePl.lvs[name].cd) {
+                    fakePl.lvs[name].lastUse = Date.now();
+                    setTimeout(()=> {
+                        render();
+                    }, fakePl.lvs[name].cd);
+                    socket.emit('cast', session, name);
+                }
             }
 
             function setAsAmmo() {

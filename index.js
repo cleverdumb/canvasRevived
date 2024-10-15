@@ -244,14 +244,18 @@ app.post('/signup', jsonParser, (req, res)=>{
                             xp: 0,
                             req: 5,
                             ability: true,
-                            itemName: 'TORNADOSCROLL'
+                            itemName: 'TORNADOSCROLL',
+                            lastUse: 0,
+                            cd: 1000
                         },
                         slash: {
                             lv: 1,
                             xp: 0,
                             req: 5,
                             ability: true,
-                            itemName: 'SLASHSCROLL'
+                            itemName: 'SLASHSCROLL',
+                            lastUse: 0,
+                            cd: 1000
                         }
                     },
                     lastGotHit: 0,
@@ -1037,7 +1041,11 @@ io.on('connection', (socket)=>{
         io.to(socket.id).emit('authCmd', cmdId);
     })
 
-    socket.on('cast', (session, name) => {
+    socket.on('cast', (session, name, cmdId) => {
+        if ((Date.now() - players[session].lvs[name].lastUse) < players[session].lvs[name].cd) {
+            return;
+        }
+        players[session].lvs[name].lastUse = Date.now();
         if (name == 'slash') {
             new Slash({
                 pos: {
