@@ -254,7 +254,8 @@ app.post('/signup', jsonParser, (req, res)=>{
                             itemName: 'SLASHSCROLL'
                         }
                     },
-                    lastGotHit: 0
+                    lastGotHit: 0,
+                    coin: 0
                 })], err => {
                     if (err) throw err;
                     res.send('0');
@@ -2002,6 +2003,9 @@ class CloseRangeNpc extends GenNpc{
     afterDeath(session) {
         addToInv(session, I.APPLE, null);
         io.to(sockets[session].id).emit('fakePlAddToInv', I.APPLE);
+
+        players[session].coin++;
+        io.to(sockets[session].id).emit('fakePlProp', 'coin', players[session].coin);
 
         if (Math.random() > 0.5) {
             addToInv(session, I.SLASHSCROLL, null);

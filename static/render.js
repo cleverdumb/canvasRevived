@@ -198,7 +198,11 @@ function render() {
     ctx.fillRect(invStartX, by*bh + 30, 300 * (fakePl.hp/fakePl.maxHp), 15);
     ctx.font = '10px monospace';
     ctx.fillStyle = 'black';
-    ctx.fillText(`HP: ${fakePl.hp}/${fakePl.maxHp}`, invStartX, by*bh + 25)
+    ctx.fillText(`HP: ${fakePl.hp}/${fakePl.maxHp}`, invStartX, by*bh + 25);
+    
+    ctx.drawImage(sprite, 176, 240, 16, 16, invStartX + 200, by*bh + 10, 15, 15);
+    ctx.font = '20px monospace';
+    ctx.fillText(fakePl.coin, invStartX + 220, by*bh + 25);
 
     ctx.fillStyle = '#685232';
     ctx.font = '15px monospace';

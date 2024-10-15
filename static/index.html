@@ -96,7 +96,6 @@
 
                 socket.on('fakePlProp', (prop, data)=>{
                     console.log('prop');
-                    console.log(prop, data);
                     plData[plId][prop] = data;
 
                     simulateAllUnauth();
