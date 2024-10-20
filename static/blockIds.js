@@ -28,7 +28,12 @@ const B = {
     WHEAT3: 26,
     WHEAT4: 27,
     CARROT1: 28,
-    CARROT2: 29
+    CARROT2: 29,
+    COPPER: 30,
+    COPPER1: 31,
+    COPPER2: 32,
+    COPPER3: 33,
+    COPPERBASE: 34
 }
 
 const sprPos = {
@@ -61,7 +66,12 @@ const sprPos = {
     26: [224, 448],
     27: [272, 448],
     28: [0, 528],
-    29: [304, 512]
+    29: [304, 512],
+    30: [176, 0],
+    31: [192, 176],
+    32: [208, 176],
+    33: [224, 176],
+    34: [240, 176]
 }
 
 const I = {
@@ -90,7 +100,11 @@ const I = {
     IRONARMOR: 22,
     IRONHELM: 23,
     SLASHSCROLL: 24,
-    TORNADOSCROLL: 25
+    TORNADOSCROLL: 25,
+    COPPERBAR: 26,
+    COPPERAXE: 27,
+    COPPERPICK: 28,
+    COPPERORE: 29
 }
 
 const iSprPos = {
@@ -119,7 +133,11 @@ const iSprPos = {
     22: [288, 208],
     23: [160, 352],
     24: [288, 384],
-    25: [160, 464]
+    25: [160, 464],
+    26: [288, 128],
+    27: [288, 192],
+    28: [288, 176],
+    29: [272, 32]
 }
 
 const toolSprPos = {
@@ -128,7 +146,9 @@ const toolSprPos = {
     8: [[224, 192], [48, 192]],
     9: [[240, 192], [32, 192]],
     10: [[208, 192], [64, 192]],
-    19: [[144, 240], [128, 240]]
+    19: [[144, 240], [128, 240]],
+    27: [[208, 224], [192, 224]],
+    28: [[208, 208], [192, 208]]
 }
 
 const clothingSprPos = {
@@ -137,15 +157,15 @@ const clothingSprPos = {
 }
 
 const unstack = [
-    6, 7, 8, 9, 10, 19, 22, 23
+    6, 7, 8, 9, 10, 19, 22, 23, 27, 28
 ]
 
 const axe = [
-    7, 9
+    7, 9, 27
 ]
 
 const pickaxe = [
-    6, 8
+    6, 8, 28
 ]
 
 const sword = [
@@ -170,7 +190,8 @@ const requireAxe = [
 
 const requirePickaxe = [
     B.STONE, B.STONE1, B.STONE2, B.STONE3,
-    B.IRON, B.IRON1, B.IRON2, B.IRON3
+    B.IRON, B.IRON1, B.IRON2, B.IRON3,
+    B.COPPER, B.COPPER1, B.COPPER2, B.COPPER3
 ]
 
 const toolCd = {
@@ -179,7 +200,9 @@ const toolCd = {
     8: 250,
     9: 250,
     10: 500,
-    19: 400
+    19: 400,
+    27: 150,
+    28: 150
 }
 
 const toolMaxDura = {
@@ -190,7 +213,9 @@ const toolMaxDura = {
     10: 10,
     19: 100,
     22: 100,
-    23: 100
+    23: 100,
+    27: 150,
+    28: 150
 }
 
 const dmg = {
@@ -201,16 +226,20 @@ const dmg = {
 
 const baseRecipes = {
     STONEWALL: {STONE: 1},
-    WOODWALL: {WOOD: 4}
+    WOODWALL: {WOOD: 4},
+    COPPERAXE: {WOOD: 5, COPPERBAR: 3},
+    COPPERPICK: {WOOD: 5, COPPERBAR: 3},
+    COPPERARROW: {WOOD: 5, COPPERBAR: 4}
 }
 
 const smelterRecipes = {
-    IRONBAR: {IRONORE: 4} 
+    IRONBAR: {IRONORE: 4},
+    COPPERBAR: {COPPERORE: 4}
 }
 
 const interactable = [B.TREE, B.TREE1, B.TREE2, B.TREE3, B.STONE, B.STONE1, B.STONE2, B.STONE3, B.IRON, B.IRON1, B.IRON2, B.IRON3, B.TOMATO2, B.TOMATO3,
-B.WHEAT2, B.WHEAT3, B.WHEAT4, B.CARROT2];
-const passable = [B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER, B.TOMATO1, B.TOMATO2, B.TOMATO3, B.WHEAT1, B.WHEAT2, B.WHEAT3, B.WHEAT4, B.CARROT1, B.CARROT2];
+B.WHEAT2, B.WHEAT3, B.WHEAT4, B.CARROT2, B.COPPER, B.COPPER1, B.COPPER2, B.COPPER3];
+const passable = [B.STUMP, B.STONEBASE, B.IRONBASE, B.SMELTER, B.TOMATO1, B.TOMATO2, B.TOMATO3, B.WHEAT1, B.WHEAT2, B.WHEAT3, B.WHEAT4, B.CARROT1, B.CARROT2, B.COPPERBASE];
 
 const usable = [I.APPLE, I.TOMATOSEED, I.WATERBUCKET, I.WHEATSEED, I.CARROTSEED, I.TORNADOSCROLL, I.SLASHSCROLL];
 

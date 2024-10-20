@@ -752,6 +752,22 @@
 
                     giveXp('mining', 1);
                 }
+                
+                else if (type == B.COPPER) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.COPPER1;
+                }
+                else if (type == B.COPPER1) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.COPPER2;
+                }
+                else if (type == B.COPPER2) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.COPPER3;
+                }
+                else if (type == B.COPPER3) {
+                    fakeOverMap[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.COPPERBASE;
+                    addToInventory(I.COPPERORE);
+
+                    giveXp('mining', 1);
+                }
             }
             
             function useEffect(id) {

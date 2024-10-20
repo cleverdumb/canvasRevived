@@ -77,6 +77,9 @@ for (let y=0; y<chunkY; y++) {
                                 if (Math.random() > 0.9) {
                                     world[y][x][a][b].push(B.IRON);
                                 }
+                                else if (Math.random() > 0.8) {
+                                    world[y][x][a][b].push(B.COPPER);
+                                }
                                 else { 
                                     world[y][x][a][b].push(B.STONE);
                                 }
@@ -1445,6 +1448,31 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
         setTimeout(()=>{
             emitToAdj(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.IRON]);
             world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.IRON;
+        }, stoneRegrowTime)
+
+        giveXp(session, 'mining', 1);
+    }
+
+    else if (type == B.COPPER) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.COPPER1; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.COPPER1], socket);
+    }
+    else if (type == B.COPPER1) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.COPPER2; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.COPPER2], socket);
+    }
+    else if (type == B.COPPER2) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.COPPER3; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.COPPER3], socket);
+    }
+    else if (type == B.COPPER3) {
+        world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.COPPERBASE; 
+        emitToAdjNoSender(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.COPPERBASE], socket);
+        addToInv(session, I.COPPERORE);
+
+        setTimeout(()=>{
+            emitToAdj(chunk, 'blockChange', [JSON.stringify(chunk), JSON.stringify(pos), B.COPPER]);
+            world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = B.COPPER;
         }, stoneRegrowTime)
 
         giveXp(session, 'mining', 1);
