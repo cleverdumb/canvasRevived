@@ -435,7 +435,7 @@ io.on('connection', (socket)=>{
             }
 
             if (hitNpc) {
-                if (players[session].holding !== null && sword.includes(parseInt(players[session].holding.id))) { 
+                if (players[session].holding !== null && (sword.includes(parseInt(players[session].holding.id)) || players[session].holding.id == I.BOW)) { 
                     if ((Date.now() - players[session].lastAction) > (toolCd[parseInt(players[session].holding.id)] - 10)) {
                         let npcInDest = false;
                         let targetNpc = null;
@@ -446,7 +446,7 @@ io.on('connection', (socket)=>{
                             }
                         })
 
-                        if (npcInDest) {
+                        if (npcInDest && (Date.now() - players[session].lastAction) > toolCd[parseInt(players[session].holding.id)] && sword.includes(parseInt(players[session].holding.id))) {
                             players[session].lastAction = Date.now();
                             targetNpc.move(direction);
                             targetNpc.damage(session, dmg[parseInt(players[session].holding.id)] + players[session].lvs.melee.lv);
@@ -613,7 +613,7 @@ io.on('connection', (socket)=>{
             }
 
             if (hitNpc) {
-                if (players[session].holding !== null && sword.includes(parseInt(players[session].holding.id))) { 
+                if (players[session].holding !== null && (sword.includes(parseInt(players[session].holding.id)) || players[session].holding.id == I.BOW)) { 
                     let npcInDest = false;
                     let targetNpc = null;
                     npcs[destChunk.y][destChunk.x].forEach(n=>{
@@ -623,7 +623,7 @@ io.on('connection', (socket)=>{
                         }
                     })
 
-                    if (npcInDest && (Date.now() - players[session].lastAction) > toolCd[parseInt(players[session].holding.id)]) {
+                    if (npcInDest && (Date.now() - players[session].lastAction) > toolCd[parseInt(players[session].holding.id)] && sword.includes(parseInt(players[session].holding.id))) {
                         players[session].lastAction = Date.now();
                         targetNpc.move(direction);
                         targetNpc.damage(session, dmg[parseInt(players[session].holding.id)] + players[session].lvs.melee.lv);
