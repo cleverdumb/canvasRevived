@@ -106,7 +106,7 @@ for (let y=0; y<chunkY; y++) {
     }
 }
 
-// world[0][0][5][5][3] = B.STONE;
+world[0][0][5][5][1] = B.ALTAR;
 // world[0][0][4][5][1] = B.TOMATO3;
 
 let plRooms = [];
@@ -1325,7 +1325,12 @@ function interact(type, chunk, pos, socket, session, seed, cmdId) {
         io.to(socket.id).emit('authCmd', cmdId);
     }, lagSim)
 
-    if (type == B.TOMATO2) {
+    if (type == B.ALTAR) {
+        if (players[session].hp <= 0) {
+            players[session].hp = players[session].maxHp;
+        }
+    }
+    else if (type == B.TOMATO2) {
         world[chunk.y][chunk.x][pos.y][pos.x][pos.z] = null;
         addToInv(session, I.TOMATO, null);
         addToInv(session, I.TOMATO, null);

@@ -91,24 +91,29 @@ function render() {
             }
             
             if (x == 19 && y == 12) {
-                if (fakePl.holding === null) {
-                    ctx.drawImage(sprite, fakePl.faceLeft ? 0 : 0, fakePl.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
-                    if (fakePl.armor !== null) {
-                        ctx.drawImage(sprite, fakePl.faceLeft ? clothingSprPos[fakePl.armor.id][0][0] : clothingSprPos[fakePl.armor.id][1][0], fakePl.faceLeft ? clothingSprPos[fakePl.armor.id][0][1] : clothingSprPos[fakePl.armor.id][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                if (fakePl.hp > 0) {
+                    if (fakePl.holding === null) {
+                        ctx.drawImage(sprite, fakePl.faceLeft ? 0 : 0, fakePl.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                        if (fakePl.armor !== null) {
+                            ctx.drawImage(sprite, fakePl.faceLeft ? clothingSprPos[fakePl.armor.id][0][0] : clothingSprPos[fakePl.armor.id][1][0], fakePl.faceLeft ? clothingSprPos[fakePl.armor.id][0][1] : clothingSprPos[fakePl.armor.id][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                        }
+                        if (fakePl.helm !== null) {
+                            ctx.drawImage(sprite, fakePl.faceLeft ? clothingSprPos[fakePl.helm.id][0][0] : clothingSprPos[fakePl.helm.id][1][0], fakePl.faceLeft ? clothingSprPos[fakePl.helm.id][0][1] : clothingSprPos[fakePl.helm.id][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                        }
                     }
-                    if (fakePl.helm !== null) {
-                        ctx.drawImage(sprite, fakePl.faceLeft ? clothingSprPos[fakePl.helm.id][0][0] : clothingSprPos[fakePl.helm.id][1][0], fakePl.faceLeft ? clothingSprPos[fakePl.helm.id][0][1] : clothingSprPos[fakePl.helm.id][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                    else {
+                        ctx.drawImage(sprite, fakePl.faceLeft ? 16 : 16, fakePl.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
+                        ctx.drawImage(sprite, fakePl.faceLeft ? toolSprPos[parseInt(fakePl.holding.id)][0][0] : toolSprPos[parseInt(fakePl.holding.id)][1][0], fakePl.faceLeft ? toolSprPos[parseInt(fakePl.holding.id)][0][1] : toolSprPos[parseInt(fakePl.holding.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                        if (fakePl.armor !== null) {
+                            ctx.drawImage(sprite, fakePl.faceLeft ? clothingSprPos[fakePl.armor.id][2][0] : clothingSprPos[fakePl.armor.id][3][0], fakePl.faceLeft ? clothingSprPos[fakePl.armor.id][2][1] : clothingSprPos[fakePl.armor.id][3][1], 16, 16, x*bw, y*bh, bw, bh);
+                        }
+                        if (fakePl.helm !== null) {
+                            ctx.drawImage(sprite, fakePl.faceLeft ? clothingSprPos[fakePl.helm.id][0][0] : clothingSprPos[fakePl.helm.id][1][0], fakePl.faceLeft ? clothingSprPos[fakePl.helm.id][0][1] : clothingSprPos[fakePl.helm.id][1][1], 16, 16, x*bw, y*bh, bw, bh);
+                        }
                     }
                 }
                 else {
-                    ctx.drawImage(sprite, fakePl.faceLeft ? 16 : 16, fakePl.faceLeft ? 224 : 208, 16, 16, x*bw, y*bh, bw, bh);
-                    ctx.drawImage(sprite, fakePl.faceLeft ? toolSprPos[parseInt(fakePl.holding.id)][0][0] : toolSprPos[parseInt(fakePl.holding.id)][1][0], fakePl.faceLeft ? toolSprPos[parseInt(fakePl.holding.id)][0][1] : toolSprPos[parseInt(fakePl.holding.id)][1][1], 16, 16, x*bw, y*bh, bw, bh);
-                    if (fakePl.armor !== null) {
-                        ctx.drawImage(sprite, fakePl.faceLeft ? clothingSprPos[fakePl.armor.id][2][0] : clothingSprPos[fakePl.armor.id][3][0], fakePl.faceLeft ? clothingSprPos[fakePl.armor.id][2][1] : clothingSprPos[fakePl.armor.id][3][1], 16, 16, x*bw, y*bh, bw, bh);
-                    }
-                    if (fakePl.helm !== null) {
-                        ctx.drawImage(sprite, fakePl.faceLeft ? clothingSprPos[fakePl.helm.id][0][0] : clothingSprPos[fakePl.helm.id][1][0], fakePl.faceLeft ? clothingSprPos[fakePl.helm.id][0][1] : clothingSprPos[fakePl.helm.id][1][1], 16, 16, x*bw, y*bh, bw, bh);
-                    }
+                    ctx.drawImage(sprite, fakePl.faceLeft ? 64 : 48, fakePl.faceLeft ? 96 : 80, 16, 16, x*bw, y*bh, bw, bh);
                 }
             }
             for (q in plData) {
