@@ -853,6 +853,11 @@ io.on('connection', (socket)=>{
     })
 
     socket.on('craft', (session, type, amount, cmdId) => {
+        if (players[session].hp <= 0) {
+            io.to(socket.id).emit('rejectCmd', cmdId);
+            return;
+        }
+        
         let R = {...baseRecipes};
         if (world[players[session].chunk.y][players[session].chunk.x][players[session].pos.y][players[session].pos.x][players[session].z] == B.SMELTER) {
             R = {...R, ...smelterRecipes};

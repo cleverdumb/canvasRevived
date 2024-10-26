@@ -429,26 +429,28 @@ function render() {
                     render();
                 }
             })
-            ctx.font = '15px monospace';
-            ctx.fillText('CRAFT', currX + 150 + 10, currY+18);
-            ctx.strokeRect(currX + 150, currY, ctx.measureText('CRAFT').width + 20, 15 + 10);
-            buttons.push({
-                x: currX + 150,
-                y: currY,
-                w: ctx.measureText('CRAFT').width + 20,
-                h: 15 + 10,
-                cb: () => {
-                    let possible = true;
-                    for (let part in R[craftCurrSel]) {
-                        if ((!fakePl.inv.hasOwnProperty(I[part])) || (fakePl.inv[I[part]] < R[craftCurrSel][part] * craftCurrCount)) {
-                            possible = false;
+            if (fakePl.hp > 0) {
+                ctx.font = '15px monospace';
+                ctx.fillText('CRAFT', currX + 150 + 10, currY+18);
+                ctx.strokeRect(currX + 150, currY, ctx.measureText('CRAFT').width + 20, 15 + 10);
+                buttons.push({
+                    x: currX + 150,
+                    y: currY,
+                    w: ctx.measureText('CRAFT').width + 20,
+                    h: 15 + 10,
+                    cb: () => {
+                        let possible = true;
+                        for (let part in R[craftCurrSel]) {
+                            if ((!fakePl.inv.hasOwnProperty(I[part])) || (fakePl.inv[I[part]] < R[craftCurrSel][part] * craftCurrCount)) {
+                                possible = false;
+                            }
+                        }
+                        if (possible) {
+                            craft(craftCurrSel, craftCurrCount);
                         }
                     }
-                    if (possible) {
-                        craft(craftCurrSel, craftCurrCount);
-                    }
-                }
-            })
+                })
+            }
 
             currY += 32;
 
