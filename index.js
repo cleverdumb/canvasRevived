@@ -857,7 +857,7 @@ io.on('connection', (socket)=>{
             io.to(socket.id).emit('rejectCmd', cmdId);
             return;
         }
-        
+
         let R = {...baseRecipes};
         if (world[players[session].chunk.y][players[session].chunk.x][players[session].pos.y][players[session].pos.x][players[session].z] == B.SMELTER) {
             R = {...R, ...smelterRecipes};
@@ -1270,6 +1270,15 @@ const miningCdRed = 50;
 const choppingCdRed = 50;
 
 function interact(type, chunk, pos, socket, session, seed, cmdId) {
+    if (requireAxe.includes(type) || requirePickaxe.includes(type)) {
+        if (players[session].hp <= 0) {
+            setTimeout(()=>{
+                io.to(socket.id).emit('rejectCmd', cmdId);
+            }, lagSim)
+            return;
+        }
+    }
+
     if (requireAxe.includes(type)) {
         if (players[session].holding === null || !axe.includes(parseInt(players[session].holding.id))) {
             setTimeout(()=>{

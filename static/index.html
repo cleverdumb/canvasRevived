@@ -644,6 +644,12 @@
             }
 
             function interact(type, chunk, pos, seed) {
+                if (requireAxe.includes(type) || requirePickaxe.includes(type)) {
+                    if (fakePl.hp <= 0) {
+                        return;
+                    }
+                }
+                
                 if (requireAxe.includes(type)) {
                     if (fakePl.holding.id != I.WOODAXE) {
                         fakePl.inv[fakePl.holding.id].duras[fakePl.holding.ins]--;
