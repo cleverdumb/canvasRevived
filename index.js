@@ -127,15 +127,6 @@ for (let y=0; y<chunkY; y++) {
 
 let npcObj = {};
 
-function *commandIdGenO() {
-    let x = 0;
-    while (true) {
-        yield x++;
-    }
-}
-
-let commandIdGen = commandIdGenO();
-
 const port = 3276;
 
 app.get('/', (req, res)=>{

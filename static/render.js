@@ -481,7 +481,7 @@ function render() {
         let currY = 80;
 
         for (let s in fakePl.lvs) {
-            // if (!fakePl.lvs[s].ability) {
+            if (!fakePl.lvs[s].ability) {
                 ctx.font = '20px monospace';
                 ctx.fillStyle = 'white';
                 ctx.fillText(`${s.toUpperCase()} ${fakePl.lvs[s].lv}`, 70, currY + 10);
@@ -494,7 +494,7 @@ function render() {
                 ctx.fillStyle = 'white';
                 ctx.fillText(`${fakePl.lvs[s].xp}/${fakePl.lvs[s].req}`, 280, currY + 10);
                 currY += 35;
-            // }
+            }
         }
     }
 
